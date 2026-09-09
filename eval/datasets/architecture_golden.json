@@ -1,0 +1,823 @@
+{
+  "version": 1,
+  "scenarios": [
+    {
+      "id": "SC067",
+      "description": "Golden 01 - budget-only recommendation starts progressive recommendation",
+      "groups": [
+        "architecture_golden",
+        "progressive_recommendation",
+        "budget"
+      ],
+      "golden_case": "budget_only",
+      "workflow": {
+        "terminal": "ANSWER",
+        "required_stages": [
+          "candidate_filter"
+        ],
+        "forbidden_stages": [
+          "recommendation_interview",
+          "hitl"
+        ]
+      },
+      "turns": [
+        {
+          "user_message": "Tôi có khoảng 700 triệu",
+          "llm_payload": {
+            "task": "RECOMMEND",
+            "topics": [
+              "PRICE"
+            ],
+            "budget_max_vnd": "700 triệu"
+          },
+          "expected_slots": {
+            "budget_min_vnd": 600000000,
+            "budget_max_vnd": 800000000
+          },
+          "provided_slots": [
+            "budget_min_vnd",
+            "budget_max_vnd"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "ASK",
+          "expected_next_slot": "vehicle_type",
+          "expected_task": "RECOMMEND",
+          "expected_topics": [
+            "PRICE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SC068",
+      "description": "Golden 02 - elliptical Plus follow-up keeps the focused VF 7 family",
+      "groups": [
+        "architecture_golden",
+        "followup",
+        "referent_resolution",
+        "memory"
+      ],
+      "golden_case": "followup_ellipsis",
+      "workflow": {
+        "terminal": "ANSWER",
+        "required_stages": [
+          "product_lookup"
+        ],
+        "forbidden_stages": [
+          "recommendation_interview",
+          "hitl"
+        ]
+      },
+      "turns": [
+        {
+          "user_message": "Thế bản Plus?",
+          "memory_summary": "Khách đang xem VF 7 Eco.",
+          "recent_messages": [
+            {
+              "role": "ASSISTANT",
+              "content": "VF 7 Eco có giá niêm yết như sau."
+            }
+          ],
+          "llm_payload": {
+            "task": "PRODUCT_QA",
+            "variant_mentions": [
+              "Plus"
+            ]
+          },
+          "expected_slots": {},
+          "expected_vehicle_mentions": [
+            "VF 7 Plus"
+          ],
+          "expected_intents": [
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": "vehicle_type",
+          "expected_task": "PRODUCT_QA"
+        }
+      ]
+    },
+    {
+      "id": "SC069",
+      "description": "Golden 03 - explicit correction replaces the active 700 million budget",
+      "groups": [
+        "architecture_golden",
+        "correction",
+        "budget",
+        "stateful"
+      ],
+      "golden_case": "budget_correction",
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "budget_max_vnd": 700000000
+      },
+      "workflow": {
+        "terminal": "ANSWER",
+        "required_stages": [
+          "state_update",
+          "candidate_filter"
+        ],
+        "forbidden_stages": [
+          "hitl"
+        ]
+      },
+      "turns": [
+        {
+          "user_message": "Sửa lại, ngân sách tối đa của tôi là 900 triệu",
+          "llm_payload": {
+            "task": "RECOMMEND",
+            "dialogue_act": "CORRECTION",
+            "budget_max_vnd": "700 triệu",
+            "constraint_updates": {
+              "budget_max_vnd": "900 triệu"
+            }
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "budget_max_vnd": 900000000
+          },
+          "provided_slots": [
+            "budget_max_vnd"
+          ],
+          "correction_slots": [
+            "budget_max_vnd"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "RETRIEVE",
+          "expected_next_slot": null,
+          "expected_task": "RECOMMEND",
+          "expected_dialogue_act": "CORRECTION"
+        }
+      ]
+    },
+    {
+      "id": "SC070",
+      "description": "Golden 04 - compare VF 7 and VF 8 without inventing recommendation slots",
+      "groups": [
+        "architecture_golden",
+        "comparison",
+        "no_false_fill"
+      ],
+      "golden_case": "compare_vf7_vf8",
+      "workflow": {
+        "terminal": "ANSWER",
+        "required_stages": [
+          "compare"
+        ],
+        "forbidden_stages": [
+          "recommendation_interview",
+          "tco",
+          "hitl"
+        ]
+      },
+      "turns": [
+        {
+          "user_message": "So sánh VF 7 và VF 8 giúp tôi",
+          "llm_payload": {
+            "task": "COMPARE",
+            "vehicle_name_mentions": [
+              "VF 7",
+              "VF 8"
+            ]
+          },
+          "expected_slots": {},
+          "forbidden_slots": [
+            "passenger_count",
+            "budget_max_vnd"
+          ],
+          "expected_vehicle_mentions": [
+            "VF 7",
+            "VF 8"
+          ],
+          "expected_intents": [
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": "vehicle_type",
+          "expected_task": "COMPARE"
+        }
+      ]
+    },
+    {
+      "id": "SC071",
+      "description": "Golden 05 - normal warranty question uses authoritative policy evidence",
+      "groups": [
+        "architecture_golden",
+        "policy_qa",
+        "citation"
+      ],
+      "golden_case": "warranty_question",
+      "workflow": {
+        "terminal": "ANSWER",
+        "required_stages": [
+          "policy_rag",
+          "citation"
+        ],
+        "forbidden_stages": [
+          "recommendation_interview",
+          "hitl"
+        ],
+        "requires_authoritative_source": true
+      },
+      "turns": [
+        {
+          "user_message": "VF 7 được bảo hành thế nào?",
+          "llm_payload": {
+            "task": "POLICY_QA",
+            "topics": [
+              "WARRANTY_POLICY"
+            ],
+            "vehicle_name_mentions": [
+              "VF 7"
+            ]
+          },
+          "expected_slots": {},
+          "expected_vehicle_mentions": [
+            "VF 7"
+          ],
+          "expected_intents": [
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": "vehicle_type",
+          "expected_task": "POLICY_QA",
+          "expected_topics": [
+            "WARRANTY_POLICY"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SC072",
+      "description": "Golden 06 - battery warranty complaint remains policy QA with complaint semantics",
+      "groups": [
+        "architecture_golden",
+        "policy_qa",
+        "complaint",
+        "battery_warranty"
+      ],
+      "golden_case": "battery_warranty_complaint",
+      "workflow": {
+        "terminal": "ANSWER",
+        "required_stages": [
+          "policy_rag",
+          "citation"
+        ],
+        "forbidden_stages": [
+          "recommendation_interview",
+          "hitl"
+        ],
+        "requires_authoritative_source": true
+      },
+      "turns": [
+        {
+          "user_message": "Tôi lo pin VF 8 không bền, bảo hành pin thế nào?",
+          "llm_payload": {
+            "task": "POLICY_QA",
+            "topics": [
+              "BATTERY_WARRANTY"
+            ],
+            "dialogue_act": "COMPLAIN",
+            "severity": "ELEVATED",
+            "vehicle_name_mentions": [
+              "VF 8"
+            ]
+          },
+          "expected_slots": {},
+          "expected_vehicle_mentions": [
+            "VF 8"
+          ],
+          "expected_intents": [
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": "vehicle_type",
+          "expected_task": "POLICY_QA",
+          "expected_topics": [
+            "BATTERY_WARRANTY"
+          ],
+          "expected_dialogue_act": "COMPLAIN",
+          "expected_severity": "NORMAL"
+        }
+      ]
+    },
+    {
+      "id": "SC073",
+      "description": "Golden 07 - greeting is handled socially without heavy tools",
+      "groups": [
+        "architecture_golden",
+        "social",
+        "no_heavy_tools"
+      ],
+      "golden_case": "greeting",
+      "workflow": {
+        "terminal": "ANSWER",
+        "required_stages": [
+          "casual_response"
+        ],
+        "forbidden_stages": [
+          "product_lookup",
+          "policy_rag",
+          "candidate_filter",
+          "scoring",
+          "tco",
+          "hitl"
+        ]
+      },
+      "turns": [
+        {
+          "user_message": "Xin chào",
+          "llm_payload": {
+            "scope": "SOCIAL",
+            "task": "CASUAL",
+            "dialogue_act": "SOCIAL"
+          },
+          "expected_slots": {},
+          "expected_intents": [],
+          "expected_decision": "CLARIFY_INTENT",
+          "expected_next_slot": "vehicle_type",
+          "expected_scope": "SOCIAL",
+          "expected_task": "CASUAL",
+          "expected_dialogue_act": "SOCIAL"
+        }
+      ]
+    },
+    {
+      "id": "SC074",
+      "description": "Golden 08 - thank-you is a terminal social acknowledgment",
+      "groups": [
+        "architecture_golden",
+        "social",
+        "acknowledgment",
+        "no_heavy_tools"
+      ],
+      "golden_case": "thank_you",
+      "workflow": {
+        "terminal": "ANSWER",
+        "required_stages": [
+          "casual_response"
+        ],
+        "forbidden_stages": [
+          "product_lookup",
+          "policy_rag",
+          "candidate_filter",
+          "scoring",
+          "tco",
+          "hitl"
+        ]
+      },
+      "turns": [
+        {
+          "user_message": "Cảm ơn em nhé",
+          "llm_payload": {
+            "scope": "SOCIAL",
+            "task": "CASUAL",
+            "dialogue_act": "ACKNOWLEDGMENT"
+          },
+          "expected_slots": {},
+          "expected_intents": [],
+          "expected_decision": "CLARIFY_INTENT",
+          "expected_next_slot": "vehicle_type",
+          "expected_scope": "SOCIAL",
+          "expected_task": "CASUAL",
+          "expected_dialogue_act": "ACKNOWLEDGMENT"
+        }
+      ]
+    },
+    {
+      "id": "SC075",
+      "description": "Golden 09 - out-of-scope question stops before vehicle tools",
+      "groups": [
+        "architecture_golden",
+        "out_of_scope",
+        "no_heavy_tools"
+      ],
+      "golden_case": "out_of_scope",
+      "workflow": {
+        "terminal": "ANSWER",
+        "required_stages": [
+          "scope_response"
+        ],
+        "forbidden_stages": [
+          "product_lookup",
+          "policy_rag",
+          "candidate_filter",
+          "scoring",
+          "tco",
+          "hitl"
+        ]
+      },
+      "turns": [
+        {
+          "user_message": "Hôm nay thời tiết Hà Nội thế nào?",
+          "llm_payload": {
+            "scope": "OUT_OF_SCOPE",
+            "task": "OUT_OF_SCOPE"
+          },
+          "expected_slots": {},
+          "expected_intents": [],
+          "expected_decision": "CLARIFY_INTENT",
+          "expected_next_slot": "vehicle_type",
+          "expected_scope": "OUT_OF_SCOPE",
+          "expected_task": "OUT_OF_SCOPE"
+        }
+      ]
+    },
+    {
+      "id": "SC076",
+      "description": "Golden 10 - explicit human request always escalates",
+      "groups": [
+        "architecture_golden",
+        "hitl",
+        "explicit_human"
+      ],
+      "golden_case": "explicit_human_request",
+      "workflow": {
+        "terminal": "HITL",
+        "required_stages": [
+          "quote_gate",
+          "hitl"
+        ],
+        "forbidden_stages": [
+          "recommendation_interview",
+          "candidate_filter",
+          "scoring",
+          "tco"
+        ]
+      },
+      "turns": [
+        {
+          "user_message": "Cho tôi gặp tư vấn viên",
+          "llm_payload": {
+            "task": "SUPPORT",
+            "human_requested": true
+          },
+          "expected_slots": {},
+          "expected_intents": [],
+          "expected_decision": "CLARIFY_INTENT",
+          "expected_next_slot": "vehicle_type",
+          "expected_task": "SUPPORT",
+          "expected_human_requested": true
+        }
+      ]
+    },
+    {
+      "id": "SC077",
+      "description": "Golden 11 - live battery smoke complaint uses critical safe handling",
+      "groups": [
+        "architecture_golden",
+        "hitl",
+        "safety",
+        "complaint"
+      ],
+      "golden_case": "serious_safety_complaint",
+      "workflow": {
+        "terminal": "SAFE_HANDLING",
+        "required_stages": [
+          "quote_gate",
+          "hitl"
+        ],
+        "forbidden_stages": [
+          "recommendation_interview",
+          "candidate_filter",
+          "scoring",
+          "tco"
+        ]
+      },
+      "turns": [
+        {
+          "user_message": "Xe của tôi đang bốc khói ở khu vực pin",
+          "llm_payload": {
+            "task": "SUPPORT",
+            "topics": [
+              "SAFETY"
+            ],
+            "dialogue_act": "COMPLAIN",
+            "severity": "CRITICAL"
+          },
+          "expected_slots": {},
+          "expected_intents": [],
+          "expected_decision": "CLARIFY_INTENT",
+          "expected_next_slot": "vehicle_type",
+          "expected_task": "SUPPORT",
+          "expected_topics": [
+            "SAFETY"
+          ],
+          "expected_dialogue_act": "COMPLAIN",
+          "expected_severity": "CRITICAL"
+        }
+      ]
+    },
+    {
+      "id": "SC078",
+      "description": "Golden 12 - missing authoritative policy evidence escalates instead of guessing",
+      "groups": [
+        "architecture_golden",
+        "policy_qa",
+        "missing_evidence",
+        "hitl"
+      ],
+      "golden_case": "insufficient_policy_evidence",
+      "workflow": {
+        "terminal": "HITL",
+        "required_stages": [
+          "policy_rag",
+          "quote_gate",
+          "hitl"
+        ],
+        "forbidden_stages": [
+          "unsupported_answer"
+        ],
+        "requires_authoritative_source": true
+      },
+      "turns": [
+        {
+          "user_message": "Pin VF 8 được đổi mới miễn phí trong mọi trường hợp đúng không?",
+          "llm_payload": {
+            "task": "POLICY_QA",
+            "topics": [
+              "BATTERY_WARRANTY"
+            ],
+            "vehicle_name_mentions": [
+              "VF 8"
+            ]
+          },
+          "expected_slots": {},
+          "expected_vehicle_mentions": [
+            "VF 8"
+          ],
+          "expected_intents": [
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": "vehicle_type",
+          "expected_task": "POLICY_QA",
+          "expected_topics": [
+            "BATTERY_WARRANTY"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SC079",
+      "description": "Golden 13 - repeated validation failure ends in a safe handoff",
+      "groups": [
+        "architecture_golden",
+        "guardrail",
+        "repeated_failure",
+        "hitl"
+      ],
+      "golden_case": "repeated_validation_failure",
+      "workflow": {
+        "terminal": "SAFE_HANDLING",
+        "required_stages": [
+          "guardrail_retry",
+          "hitl"
+        ],
+        "forbidden_stages": [
+          "unverified_answer"
+        ]
+      },
+      "turns": [
+        {
+          "user_message": "Thông tin tầm hoạt động VF 8 là bao nhiêu?",
+          "llm_payload": {
+            "task": "PRODUCT_QA",
+            "topics": [
+              "RANGE"
+            ],
+            "vehicle_name_mentions": [
+              "VF 8"
+            ]
+          },
+          "expected_slots": {},
+          "expected_vehicle_mentions": [
+            "VF 8"
+          ],
+          "expected_intents": [
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": "vehicle_type",
+          "expected_task": "PRODUCT_QA",
+          "expected_topics": [
+            "RANGE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SC080",
+      "description": "Golden 14 - test-drive request bypasses recommendation interview",
+      "groups": [
+        "architecture_golden",
+        "test_drive",
+        "branch_isolation",
+        "no_heavy_tools"
+      ],
+      "golden_case": "test_drive_bypass",
+      "workflow": {
+        "terminal": "ASK",
+        "required_stages": [
+          "test_drive"
+        ],
+        "forbidden_stages": [
+          "recommendation_interview",
+          "policy_rag",
+          "candidate_filter",
+          "scoring",
+          "tco",
+          "hitl"
+        ]
+      },
+      "turns": [
+        {
+          "user_message": "Tôi muốn đăng ký lái thử",
+          "llm_payload": {
+            "task": "TEST_DRIVE",
+            "topics": [
+              "BOOKING"
+            ]
+          },
+          "expected_slots": {},
+          "expected_intents": [],
+          "expected_decision": "CLARIFY_INTENT",
+          "expected_next_slot": "vehicle_type",
+          "expected_task": "TEST_DRIVE",
+          "expected_topics": [
+            "BOOKING"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SC081",
+      "description": "Mutation - plain 700 million budget",
+      "groups": [
+        "mutation_paraphrase",
+        "budget_semantics"
+      ],
+      "turns": [
+        {
+          "user_message": "700 triệu",
+          "llm_payload": {
+            "task": "RECOMMEND",
+            "topics": [
+              "PRICE"
+            ],
+            "budget_max_vnd": "700 triệu"
+          },
+          "expected_slots": {
+            "budget_max_vnd": 700000000
+          },
+          "provided_slots": [
+            "budget_max_vnd"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "ASK",
+          "expected_next_slot": "vehicle_type",
+          "expected_task": "RECOMMEND",
+          "expected_budget_anchor_vnd": 700000000
+        }
+      ]
+    },
+    {
+      "id": "SC082",
+      "description": "Mutation - compact 700tr hard ceiling",
+      "groups": [
+        "mutation_paraphrase",
+        "budget_semantics"
+      ],
+      "turns": [
+        {
+          "user_message": "700tr thôi",
+          "llm_payload": {
+            "task": "RECOMMEND",
+            "topics": [
+              "PRICE"
+            ],
+            "budget_max_vnd": "700 triệu"
+          },
+          "expected_slots": {
+            "budget_max_vnd": 700000000
+          },
+          "provided_slots": [
+            "budget_max_vnd"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "ASK",
+          "expected_next_slot": "vehicle_type",
+          "expected_task": "RECOMMEND",
+          "expected_budget_anchor_vnd": 700000000
+        }
+      ]
+    },
+    {
+      "id": "SC083",
+      "description": "Mutation - worded approximate seven hundred million budget",
+      "groups": [
+        "mutation_paraphrase",
+        "budget_semantics"
+      ],
+      "turns": [
+        {
+          "user_message": "tầm bảy trăm",
+          "llm_payload": {
+            "task": "RECOMMEND",
+            "topics": [
+              "PRICE"
+            ],
+            "budget_max_vnd": "700 triệu"
+          },
+          "expected_slots": {
+            "budget_max_vnd": 700000000
+          },
+          "provided_slots": [
+            "budget_max_vnd"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "ASK",
+          "expected_next_slot": "vehicle_type",
+          "expected_task": "RECOMMEND",
+          "expected_budget_anchor_vnd": 700000000
+        }
+      ]
+    },
+    {
+      "id": "SC084",
+      "description": "Mutation - colloquial 700 cu budget",
+      "groups": [
+        "mutation_paraphrase",
+        "budget_semantics"
+      ],
+      "turns": [
+        {
+          "user_message": "700 củ",
+          "llm_payload": {
+            "task": "RECOMMEND",
+            "topics": [
+              "PRICE"
+            ],
+            "budget_max_vnd": "700 triệu"
+          },
+          "expected_slots": {
+            "budget_max_vnd": 700000000
+          },
+          "provided_slots": [
+            "budget_max_vnd"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "ASK",
+          "expected_next_slot": "vehicle_type",
+          "expected_task": "RECOMMEND",
+          "expected_budget_anchor_vnd": 700000000
+        }
+      ]
+    },
+    {
+      "id": "SC085",
+      "description": "Mutation - natural-language hard 700 million ceiling",
+      "groups": [
+        "mutation_paraphrase",
+        "budget_semantics"
+      ],
+      "turns": [
+        {
+          "user_message": "chắc 700 là căng",
+          "llm_payload": {
+            "task": "RECOMMEND",
+            "topics": [
+              "PRICE"
+            ],
+            "budget_max_vnd": "700 triệu"
+          },
+          "expected_slots": {
+            "budget_max_vnd": 700000000
+          },
+          "provided_slots": [
+            "budget_max_vnd"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "ASK",
+          "expected_next_slot": "vehicle_type",
+          "expected_task": "RECOMMEND",
+          "expected_budget_anchor_vnd": 700000000
+        }
+      ]
+    }
+  ]
+}

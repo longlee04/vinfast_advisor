@@ -1,0 +1,29 @@
+# Development override for the backend: bind-mount the source tree and run
+# uvicorn with --reload so editing backend logic takes effect immediately
+# instead of requiring `docker compose build`.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d backend
+#
+# The image still has to be built once (it provides the virtualenv at
+# /app/.venv). Only a dependency change in pyproject.toml/uv.lock needs a
+# rebuild after that.
+services:
+  backend:
+    volumes:
+      - ./data:/app/data
+      - ./src:/app/src
+      - ./scripts:/app/scripts
+      - ./migrations:/app/migrations
+    command:
+      [
+        "uvicorn",
+        "src.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--reload",
+        "--reload-dir",
+        "/app/src",
+      ]

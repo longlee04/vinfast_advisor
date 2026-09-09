@@ -1,0 +1,158 @@
+.section {
+  width: min(1180px, calc(100% - 48px));
+  margin: clamp(76px, 9vw, 130px) auto;
+  padding: clamp(46px, 5vw, 68px);
+  color: #fff;
+  background:
+    radial-gradient(circle at 94% 8%, rgb(34 108 224 / .42), transparent 33%),
+    linear-gradient(135deg, #101d2b 0%, #07111e 100%);
+}
+
+.intro {
+  max-width: 830px;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.intro > span {
+  color: #8db7f4;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.intro h2 {
+  margin: 15px 0 18px;
+  font-size: clamp(29px, 3vw, 44px);
+  font-weight: 450;
+  line-height: 1.08;
+  letter-spacing: -.04em;
+}
+
+.intro p {
+  margin: 0;
+  color: #c6d0db;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 34px;
+}
+
+.option {
+  min-height: 108px;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 20px;
+  gap: 15px;
+  align-items: center;
+  padding: 19px 20px;
+  color: #142236;
+  background: #fff;
+  border: 1px solid rgb(255 255 255 / .18);
+  text-decoration: none;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.option:hover,
+.option:focus-visible {
+  border-color: #2d7fe5;
+  box-shadow: 0 16px 40px rgb(0 0 0 / .18);
+  transform: translateY(-3px);
+}
+
+.option:focus-visible {
+  outline: 3px solid #8db7f4;
+  outline-offset: 3px;
+}
+
+.vivi {
+  color: #fff;
+  background: linear-gradient(135deg, #1264cf, #1e8deb);
+}
+
+.icon {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  color: #176ed4;
+  background: #edf5ff;
+  border-radius: 50%;
+}
+
+.vivi .icon {
+  color: #fff;
+  background: rgb(255 255 255 / .16);
+}
+
+.icon svg {
+  width: 23px;
+  height: 23px;
+}
+
+.copy {
+  display: grid;
+  gap: 7px;
+}
+
+.copy strong {
+  font-size: 19px;
+  font-weight: 650;
+}
+
+.copy small {
+  color: #667386;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.vivi .copy small {
+  color: #e2efff;
+}
+
+.arrow {
+  width: 22px;
+  height: 22px;
+}
+
+@media (max-width: 900px) {
+  .section { width: min(760px, calc(100% - 36px)); }
+}
+
+@media (max-width: 620px) {
+  .section {
+    width: calc(100% - 28px);
+    margin-block: 64px;
+    padding: 38px 14px 14px;
+  }
+
+  .intro h2 {
+    font-size: 29px;
+  }
+
+  .intro p { font-size: 14px; }
+
+  .options { gap: 9px; margin-top: 27px; }
+
+  .option {
+    min-height: 96px;
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 10px;
+    padding: 14px 11px;
+  }
+
+  .icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .copy { gap: 3px; }
+  .copy strong { font-size: 15px; }
+  .copy small { font-size: 11px; line-height: 1.35; }
+  .arrow { display: none; }
+}

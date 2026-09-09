@@ -1,0 +1,258 @@
+{
+  "model": "VF 8 The All New",
+  "source_page": "https://vinfastauto.com/vn_vi/dat-coc-xe-vf8-the-all-new-2026",
+  "assets": [
+    {
+      "file": "hero.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/hero-banner.svg",
+      "role": "hero",
+      "alt": "VinFast VF 8 Thế Hệ Mới",
+      "width": 1600,
+      "height": 900,
+      "sha256": "a9f7aff16972329d34dbca5fdc6a1a98a6b49841a69165e4648d9f0335c32c60"
+    },
+    {
+      "file": "hero-mobile.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/vf8_mobile-1-1.jpg",
+      "role": "hero",
+      "alt": "VinFast VF 8 Thế Hệ Mới",
+      "width": 390,
+      "height": 574,
+      "sha256": "c3bd4db033021035da1a4e5340ee53709d68665d55637758c076b4c080f6b35f"
+    },
+    {
+      "file": "color-vf8ph-13.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/color/car/VF8PH-13.png",
+      "role": "color",
+      "alt": "VF 8 Thế Hệ Mới màu Solar Ruby",
+      "width": 600,
+      "height": 335,
+      "sha256": "0cff6253915d29f22033b87944880fff71674b25ee35bf3bbd5ad731138312a9"
+    },
+    {
+      "file": "color-vf8ph-15.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/color/car/VF8PH-15.png",
+      "role": "color",
+      "alt": "VF 8 Thế Hệ Mới màu Infinity Blanc",
+      "width": 600,
+      "height": 335,
+      "sha256": "07905c76b1bbc4ccc7646e0dc0e0c0606f4e234173776ae75422176cdcd8809a"
+    },
+    {
+      "file": "color-vf8ph-21.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/color/car/VF8PH-21.png",
+      "role": "color",
+      "alt": "VF 8 Thế Hệ Mới màu Jet Black",
+      "width": 600,
+      "height": 335,
+      "sha256": "646b08f2e005beaa810aff2a3a22ddbc7ee34a4a445f8ba3b261d8d7b807a063"
+    },
+    {
+      "file": "color-vf8ph-23.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/color/car/VF8PH-23.png",
+      "role": "color",
+      "alt": "VF 8 Thế Hệ Mới màu Starburst Blue",
+      "width": 600,
+      "height": 335,
+      "sha256": "40c47473d4bd3f5ef5c082cfd7c6a141dfea3413939b554c51ab85b4035336e7"
+    },
+    {
+      "file": "color-vf8ph-17.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/color/car/VF8PH-17.png",
+      "role": "color",
+      "alt": "VF 8 Thế Hệ Mới màu Mysterioso Purple",
+      "width": 600,
+      "height": 335,
+      "sha256": "815b65ceb55a5247a62c462b9fe73ab568a25031bb8a78dfb59736a323bed0f1"
+    },
+    {
+      "file": "color-vf8ph-19.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/color/car/VF8PH-19.png",
+      "role": "color",
+      "alt": "VF 8 Thế Hệ Mới màu Vitality Orange",
+      "width": 681,
+      "height": 380,
+      "sha256": "07bad6c39571bc55219aa20339ad96e0026fb91b0a7e1462b3273873e8a84c9b"
+    },
+    {
+      "file": "color-vf8ph-14.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/color/car/VF8PH-14.png",
+      "role": "color",
+      "alt": "VF 8 Thế Hệ Mới màu Solar Ruby Body - Jet Black Roof",
+      "width": 600,
+      "height": 335,
+      "sha256": "7bb9b94ef3ee4f981c82080851d99896582205157494f8b933bf5373bad88a9e"
+    },
+    {
+      "file": "color-vf8ph-16.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/color/car/VF8PH-16.png",
+      "role": "color",
+      "alt": "VF 8 Thế Hệ Mới màu Vitality Orange Body - Infinity Blanc Roof",
+      "width": 600,
+      "height": 335,
+      "sha256": "8d5cc1f9a43ddc827cce0672b174ec192f2210b037458db3654f099393bcacbf"
+    },
+    {
+      "file": "color-vf8ph-18.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/color/car/VF8PH-18.png",
+      "role": "color",
+      "alt": "VF 8 Thế Hệ Mới màu Mysterioso Purple Body - Stealth Gray Roof",
+      "width": 600,
+      "height": 335,
+      "sha256": "448be13b62ae1a8c2396df509d20ad0589d6a3efb8785d1405925a50cb129f0f"
+    },
+    {
+      "file": "color-vf8ph-20.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/color/car/VF8PH-20.png",
+      "role": "color",
+      "alt": "VF 8 Thế Hệ Mới màu Vitality Orange Body - Jet Black Roof",
+      "width": 600,
+      "height": 335,
+      "sha256": "19641ce22308560ef41eef3b00899b2506869f5dc1cff86f67dab143fc1072d3"
+    },
+    {
+      "file": "color-vf8ph-22.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/color/car/VF8PH-22.png",
+      "role": "color",
+      "alt": "VF 8 Thế Hệ Mới màu Jet Black Body - Stealth Gray Roof",
+      "width": 600,
+      "height": 335,
+      "sha256": "9d60b08b10ab105c508f39e773b62b3d2633a4b0260e9ca966dbef39c7e76cc3"
+    },
+    {
+      "file": "color-vf8ph-24.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/color/car/VF8PH-24.png",
+      "role": "color",
+      "alt": "VF 8 Thế Hệ Mới màu Starburst Blue Body - Infinity Blanc Roof",
+      "width": 600,
+      "height": 335,
+      "sha256": "cbdaf5b0cdaaf10174649ecd3ea6223fb92161c1883c4a2e4636aa534758e2ed"
+    },
+    {
+      "file": "story-city.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/tech/tech1.png",
+      "role": "story",
+      "alt": "VF 8 Thế Hệ Mới trong bối cảnh đô thị",
+      "width": 659,
+      "height": 610,
+      "sha256": "520b7a749d504186daed8e1c56708c32225a31bf25b4ac1be14a35964af7d656"
+    },
+    {
+      "file": "story-coast.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/tech/tech2.png",
+      "role": "story",
+      "alt": "VF 8 Thế Hệ Mới trên cung đường biển",
+      "width": 329,
+      "height": 352,
+      "sha256": "ddaca95c47fa3725c28b11815523a1f8f14d352fc593f7b0a804693a015a81a2"
+    },
+    {
+      "file": "story-road.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/tech/tech3.png",
+      "role": "story",
+      "alt": "VF 8 Thế Hệ Mới vận hành ven biển",
+      "width": 328,
+      "height": 352,
+      "sha256": "b1899002d587e35caf6c0e894a9e04c2dbda43bf6e57fc0171b7f84b45798461"
+    },
+    {
+      "file": "exterior-car.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/interior/car-left.png",
+      "role": "exterior",
+      "alt": "VF 8 Thế Hệ Mới nhìn nghiêng",
+      "width": 510,
+      "height": 540,
+      "sha256": "4f595c9c78fbf086c56a798a3351cf10ee1498689d5fd368ca26402eb77c5f1c"
+    },
+    {
+      "file": "interior-1.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/ex-ex4.png",
+      "role": "interior",
+      "alt": "Không gian lái VF 8 Thế Hệ Mới",
+      "width": 810,
+      "height": 392,
+      "sha256": "01ae1d29c453718db4d855b6602026df08b335551db1a237de9bc028c019ce73"
+    },
+    {
+      "file": "interior-2.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/ex-ex5-e.png",
+      "role": "interior",
+      "alt": "Nội thất cao cấp VF 8 Thế Hệ Mới",
+      "width": 810,
+      "height": 392,
+      "sha256": "1fb89c87292beb1ab12d65b3ae4e55c27889b49b547ef8c39d847310bd7cdf40"
+    },
+    {
+      "file": "interior-3.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/ex-ex3.png",
+      "role": "interior",
+      "alt": "Nội thất VF 8 Thế Hệ Mới sang trọng",
+      "width": 810,
+      "height": 392,
+      "sha256": "6491935bb71d898aa3aaae63ea0bbd5387e8adfdf928d277f3f46a2d8d3fc1f6"
+    },
+    {
+      "file": "interior-wheel.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/experience/ex-right.png",
+      "role": "interior",
+      "alt": "Khoang lái và vô lăng VF 8 Thế Hệ Mới",
+      "width": 510,
+      "height": 540,
+      "sha256": "a650856ffd067407d2bf0c4b8ed85d8a49f6cf8bdf24a36c5b92f64f95a79001"
+    },
+    {
+      "file": "technology-1.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/tech-t1.png",
+      "role": "technology",
+      "alt": "Kiến trúc điện - điện tử VF 8 Thế Hệ Mới",
+      "width": 828,
+      "height": 540,
+      "sha256": "5c838d07af11d089840e7173dd1902e6ec56eed4eb448b8c0b44c592a1fb095f"
+    },
+    {
+      "file": "technology-2.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/tech-t2.png",
+      "role": "technology",
+      "alt": "Hệ thống hỗ trợ lái nâng cao ADAS",
+      "width": 828,
+      "height": 540,
+      "sha256": "b2c0835665fed2739d03fc74a4122918d113de6e505e9a72acfcad8864d9cb28"
+    },
+    {
+      "file": "technology-3.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/tech-t3.png",
+      "role": "technology",
+      "alt": "Trợ lý ảo VF 8 Thế Hệ Mới",
+      "width": 828,
+      "height": 540,
+      "sha256": "7982239fc29a7d2310ffb570b56dd6044cdd85857f29df2f56444ca5fed1e49d"
+    },
+    {
+      "file": "technology-4.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/tech-t4.png",
+      "role": "technology",
+      "alt": "Hệ thống treo thích ứng FSD",
+      "width": 828,
+      "height": 540,
+      "sha256": "fd5c1bd26754dfcf0c122a63abf673cd85acf1c9c47414a9d70ff4b68c8d9e97"
+    },
+    {
+      "file": "specs-background.webp",
+      "source_url": "https://vinfastauto.com/themes/porto/img/vf8-new-product/specs/s1.png",
+      "role": "specifications",
+      "alt": "VF 8 Thế Hệ Mới nâng cấp toàn diện",
+      "width": 1380,
+      "height": 596,
+      "sha256": "0a26968d96a2c532c8bfc76e38bd63ffd6969947841b2325677fedd5fe1eb681"
+    },
+    {
+      "file": "comparison-car.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/braminy-white_00022-1_0.png",
+      "role": "comparison",
+      "alt": "VinFast VF 8 The All New",
+      "width": 230,
+      "height": 128,
+      "sha256": "b9078710a60fa9d14ee83cd1f171b556fb7595c01d832890e9e2e205efb46d58"
+    }
+  ]
+}

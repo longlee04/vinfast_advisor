@@ -1,0 +1,1 @@
+"""Image application unit tests."""

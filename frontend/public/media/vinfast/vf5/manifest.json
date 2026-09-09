@@ -1,0 +1,213 @@
+{
+  "model": "VF 5",
+  "source_page": "https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf5.html",
+  "assets": [
+    {
+      "file": "campaign-hero.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw8239f7a0/reserves/VF5/2025/hero.webp",
+      "role": "hero",
+      "alt": "VinFast VF 5 - Cá nhân vượt trội",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "d90b0e31ce22777f523fcad2b6a986c3b554de54c3b0ce8171f95aef48dec263"
+    },
+    {
+      "file": "campaign-hero-mobile.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw0e6b7686/reserves/VF5/2025/sp/hero.webp",
+      "role": "hero",
+      "alt": "VinFast VF 5 - Cá nhân vượt trội",
+      "width": 780,
+      "height": 1400,
+      "sha256": "02220f5ffd4de8698738318ad5b54d64e7d6213000f63e4e2859664b4019b5ff"
+    },
+    {
+      "file": "feature-01.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf18c6f11/reserves/VF5/2025/Main.webp",
+      "role": "feature",
+      "alt": "VinFast VF 5 đồng hành hàng ngày",
+      "width": 764,
+      "height": 552,
+      "sha256": "5f05a0595f50dadd5714039d152d08724fdae2e11164147e5ad2c059ac9705eb"
+    },
+    {
+      "file": "feature-02.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw33002669/reserves/VF5/2025/Main-1.webp",
+      "role": "feature",
+      "alt": "VinFast VF 5 Solar Ruby",
+      "width": 764,
+      "height": 552,
+      "sha256": "9b40f7ce4a7f18911d261c2e8bc63b93a8f93ca7e8b922540b933ee7c248e409"
+    },
+    {
+      "file": "feature-03.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw600597e3/reserves/VF5/2025/Main-2.webp",
+      "role": "feature",
+      "alt": "Không gian gia đình trên VinFast VF 5",
+      "width": 764,
+      "height": 552,
+      "sha256": "4dbf90349912626cc5948b4f8b084dfaec65a4ca040aff9844be9d7e021b33de"
+    },
+    {
+      "file": "feature-04.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dweb4575d7/reserves/VF5/2025/Main-3.webp",
+      "role": "feature",
+      "alt": "VinFast VF 5 nhìn từ trên cao",
+      "width": 764,
+      "height": 552,
+      "sha256": "955a7b4f99a1488b52b16aec600faafee532df40c4adf629fcb52b3af41a2703"
+    },
+    {
+      "file": "feature-05.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw8b773c30/reserves/VF5/2025/Main-4.webp",
+      "role": "feature",
+      "alt": "Khoang hành lý VinFast VF 5",
+      "width": 764,
+      "height": 552,
+      "sha256": "f90d5c8af14cb3e8c49838acc7bf48cf5e151cac3f61db686c0a27188e1407d6"
+    },
+    {
+      "file": "feature-06.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwdf8238a5/reserves/VF5/2025/Main-5.webp",
+      "role": "feature",
+      "alt": "Gia đình trên VinFast VF 5",
+      "width": 764,
+      "height": 552,
+      "sha256": "8802d9a3ae7f3b863fa382e9751e365a928e0eaec4f91faf26cb565b3d6fe152"
+    },
+    {
+      "file": "feature-07.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw6d9452e6/reserves/VF5/2025/Main-6.webp",
+      "role": "feature",
+      "alt": "VinFast VF 5 trên đường phố",
+      "width": 764,
+      "height": 552,
+      "sha256": "f76637189c74f5716b18343ef1d17efe54818a478916b098199bef351e178ebb"
+    },
+    {
+      "file": "feature-08.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwa7adf17e/reserves/VF5/2025/Main-7.webp",
+      "role": "feature",
+      "alt": "VinFast VF 5 Solar Ruby nhìn từ trên cao",
+      "width": 764,
+      "height": 552,
+      "sha256": "bb1c578a8c6e96df2a0f8ba3dacb7f7e07aa7d4e4e27290b91c81e4c4563c334"
+    },
+    {
+      "file": "feature-09.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwac527b2a/reserves/VF5/2025/Main-8.webp",
+      "role": "feature",
+      "alt": "VinFast VF 5 và gia đình",
+      "width": 764,
+      "height": 552,
+      "sha256": "70ce221d2a3ee6a4d0042c66a53af21f1077a68fe0d8c29372c10795f6bcb2bd"
+    },
+    {
+      "file": "color-zenith-grey.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw15aebeed/reserves/VF5/2025/10.webp",
+      "role": "color",
+      "alt": "VinFast VF 5 màu Zenith Grey",
+      "width": 1196,
+      "height": 672,
+      "sha256": "2758e7a3c5e2fc34b94f05ea0cd7b7e76c226e0e410d3a6118924c3eb9f7d4bc"
+    },
+    {
+      "file": "color-infinity-blanc.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw32aad97c/reserves/VF5/2025/12.webp",
+      "role": "color",
+      "alt": "VinFast VF 5 màu Infinity Blanc",
+      "width": 1196,
+      "height": 672,
+      "sha256": "c5e42d8ddeb5206f221c1f97d88c7a0db0ec452f1f250fe4ade0bcec35889c24"
+    },
+    {
+      "file": "color-solar-ruby.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw13fe4022/reserves/VF5/2025/15.webp",
+      "role": "color",
+      "alt": "VinFast VF 5 màu Solar Ruby",
+      "width": 1196,
+      "height": 672,
+      "sha256": "58d3a0eaa3a5c1557f98e15e45beb05e90caecf12efbd161191aaccbfa8f335e"
+    },
+    {
+      "file": "color-summer-yellow.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwba68e5c8/reserves/VF5/2025/11.webp",
+      "role": "color",
+      "alt": "VinFast VF 5 màu Summer Yellow Body - Jet Black Roof",
+      "width": 1196,
+      "height": 672,
+      "sha256": "006766304146ed455c95849aff24302ce2fad412cf4380af60c4f65f76997380"
+    },
+    {
+      "file": "interior-01.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw4b66e15b/reserves/VF5/2025/place-1.webp",
+      "role": "interior",
+      "alt": "Khoang lái VinFast VF 5",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "68fa6e9e73f1e26b23a8eb056bf6d706437cc680cdabe1513333333feae0278f"
+    },
+    {
+      "file": "interior-02.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw49d2826f/reserves/VF5/2025/place-2.webp",
+      "role": "interior",
+      "alt": "Vô lăng VinFast VF 5",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "00cc12f5209a465e63a4057b19d10f301892e641398a0b3f67570183361c2d2d"
+    },
+    {
+      "file": "interior-03.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw02505059/reserves/VF5/2025/place-3.webp",
+      "role": "interior",
+      "alt": "Ghế trước VinFast VF 5",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "d0ff649a10e3995dcb53c468512ea33750e7bf99200f462c9294cdb60f99cbc8"
+    },
+    {
+      "file": "interior-04.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw7cef2ba8/reserves/VF5/2025/place-4.webp",
+      "role": "interior",
+      "alt": "Núm chuyển số VinFast VF 5",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "b69ab63c64212a80fddffbd049d4832cd0125436146c6336ea90832fd4ef720e"
+    },
+    {
+      "file": "interior-05.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw33d4feb9/reserves/VF5/2025/place-5.webp",
+      "role": "interior",
+      "alt": "Cổng kết nối VinFast VF 5",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "105e0d51613fd5788e6a3c00205cd1f9741578882e9001e6d2ebea8860f0f05c"
+    },
+    {
+      "file": "interior-06.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw5a73d22f/reserves/VF5/2025/place-6.webp",
+      "role": "interior",
+      "alt": "Khoang hành lý VinFast VF 5",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "28adc6d40dda00b20010d1c04ffca9f195dfedf011e61d8c286a330632298da1"
+    },
+    {
+      "file": "performance.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw3c73aa0a/reserves/VF5/2025/vanhanh.webp",
+      "role": "performance",
+      "alt": "VinFast VF 5 vận hành êm ái",
+      "width": 2400,
+      "height": 1845,
+      "sha256": "71692c796f44f66763c74ad65c8b00335b940c6e4cce2705eccca636fbc7b746"
+    },
+    {
+      "file": "comparison-car.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw948beff6/reserves/VF5/2025/xe.webp",
+      "role": "comparison",
+      "alt": "VinFast VF 5",
+      "width": 318,
+      "height": 174,
+      "sha256": "5efe4696cd20eacbae75b14802656628055bd6f3b8a5943d20959ae574de0c3b"
+    }
+  ]
+}

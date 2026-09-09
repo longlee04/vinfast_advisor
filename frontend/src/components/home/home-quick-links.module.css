@@ -1,0 +1,24 @@
+/* Hàng lối tắt dưới hero: nhẹ, một dòng, cuộn ngang trên máy hẹp thay vì bọc
+   thành nhiều tầng chiếm chỗ hero. */
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(18px, 3vw, 38px);
+  padding: 14px 20px;
+  background: #fff;
+  border-bottom: 1px solid #eef1f2;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.row a {
+  color: #2f3338;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.row a:hover {
+  color: #1464f4;
+}

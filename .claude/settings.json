@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "defaultMode": "auto",
+    "deny": [
+      "Bash(sudo *)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(docker volume rm *)",
+      "Bash(docker compose down -v*)",
+      "Bash(*DROP DATABASE*)",
+      "Bash(*drop database*)",
+      "Bash(*DROP SCHEMA*)",
+      "Bash(*drop schema*)",
+      "Bash(*TRUNCATE *)",
+      "Bash(*truncate table*)",
+      "Edit(./.env)",
+      "Edit(./.env.*)"
+    ],
+    "allow": [
+      "Bash(.venv/bin/python -m pytest *)",
+      "Bash(python -m pytest *)",
+      "Bash(python3 -m pytest *)",
+      "Bash(uv run pytest *)",
+      "Bash(uv run ruff check *)",
+      "Bash(uv run mypy *)",
+      "Bash(docker compose ps)",
+      "Bash(docker compose ps *)"
+    ]
+  }
+}

@@ -1,0 +1,330 @@
+{
+  "model": "VF 9",
+  "source_page": "https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf9.html",
+  "assets": [
+    {
+      "file": "hero.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw174b57d5/images/PDP/vf9/202406/hero.webp",
+      "role": "hero",
+      "alt": "VinFast VF 9 - Sự lựa chọn của người thành đạt, tiên phong",
+      "width": 2400,
+      "height": 1551,
+      "sha256": "a192a0ac84ae44afbab8aa4eea1130394acab7404404a11ba18e7cb03cfbcbfb"
+    },
+    {
+      "file": "hero-mobile.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwd2ba4bf9/images/PDP/vf9/202406/hero-mb.webp",
+      "role": "hero",
+      "alt": "VinFast VF 9 trên hành trình đẳng cấp",
+      "width": 860,
+      "height": 1864,
+      "sha256": "8af88e0dcc21d6c4dfb0fe4f5c031a5b341fe6cc31bcafbe8f4e640688a78963"
+    },
+    {
+      "file": "silhouette.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw0c37f2bd/images/PDP/vf9/202406/img-vf9-top-side.webp",
+      "role": "price",
+      "alt": "VinFast VF 9 nhìn từ trên cao",
+      "width": 1079,
+      "height": 543,
+      "sha256": "83b50843135cd48e0673bea16172120c39e92aec99f0c409c836059949aea8eb"
+    },
+    {
+      "file": "lead.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwb6410078/images/PDP/vf9/202406/lead-hero-img.webp",
+      "role": "exterior",
+      "alt": "VinFast VF 9 mạnh mẽ và bề thế",
+      "width": 1728,
+      "height": 1118,
+      "sha256": "6ba3ba9f195912a22293659836a656d5a0b40de89025414cfce6b33f4f27c2a0"
+    },
+    {
+      "file": "color-zenith-grey.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf3c2decf/images/PDP/vf9/202406/exterior/CE1V.webp",
+      "role": "color",
+      "alt": "VinFast VF 9 màu Zenith Grey",
+      "width": 1768,
+      "height": 996,
+      "sha256": "ae66ae1636994a25bc3a2c19af4e23d3fa38fdf4b035f75b91918c0995ff4649"
+    },
+    {
+      "file": "color-urban-mint.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw37cb98dd/images/PDP/vf9/202406/exterior/CE1W.webp",
+      "role": "color",
+      "alt": "VinFast VF 9 màu Urban Mint",
+      "width": 1770,
+      "height": 996,
+      "sha256": "120c2bf1888a217026f0a22e351c7f265570a0bf08c9f43e87c0f0281094c56c"
+    },
+    {
+      "file": "color-jet-black.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw9d53cdfe/images/PDP/vf9/202406/exterior/CE11.webp",
+      "role": "color",
+      "alt": "VinFast VF 9 màu Jet Black",
+      "width": 1768,
+      "height": 996,
+      "sha256": "edd94051413dcce1b3277bf00a81ad0994ba22c5dc610c44dd881d3b86fbdea1"
+    },
+    {
+      "file": "color-ivy-green.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwb0ee18c4/images/PDP/vf9/202406/exterior/CE22.webp",
+      "role": "color",
+      "alt": "VinFast VF 9 màu Ivy Green",
+      "width": 1770,
+      "height": 996,
+      "sha256": "374cdd74cb638d743b123a729f586c7d9997767939e76aa27471ac9aa48e1348"
+    },
+    {
+      "file": "color-infinity-blanc.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw84760cc5/images/PDP/vf9/202406/exterior/CE18.webp",
+      "role": "color",
+      "alt": "VinFast VF 9 màu Infinity Blanc",
+      "width": 1768,
+      "height": 996,
+      "sha256": "9c05f8751a89281fcbfb034d532e9484d9d7ff3439947f4175a1aa003d9a3db7"
+    },
+    {
+      "file": "color-desat-silver.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwb4f373f5/images/PDP/vf9/202406/exterior/CE17.webp",
+      "role": "color",
+      "alt": "VinFast VF 9 màu Desat Silver",
+      "width": 1768,
+      "height": 996,
+      "sha256": "97621ac9a1376389fc49150d61989466ea0015cd09a43c6dcffb48e754a8e20f"
+    },
+    {
+      "file": "color-crimson-red.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf7565bce/images/PDP/vf9/202406/exterior/CE1M.webp",
+      "role": "color",
+      "alt": "VinFast VF 9 màu Crimson Red",
+      "width": 1768,
+      "height": 996,
+      "sha256": "7d7cfa2257d673c31f16da1155d9bdaf10e77670ca5c6640b9a503eba4e6518d"
+    },
+    {
+      "file": "detail-zenith-grey.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw22c1037b/images/PDP/vf9/202406/exterior/f-CE1V.webp",
+      "role": "exterior",
+      "alt": "Chi tiết bánh xe VF 9 màu Zenith Grey",
+      "width": 1472,
+      "height": 2167,
+      "sha256": "f312af704c49007b434f1efb0d117f9716e88097719647f592eeafea66fd0b52"
+    },
+    {
+      "file": "detail-urban-mint.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw7ad09d15/images/PDP/vf9/202406/exterior/f-CE1W.webp",
+      "role": "exterior",
+      "alt": "Chi tiết bánh xe VF 9 màu Urban Mint",
+      "width": 1472,
+      "height": 2167,
+      "sha256": "26777e46c1b51680c033d330bd789d51a87083c4e85210c8e99c2989ffc63203"
+    },
+    {
+      "file": "detail-jet-black.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwfb7a22ac/images/PDP/vf9/202406/exterior/f-CE11.webp",
+      "role": "exterior",
+      "alt": "Chi tiết bánh xe VF 9 màu Jet Black",
+      "width": 1472,
+      "height": 2167,
+      "sha256": "f3f8b41a9ea22f475c52d957b8a1dd0456a6b4650ec5494e4d454058725aab2e"
+    },
+    {
+      "file": "detail-ivy-green.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw7390c022/images/PDP/vf9/202406/exterior/f-CE22.webp",
+      "role": "exterior",
+      "alt": "Chi tiết bánh xe VF 9 màu Ivy Green",
+      "width": 1472,
+      "height": 2167,
+      "sha256": "1149519d0ec742f115c9d3d97c23f37e6b7d480ffe5b08b9c1a219296e3d7f54"
+    },
+    {
+      "file": "detail-infinity-blanc.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwb31e3f54/images/PDP/vf9/202406/exterior/f-CE18.webp",
+      "role": "exterior",
+      "alt": "Chi tiết bánh xe VF 9 màu Infinity Blanc",
+      "width": 1472,
+      "height": 2167,
+      "sha256": "996d66ee4fe867ff14c8d22a359681769c170e78344c1a0c7eeb33e9f79123e3"
+    },
+    {
+      "file": "detail-desat-silver.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw28212e1e/images/PDP/vf9/202406/exterior/f-CE17.webp",
+      "role": "exterior",
+      "alt": "Chi tiết bánh xe VF 9 màu Desat Silver",
+      "width": 1472,
+      "height": 2167,
+      "sha256": "79fd5e871e7f19d500609540e322e810a5028c4ee7b491ccae6893f1fd865c80"
+    },
+    {
+      "file": "detail-crimson-red.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw46e9c581/images/PDP/vf9/202406/exterior/f-CE1M.webp",
+      "role": "exterior",
+      "alt": "Chi tiết bánh xe VF 9 màu Crimson Red",
+      "width": 1472,
+      "height": 2167,
+      "sha256": "526ee81467acdc2debb25e8ff70371b2c3fc307855ce771870444823ee6cf29f"
+    },
+    {
+      "file": "interior-hero.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw5460e0c6/images/PDP/vf9/202406/interior/interior-first-sight.webp",
+      "role": "interior",
+      "alt": "Không gian nội thất VinFast VF 9",
+      "width": 2132,
+      "height": 934,
+      "sha256": "6f3726817349ea06156370cef2211f05f351d5f0ff568f0a44d8b3a23ea7cd06"
+    },
+    {
+      "file": "interior-01.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw82690e20/images/PDP/vf9/202406/interior/int-slide-1.webp",
+      "role": "interior",
+      "alt": "Khoang lái VinFast VF 9",
+      "width": 736,
+      "height": 410,
+      "sha256": "9af1c7c9a50481f593d2a89055cfef939ed653313b40bfa1b4b7471b1ca0445f"
+    },
+    {
+      "file": "interior-02.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwb13b43b4/images/PDP/vf9/202406/interior/int-slide-2.webp",
+      "role": "interior",
+      "alt": "Hàng ghế cơ trưởng VinFast VF 9",
+      "width": 736,
+      "height": 410,
+      "sha256": "08c5307e27217a865006d636186f767e0bc694d6c0d64b8f50988f9ec02d7b11"
+    },
+    {
+      "file": "interior-03.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwd7665f8f/images/PDP/vf9/202406/interior/int-slide-3.webp",
+      "role": "interior",
+      "alt": "Bệ điều khiển trung tâm VinFast VF 9",
+      "width": 736,
+      "height": 410,
+      "sha256": "08fefb2fd57792b369a7abee57fc2efc29f7048b88314c5cca7fef42d7f8272e"
+    },
+    {
+      "file": "interior-04.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwe554db5e/images/PDP/vf9/202406/interior/int-slide-4.webp",
+      "role": "interior",
+      "alt": "Màn hình hàng ghế sau VinFast VF 9",
+      "width": 736,
+      "height": 410,
+      "sha256": "f4bbb96e14175c54f979229fa6fcfb5de0eb6868dddabd733ed3919f28375962"
+    },
+    {
+      "file": "technology-assistant.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw93861c9b/images/PDP/vf9/202406/video/img-video.webp",
+      "role": "technology",
+      "alt": "Trợ lý ảo tiếng Việt trên VinFast VF 9",
+      "width": 2400,
+      "height": 1476,
+      "sha256": "c050c34d9ea0bdbe29e14331536b97abfa4ce4ee924e4ceb1f169f6eb1733394"
+    },
+    {
+      "file": "technology-life.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw737dc3ed/images/PDP/vf9/202406/video/img-video-1.webp",
+      "role": "technology",
+      "alt": "Công nghệ VinFast VF 9 cho cuộc sống",
+      "width": 2400,
+      "height": 1476,
+      "sha256": "017e026fc7fa4ec2de7bc81a36d9cc52fa29751ebf6f85e7408d69d020f99b62"
+    },
+    {
+      "file": "exclusive.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwdd22449f/images/PDP/vf9/202406/exclusive-bg.webp",
+      "role": "privilege",
+      "alt": "Đặc quyền xứng tầm tinh hoa của VinFast VF 9",
+      "width": 2400,
+      "height": 1551,
+      "sha256": "6b95fa9fe2998b46c534ad00c8d7c4cfd6c46cee86912831c6695e5426d89fcd"
+    },
+    {
+      "file": "privilege-vip.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw9ea6b018/images/PDP/vf9/202406/icon/VIP.webp",
+      "role": "icon",
+      "alt": "Biểu tượng trải nghiệm VIP VinFast",
+      "width": 80,
+      "height": 75,
+      "sha256": "588caf577d495c29c389eb391092e1df0d272b81411bbc04b7f502239b3b882a"
+    },
+    {
+      "file": "privilege-support.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw26c82681/images/PDP/vf9/202406/icon/Support.webp",
+      "role": "icon",
+      "alt": "Biểu tượng dịch vụ sửa chữa VinFast",
+      "width": 80,
+      "height": 80,
+      "sha256": "fad6551218c64120a72c35133bc7c89341e679c2cfced5bfda345894ea91d2ae"
+    },
+    {
+      "file": "privilege-urgent.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw9a48a20b/images/PDP/vf9/202406/icon/Urgent.webp",
+      "role": "icon",
+      "alt": "Biểu tượng chăm sóc khách hàng VinFast",
+      "width": 80,
+      "height": 80,
+      "sha256": "c8e59259f4db40328884cc9c43a6e17ab371c2dc50393fd814587a27d1b55165"
+    },
+    {
+      "file": "privilege-charging.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw6ca05278/images/PDP/vf9/202406/icon/Charging.webp",
+      "role": "icon",
+      "alt": "Biểu tượng sạc điện VinFast",
+      "width": 80,
+      "height": 80,
+      "sha256": "1edf7799d8b1b9129a5ea9031cc23bcb3c57ab552a186a597f91761281fe9132"
+    },
+    {
+      "file": "charging-hero.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw2344a594/images/PDP/vf9/202406/charging-tag-line-bg.webp",
+      "role": "charging",
+      "alt": "Giải pháp pin và trạm sạc VinFast",
+      "width": 1127,
+      "height": 729,
+      "sha256": "730cea1a36bf0d90cb20995e77e6beeed70831023b296a3ffa6387e819878a82"
+    },
+    {
+      "file": "charging-station.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf8074c61/images/PDP/vf9/202406/cs-charging-station.webp",
+      "role": "charging",
+      "alt": "Hệ thống trạm sạc VinFast",
+      "width": 1716,
+      "height": 1190,
+      "sha256": "c0dcbdbd5bc28217d658f08edaa7cbc5d261628e82953f0d6a8b95d59c249dda"
+    },
+    {
+      "file": "home-charger.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw8c6a1e85/images/PDP/vf9/202406/cs-home-charger.webp",
+      "role": "charging",
+      "alt": "Sạc VinFast tại nhà",
+      "width": 1716,
+      "height": 1190,
+      "sha256": "e19eedb102acc41017b545ecc73dd5d2e13038d371b0ff9d82a8814aecea5ca8"
+    },
+    {
+      "file": "battery-lease.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwbbed81f4/images/PDP/vf9/202406/cs-battery-lease-solution.webp",
+      "role": "charging",
+      "alt": "Giải pháp pin VinFast",
+      "width": 1716,
+      "height": 1190,
+      "sha256": "2bd5b2cab8bb6b7b44ac175f8fd29379e6c3d0deb4a736ada82990076fcba189"
+    },
+    {
+      "file": "comparison-car.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw80931a17/images/PDP/vf9/car-compare.webp",
+      "role": "comparison",
+      "alt": "VinFast VF 9",
+      "width": 230,
+      "height": 128,
+      "sha256": "a7914efe1310b44e8f6997b336e516d7f2fb1df6ee0bf7ebb3c327c32ba1d0ba"
+    },
+    {
+      "file": "comparison-logo.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw3af8d034/images/PDP/vf9/naturel.webp",
+      "role": "comparison",
+      "alt": "Nhiên liệu hóa thạch",
+      "width": 56,
+      "height": 56,
+      "sha256": "a491190b13d1b1e5cd0ae278173e30f73a92737d5ec51514974085435e195734"
+    }
+  ]
+}

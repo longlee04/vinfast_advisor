@@ -1,0 +1,87 @@
+{
+  "model": "VF 2",
+  "source_page": "https://vinfastauto.com/vn_vi/dat-coc-xe-vf2",
+  "assets": [
+    {
+      "file": "hero.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/vf2_home_page.png",
+      "role": "hero",
+      "alt": "VinFast VF 2",
+      "width": 848,
+      "height": 500,
+      "sha256": "891fa8ac14b3bd58c13e44f8c68ddfd8be399a6a2cc6ab78909cafd19901690f"
+    },
+    {
+      "file": "color-pebble-beige.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw59ac38f2/images/VF2/TH14V/CE2T.webp",
+      "role": "color",
+      "alt": "VinFast VF 2 màu Pebble Beige",
+      "width": 1330,
+      "height": 739,
+      "sha256": "ce1fa78119eb17f98e97091f3e7512b1833e97b3e0269c529c34686aecb0869f"
+    },
+    {
+      "file": "color-infinity-blanc.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw05aa09f9/images/VF2/TH14V/CE18.webp",
+      "role": "color",
+      "alt": "VinFast VF 2 màu Infinity Blanc",
+      "width": 1330,
+      "height": 739,
+      "sha256": "3a332887c3ff3ffa20bf4789b96538c232be88e7d70dc54b7fe2cd5f120c11ad"
+    },
+    {
+      "file": "color-urban-mint.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw022a5c2f/images/VF2/TH14V/CE1W.webp",
+      "role": "color",
+      "alt": "VinFast VF 2 màu Urban Mint",
+      "width": 1330,
+      "height": 739,
+      "sha256": "ecc587ca9b8df37fe96b40323e84bb36e18165d2d3eb3095ec7e7fd4a835abc0"
+    },
+    {
+      "file": "color-rose-pink.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw6712c383/images/VF2/TH14V/CE21.webp",
+      "role": "color",
+      "alt": "VinFast VF 2 màu Rose Pink",
+      "width": 1330,
+      "height": 739,
+      "sha256": "42b27b6ba4d22831e2375a0aa43b8bb308d62d89668ae8d3edb831faa705cb87"
+    },
+    {
+      "file": "color-sky-blue.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwdbdc5599/images/VF2/TH14V/CE2G.webp",
+      "role": "color",
+      "alt": "VinFast VF 2 màu Sky Blue",
+      "width": 1330,
+      "height": 739,
+      "sha256": "1954618df3b8a6281c92db3f4b03745b8e31fb331395fa69c8adb6bbe18da0d4"
+    },
+    {
+      "file": "color-solar-ruby.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwe8c59c81/images/VF2/TH14V/CE2Q.webp",
+      "role": "color",
+      "alt": "VinFast VF 2 màu Solar Ruby",
+      "width": 1330,
+      "height": 739,
+      "sha256": "61b87c6e789875c181034e92b4ce7e7ddc02b4d77eb822a5c8fc6ff974fe2b5e"
+    },
+    {
+      "file": "color-summer-yellow.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwe756594c/images/VF2/TH14V/CE1U.webp",
+      "role": "color",
+      "alt": "VinFast VF 2 màu Summer Yellow",
+      "width": 1330,
+      "height": 739,
+      "sha256": "6e9436c9456c08172c8371b60fed832507b555be59a5caf6695fe0f46804ee89"
+    },
+    {
+      "file": "color-desat-silver.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dweb504538/images/VF2/TH14V/CE17.webp",
+      "role": "color",
+      "alt": "VinFast VF 2 màu Desat Silver",
+      "width": 1330,
+      "height": 739,
+      "sha256": "29ac11d4ac46fd98ea60bafa457df09d0065db3bb1d5077ef480352a57a5a34d"
+    }
+  ]
+}

@@ -1,0 +1,241 @@
+{
+  "version": 1,
+  "scenarios": [
+    {
+      "id": "TA001",
+      "description": "Phàn nàn lồng câu hỏi: giữ cả hai trục hành vi và nhiệm vụ",
+      "groups": ["mixed", "complaint"],
+      "turns": [
+        {
+          "user_message": "Đắt quá, có mẫu nào rẻ hơn không?",
+          "llm_payload": {
+            "dialogue_act": "COMPLAIN",
+            "task": "VEHICLE_DISCOVERY",
+            "primary_topic": "PRICE_TCO",
+            "intents": ["ADVISORY"]
+          },
+          "expected": {
+            "dialogue_act": "COMPLAIN",
+            "task": "VEHICLE_DISCOVERY",
+            "primary_topic": "PRICE_TCO",
+            "secondary_topics": [],
+            "severity": "NORMAL",
+            "human_requested": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "TA002",
+      "description": "Xin gặp người theo nghĩa ngữ nghĩa, không phải keyword",
+      "groups": ["human_request"],
+      "turns": [
+        {
+          "user_message": "Cho tôi gặp tư vấn viên",
+          "llm_payload": {
+            "dialogue_act": "REQUEST",
+            "task": "HUMAN_REQUEST",
+            "primary_topic": "CUSTOMER_EXPERIENCE",
+            "human_requested": true
+          },
+          "expected": {
+            "dialogue_act": "REQUEST",
+            "task": "HUMAN_REQUEST",
+            "primary_topic": "CUSTOMER_EXPERIENCE",
+            "secondary_topics": [],
+            "severity": "NORMAL",
+            "human_requested": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "TA003",
+      "description": "Hỏi về an toàn là câu hỏi, không phải báo sự cố — không leo thang",
+      "groups": ["safety"],
+      "turns": [
+        {
+          "user_message": "Xe điện có bốc cháy không?",
+          "llm_payload": {
+            "dialogue_act": "REQUEST",
+            "task": "VEHICLE_INFO",
+            "primary_topic": "VEHICLE",
+            "severity": "NORMAL"
+          },
+          "expected": {
+            "dialogue_act": "REQUEST",
+            "task": "VEHICLE_INFO",
+            "primary_topic": "VEHICLE",
+            "secondary_topics": [],
+            "severity": "NORMAL",
+            "human_requested": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "TA004",
+      "description": "Báo xe bốc khói là sự cố thật — mức khẩn tách khỏi hành vi",
+      "groups": ["safety"],
+      "turns": [
+        {
+          "user_message": "Xe tôi đang bốc khói, giúp tôi với",
+          "llm_payload": {
+            "dialogue_act": "REQUEST",
+            "task": "OTHER",
+            "primary_topic": "CUSTOMER_EXPERIENCE",
+            "severity": "CRITICAL"
+          },
+          "expected": {
+            "dialogue_act": "REQUEST",
+            "task": "OTHER",
+            "primary_topic": "CUSTOMER_EXPERIENCE",
+            "secondary_topics": [],
+            "severity": "CRITICAL",
+            "human_requested": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "TA005",
+      "description": "Nhiều chủ đề trong giới hạn: một chính, hai phụ",
+      "groups": ["topic_cardinality"],
+      "turns": [
+        {
+          "user_message": "VF 8 giá bao nhiêu, bảo hành thế nào, và trạm sạc gần đây ở đâu?",
+          "llm_payload": {
+            "dialogue_act": "REQUEST",
+            "task": "PRICE_TCO_QUERY",
+            "primary_topic": "PRICE_TCO",
+            "secondary_topics": ["POLICY", "LOCATION"]
+          },
+          "expected": {
+            "dialogue_act": "REQUEST",
+            "task": "PRICE_TCO_QUERY",
+            "primary_topic": "PRICE_TCO",
+            "secondary_topics": ["POLICY", "LOCATION"],
+            "severity": "NORMAL",
+            "human_requested": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "TA006",
+      "description": "Quá ba chủ đề phụ bị cắt về đúng trần ba",
+      "groups": ["topic_cardinality"],
+      "turns": [
+        {
+          "user_message": "Cho tôi biết về VF 8, giá, bảo hành, trạm sạc và chính sách trả góp",
+          "llm_payload": {
+            "dialogue_act": "REQUEST",
+            "task": "VEHICLE_INFO",
+            "primary_topic": "VEHICLE",
+            "secondary_topics": ["PRICE_TCO", "POLICY", "LOCATION", "CHARGING", "TRANSACTION"]
+          },
+          "expected": {
+            "dialogue_act": "REQUEST",
+            "task": "VEHICLE_INFO",
+            "primary_topic": "VEHICLE",
+            "secondary_topics": ["PRICE_TCO", "POLICY", "LOCATION"],
+            "severity": "NORMAL",
+            "human_requested": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "TA007",
+      "description": "Chủ đề phụ trùng chính và trùng nhau bị khử",
+      "groups": ["topic_cardinality"],
+      "turns": [
+        {
+          "user_message": "Xe này giá thế nào và bảo hành ra sao?",
+          "llm_payload": {
+            "dialogue_act": "REQUEST",
+            "task": "PRICE_TCO_QUERY",
+            "primary_topic": "PRICE_TCO",
+            "secondary_topics": ["PRICE_TCO", "POLICY", "POLICY"]
+          },
+          "expected": {
+            "dialogue_act": "REQUEST",
+            "task": "PRICE_TCO_QUERY",
+            "primary_topic": "PRICE_TCO",
+            "secondary_topics": ["POLICY"],
+            "severity": "NORMAL",
+            "human_requested": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "TA008",
+      "description": "Đầu ra hỏng phải được ghi là failed case, không âm thầm loại",
+      "groups": ["malformed"],
+      "turns": [
+        {
+          "user_message": "Xe này giá bao nhiêu?",
+          "llm_payload": {
+            "dialogue_act": "REQUEST",
+            "passenger_count": "nhiều"
+          },
+          "expected": {
+            "dialogue_act": "REQUEST",
+            "task": "PRICE_TCO_QUERY",
+            "primary_topic": "PRICE_TCO",
+            "secondary_topics": [],
+            "severity": "NORMAL",
+            "human_requested": false,
+            "expect_failure": "invalid_llm_output"
+          }
+        }
+      ]
+    },
+    {
+      "id": "TA009",
+      "description": "Chủ đề phụ rác bị bỏ, chủ đề phụ hợp lệ vẫn giữ — lượt không chết",
+      "groups": ["malformed"],
+      "turns": [
+        {
+          "user_message": "Xe này thế nào?",
+          "llm_payload": {
+            "dialogue_act": "REQUEST",
+            "task": "VEHICLE_INFO",
+            "primary_topic": "VEHICLE",
+            "secondary_topics": ["KHONG_CO_THAT", "POLICY"]
+          },
+          "expected": {
+            "dialogue_act": "REQUEST",
+            "task": "VEHICLE_INFO",
+            "primary_topic": "VEHICLE",
+            "secondary_topics": ["OTHER", "POLICY"],
+            "severity": "NORMAL",
+            "human_requested": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "TA010",
+      "description": "Payload cũ chưa biết bốn trục rơi về mặc định an toàn",
+      "groups": ["legacy"],
+      "turns": [
+        {
+          "user_message": "Tôi muốn mua xe 7 chỗ",
+          "llm_payload": {
+            "intents": ["ADVISORY"]
+          },
+          "expected": {
+            "dialogue_act": "UNKNOWN",
+            "task": null,
+            "primary_topic": "OTHER",
+            "secondary_topics": [],
+            "severity": "NORMAL",
+            "human_requested": false
+          }
+        }
+      ]
+    }
+  ]
+}

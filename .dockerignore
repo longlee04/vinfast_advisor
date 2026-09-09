@@ -1,0 +1,51 @@
+.git
+.gitignore
+.env
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+.mypy_cache
+frontend/node_modules
+frontend/.next
+frontend/coverage
+docs/
+presentation/
+eval/
+*.md
+!README.md
+.dockerignore
+Dockerfile
+docker-compose.yml
+docker-compose.dev.yml
+docker-compose.prod.yml
+deploy/
+
+# Agent tooling and local scratch directories. These are large (.ai-log alone is
+# multiple GB) and are never needed inside the image; leaving them out of the
+# build context is what keeps `docker compose build` fast.
+.ai-log/
+.worktrees/
+.agents/
+.claude/
+.codegraph/
+.codex/
+.cursor/
+.gemini/
+.kiro/
+.omo/
+.opencode/
+.superpowers/
+.playwright-mcp/
+.vscode/
+.github/
+
+# Local runtime output, notes and crawler scratch data.
+logs/
+notes/
+documents/
+crawl/
+# data-p150/ KHONG bi loai: scripts/seed_*.py doc catalog/ va locations/ tu day,
+# ma prod khong bind-mount nhu docker-compose.yml (dev) van lam.
+node_modules/

@@ -1,0 +1,110 @@
+# Production / staging stack. KHONG dung file nay de dev — no khong bind-mount
+# source va khong co --reload; moi thay doi code deu di qua mot image moi do CI
+# build (xem .github/workflows/deploy.yml).
+#
+# Chay:
+#   docker compose --env-file .env -f docker-compose.prod.yml pull
+#   docker compose --env-file .env -f docker-compose.prod.yml up -d
+#
+# Staging va prod chay CUNG mot VPS: tach nhau bang COMPOSE_PROJECT_NAME (dat
+# trong .env), nen volume va network khong dung nhau. Cong chi bind vao
+# 127.0.0.1 — nginx tren host la thu duy nhat noi ra internet.
+
+# Han muc bo nho: prod va staging chay CUNG mot VPS, nen moi container phai co
+# tran. Khong co tran thi mot ro ri o staging keo ca prod xuong theo — va tren
+# may nay prod moi la thu khach dang dung. Mac dinh duoi day la khau phan prod;
+# staging ha xuong bang cac bien MEM_* trong .env cua no.
+#
+# Tong khau phan prod ~3.5G, staging ~2.2G, con lai la dem cho OS va docker.
+
+services:
+  backend:
+    image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE in .env}
+    env_file:
+      - .env
+    environment:
+      # `.env` giu DATABASE_URL tro toi localhost cho cong cu chay tren host;
+      # trong container phai la ten service. `environment` thang `env_file`.
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      AUTH_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      DOCUMENT_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      PRODUCT_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      AGENT_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      LOCATIONS_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      DOCUMENT_MINIO_ENDPOINT: http://minio:9000
+    volumes:
+      - app_data:/app/data
+    ports:
+      # Chi localhost. Nginx tren host proxy vao day.
+      - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
+    mem_limit: ${MEM_BACKEND:-1536m}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+    # KHONG them --workers: TurnEventBroker la ban in-memory, chi dung voi mot
+    # tien trinh. Xem src/agents/services/operations/turn_events.py truoc khi doi.
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    image: ${FRONTEND_IMAGE:?Set FRONTEND_IMAGE in .env}
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-3000}:3000"
+    mem_limit: ${MEM_FRONTEND:-512m}
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Khong publish cong: chi cac service trong network nay truy cap duoc.
+    # Can psql tu host thi `docker compose exec postgres psql`.
+    mem_limit: ${MEM_POSTGRES:-1g}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${DOCUMENT_ACCESS_KEY:?Set DOCUMENT_ACCESS_KEY in .env}
+      MINIO_ROOT_PASSWORD: ${DOCUMENT_SECRET_KEY:?Set DOCUMENT_SECRET_KEY in .env}
+    volumes:
+      - minio_data:/data
+    # Console 9001 khong publish. Can vao thi SSH tunnel.
+    mem_limit: ${MEM_MINIO:-512m}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "mc ready local || curl -fsS http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  postgres_data:
+  minio_data:
+  app_data:

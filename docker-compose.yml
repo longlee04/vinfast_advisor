@@ -1,0 +1,171 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # `.env` DATABASE_URLs use `localhost` for host-side tools (alembic, pytest
+      # outside docker), which is unreachable from inside this container. Override
+      # with the compose service names so the container resolves them correctly;
+      # `env_file` sets these first, `environment` wins.
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      AUTH_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      DOCUMENT_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      PRODUCT_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      AGENT_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      LOCATIONS_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      DOCUMENT_MINIO_ENDPOINT: http://minio:9000
+      # Entrypoint mac dinh TAT seed va fail-hard khi migration loi (vi prod).
+      # May dev giu hanh vi cu: seed moi lan len, va mot module chua cau hinh
+      # xong khong chan ca stack.
+      SEED_ON_START: "true"
+      MIGRATE_LENIENT: "true"
+
+    volumes:
+      - ./data:/app/data
+      # Dev-only bind mounts: image build (`COPY . .` in Dockerfile) only bakes
+      # in a snapshot, so without these, every code edit needs a full rebuild.
+      # Mounted individually (not the whole repo root) to avoid overlaying
+      # /app/.venv and /app/pyproject.toml with the host's copies.
+      - ./src:/app/src
+      - ./scripts:/app/scripts
+      - ./migrations:/app/migrations
+      - ./data-p150:/app/data-p150
+      - ./docker-entrypoint.sh:/app/docker-entrypoint.sh
+      - ./alembic-auth.ini:/app/alembic-auth.ini
+      - ./alembic-products.ini:/app/alembic-products.ini
+      - ./alembic-document.ini:/app/alembic-document.ini
+      - ./alembic-agent.ini:/app/alembic-agent.ini
+      - ./alembic-locations.ini:/app/alembic-locations.ini
+    # `--reload` watches /app/src and restarts the worker on save — no rebuild,
+    # no `docker compose restart`, for .py changes. Still single-process (see
+    # Dockerfile note on TurnEventBroker): the reloader supervises one worker.
+    command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app/src"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: dev
+      additional_contexts:
+        car_pdf: ./data-p150/car_pdf
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v1
+        NEXT_PUBLIC_DEMO_MODE: "false"
+    environment:
+      # `next dev` reads these live at request time, unlike the production
+      # build where NEXT_PUBLIC_* gets baked into the client bundle at build
+      # time — so the dev server needs them here too, not just as build args.
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v1
+      NEXT_PUBLIC_DEMO_MODE: "false"
+    volumes:
+      # Dev-only bind mount so edits under frontend/src take effect on save,
+      # same reasoning as the backend's --reload setup. node_modules and .next
+      # are masked with named volumes instead of the host's copies: Next's SWC
+      # compiler ships platform-specific native binaries, and the image is
+      # Alpine (musl) while this repo's host node_modules may be glibc-built —
+      # bind-mounting the host's copy over the container's would break it.
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+      - frontend_next:/app/.next
+      - ./data-p150/car_pdf:/data-p150/car_pdf
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3000').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # Auth database. Auth is PostgreSQL-only and never falls back to SQLite, so
+  # this service must be healthy before Auth migrations or Auth tests can run.
+  # These credentials are local-development values only; production injects its
+  # own AUTH_DATABASE_URL and never uses this service.
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  pgadmin:
+    image: dpage/pgadmin4:9.6
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider --quiet http://127.0.0.1:80/misc/ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Local test MinIO. The bucket is created privately by the integration fixture,
+  # not by a public compose policy.
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: p150_minio
+      MINIO_ROOT_PASSWORD: p150_minio_test_secret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "mc ready local || curl -fsS http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+  minio_data:
+  frontend_node_modules:
+  frontend_next:

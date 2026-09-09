@@ -1,0 +1,21 @@
+{
+  "model": "VF 2",
+  "source_page": "https://vinfastauto.com/vn_vi/dat-coc-xe-vf2",
+  "reference_video": "C:/Users/ADMIN/Videos/Captures/VF2.mp4",
+  "assets": {
+    "hero": "https://vinfastauto.com/themes/porto/img/pdp-page/vf2/hero-bg.webp",
+    "intro": "https://vinfastauto.com/themes/porto/img/pdp-page/vf2/scroll-highlight-img%402x.webp?v=20260710c",
+    "city": "https://vinfastauto.com/themes/porto/img/pdp-page/vf2/section2-car-city.webp",
+    "feature_slider": "https://vinfastauto.com/themes/porto/img/pdp-page/vf2/slider/",
+    "interior": "https://vinfastauto.com/themes/porto/img/pdp-page/vf2/interior/",
+    "charging": "https://vinfastauto.com/themes/porto/img/pdp-page/vf2/charging-station.webp",
+    "comparison_car": "https://static-cms-prod.vinfastauto.com/fuel_cost_comparison/11891-1783936757-frame-car_0.png",
+    "logo": "https://static-cms-prod.vinfastauto.com/statics/logo-footer-v2.webp"
+  },
+  "video_derived_assets": [
+    "color-solar-ruby.webp",
+    "color-pebble-beige.webp",
+    "color-summer-yellow.webp",
+    "comparison-car-large.webp"
+  ]
+}

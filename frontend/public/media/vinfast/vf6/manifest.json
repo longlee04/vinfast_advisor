@@ -1,0 +1,186 @@
+{
+  "model": "VF 6",
+  "source_page": "https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf6.html",
+  "assets": [
+    {
+      "file": "hero.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwd77c2afa/reserves/VF6/2026/VF6-banner.webp",
+      "role": "hero",
+      "alt": "VinFast VF 6 - Cùng bạn ghi dấu từng khoảnh khắc",
+      "width": 2400,
+      "height": 1346,
+      "sha256": "81fb0992043d15d55aefeed1acb8a3a557e5bf0fb1108205de5e8295e788ff16"
+    },
+    {
+      "file": "hero-mobile.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw28a9d0cc/reserves/VF6/2026/VF6-banner-mb.webp",
+      "role": "hero",
+      "alt": "VinFast VF 6 - Cùng bạn ghi dấu từng khoảnh khắc",
+      "width": 375,
+      "height": 210,
+      "sha256": "84e651a4e1fc24496d2519f889690c5203f5f69e8e12581b0787cf07be87c15e"
+    },
+    {
+      "file": "price.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw0690a10d/reserves/VF6/bottom-banner.webp",
+      "role": "price",
+      "alt": "Khoang nội thất VinFast VF 6",
+      "width": 2400,
+      "height": 1254,
+      "sha256": "1cd60419540e446ef3465fc35a32c980e40326363cedaba2b4392773ea6cce9d"
+    },
+    {
+      "file": "price-mobile.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf79603cc/reserves/VF6/bottom-banner-mb.webp",
+      "role": "price",
+      "alt": "Khoang nội thất VinFast VF 6",
+      "width": 750,
+      "height": 686,
+      "sha256": "a88370aa2a5b46d301b605bdb05c79790111154ed67fc10080e04ad0a3928bf5"
+    },
+    {
+      "file": "lifestyle-00.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwb2ebd3e3/reserves/VF6/2026/VF6-Lifestyle-00.webp",
+      "role": "lifestyle",
+      "alt": "VinFast VF 6 trên cung đường núi",
+      "width": 2400,
+      "height": 1230,
+      "sha256": "a426068d56a7d698401a1890ad50bc28b4f3486da6ef46a576d57f7447e3fa02"
+    },
+    {
+      "file": "exterior-1.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw947744f9/reserves/VF6/2026/exterior-1.webp",
+      "role": "exterior",
+      "alt": "Ngoại thất VinFast VF 6 nhìn từ phía trước",
+      "width": 1255,
+      "height": 1342,
+      "sha256": "d79cdcf4c8701cc8c505846e21d5db3646b27b3a804057c81a882e1aee2161b1"
+    },
+    {
+      "file": "exterior-2.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwa0e019a1/reserves/VF6/2026/exterior-2.webp",
+      "role": "exterior",
+      "alt": "Ngoại thất VinFast VF 6 nhìn từ phía sau",
+      "width": 1255,
+      "height": 1342,
+      "sha256": "24f8c727d6e1a01241636c1e6460c9ba4f50f5341d3a327d1fd20a97428d492a"
+    },
+    {
+      "file": "exterior-3.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw8498e74a/reserves/VF6/2026/exterior-3.webp",
+      "role": "exterior",
+      "alt": "Đèn và đường nét ngoại thất VinFast VF 6",
+      "width": 1256,
+      "height": 1342,
+      "sha256": "aa5f79a9cd53163b5f783cd6c1871c82486ec0f9cd904484a98c8fdc7d3d1514"
+    },
+    {
+      "file": "interior-1.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw3cec264f/reserves/VF6/interior-vf6-1.jpg",
+      "role": "interior",
+      "alt": "Khoang lái VinFast VF 6",
+      "width": 777,
+      "height": 503,
+      "sha256": "858408d283e8028e1a27da571c4f5baa17b9fed735e0ba764ec81cb3913f3f1e"
+    },
+    {
+      "file": "interior-2.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw5e97d502/reserves/VF6/interior-vf6-2.jpg",
+      "role": "interior",
+      "alt": "Hàng ghế VinFast VF 6",
+      "width": 1036,
+      "height": 670,
+      "sha256": "a0c68bac8eee4f87a3f20f8525ab0e8a9c0499ab5422f5fd5de12982952c8250"
+    },
+    {
+      "file": "technology-1.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw85404d6b/reserves/VF6/technology-vf6-3.jpg",
+      "role": "technology",
+      "alt": "Màn hình giải trí VinFast VF 6",
+      "width": 1036,
+      "height": 670,
+      "sha256": "e234bf8070af01e93118b13496dd1308e4daf10c2d0fb19f8a0b5a92733b6ec1"
+    },
+    {
+      "file": "technology-2.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwff8bee22/reserves/VF6/technology-vf6-4.jpg",
+      "role": "technology",
+      "alt": "Tiện nghi công nghệ VinFast VF 6",
+      "width": 1036,
+      "height": 670,
+      "sha256": "05080f99dc7dd1a0bda1a075e39d2701886713f551a6550aae2428b18a814e35"
+    },
+    {
+      "file": "performance-logo.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw491b34ed/reserves/VF6/logo-car-VF6-2.png",
+      "role": "logo",
+      "alt": "VF 6",
+      "width": 685,
+      "height": 184,
+      "sha256": "9abbf23866cb30c8103569105b96b9b5e6bb7a4412308c91ffe304c83c4063ee"
+    },
+    {
+      "file": "comparison-logo.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwd1f6c90c/reserves/VF6/2026/naturel.webp",
+      "role": "comparison",
+      "alt": "Nhiên liệu hóa thạch",
+      "width": 56,
+      "height": 56,
+      "sha256": "a491190b13d1b1e5cd0ae278173e30f73a92737d5ec51514974085435e195734"
+    },
+    {
+      "file": "comparison-car.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw867b134f/reserves/VF6/2026/xe.webp",
+      "role": "comparison",
+      "alt": "VinFast VF 6",
+      "width": 318,
+      "height": 174,
+      "sha256": "9a1c16f061a176bc67d899036638a7034a6d714e652c1f7f3fc1b49827a59407"
+    },
+    {
+      "file": "gallery-1.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw5d078c13/reserves/VF6/2026/VF6-Lifestyle-10.webp",
+      "role": "gallery",
+      "alt": "VinFast VF 6 trên cung đường ven núi",
+      "width": 2400,
+      "height": 1280,
+      "sha256": "6a38f9d69ade6dffc0484065775cd070f8124f8ec5ee785ee4fc8a60b0f8e849"
+    },
+    {
+      "file": "gallery-2.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw6389adef/reserves/VF6/2026/VF6-Lifestyle-11.webp",
+      "role": "gallery",
+      "alt": "VinFast VF 6 giữa thiên nhiên",
+      "width": 2400,
+      "height": 1280,
+      "sha256": "f4ddbb65e41ac276714cedf880ada378196bac5f32586dc5babd9c323e5a94fb"
+    },
+    {
+      "file": "gallery-3.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw8ee0628c/reserves/VF6/2026/VF6-Lifestyle-12.webp",
+      "role": "gallery",
+      "alt": "VinFast VF 6 đồng hành cùng gia đình",
+      "width": 2400,
+      "height": 1280,
+      "sha256": "3cdb9e2b178a72aff7eea215ddc6420e64371d88710c36c3f99607a247c689c7"
+    },
+    {
+      "file": "gallery-4.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw1eceafe6/reserves/VF6/2026/VF6-Lifestyle-13.webp",
+      "role": "gallery",
+      "alt": "VinFast VF 6 trên hành trình mới",
+      "width": 2400,
+      "height": 1280,
+      "sha256": "f2181bd951c7ee8c6c6b69a16fe0be1ca951c0f0db888fbe7fbdf874e529fedd"
+    },
+    {
+      "file": "logo.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw86a3d171/reserves/VF6/logo-vf6.png",
+      "role": "logo",
+      "alt": "VF 6",
+      "width": 128,
+      "height": 24,
+      "sha256": "431d41e1bb0302cb533517b1bc9e938a09790b330be30de223924afec69ae802"
+    }
+  ]
+}

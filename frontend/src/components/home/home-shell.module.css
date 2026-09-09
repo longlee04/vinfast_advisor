@@ -1,0 +1,250 @@
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: #3b3b3b;
+  background: #fff;
+  font-family: "Mulish VinFast", Arial, sans-serif;
+}
+
+.main {
+  width: 100%;
+  flex: 1;
+}
+
+/* Header riêng của trang chủ đã BỎ (Sếp: mọi trang dùng chung AppHeader) —
+   các lớp .header/.desktopNav/.mobileNav… đã xoá theo home-header.tsx. */
+
+.footer {
+  min-height: 447px;
+  color: #333;
+  background: #f7f9f9;
+  border-top: 1px solid #edf0f1;
+}
+
+.footerMain {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(230px, .8fr) minmax(250px, .75fr);
+  gap: clamp(45px, 7vw, 105px);
+  padding: 49px clamp(30px, 5.8vw, 84px) 35px;
+}
+
+.footerCompany > img {
+  width: 154px;
+  height: auto;
+  margin-bottom: 24px;
+  object-fit: contain;
+}
+
+.footerCompany h2,
+.footerContact h2 {
+  margin: 0;
+  color: #222;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.footerCompany p {
+  max-width: 600px;
+  margin: 11px 0 0;
+  color: #50545a;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.footerLinks,
+.footerContact {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.footerLinks a,
+.footerLinks > strong,
+.footerContact a {
+  margin-bottom: 10px;
+  color: #45494f;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.footerLinks > a:nth-child(-n + 3),
+.footerLinks > a:nth-child(7),
+.footerLinks > strong {
+  color: #202327;
+  font-weight: 700;
+}
+
+.footerContact h2 {
+  margin-bottom: 12px;
+}
+
+.footerContact h2:not(:first-child) {
+  margin-top: 15px;
+}
+
+.socialLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.socialLinks a {
+  color: #1464f4;
+  font-weight: 600;
+}
+
+.footerBottom {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  padding: 15px clamp(30px, 5.8vw, 84px);
+  border-top: 1px solid #dfe4e6;
+  color: #62666b;
+  font-size: 11px;
+}
+
+.footerBottom > div {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.footerBottom a:hover,
+.footerLinks a:hover,
+.footerContact a:hover {
+  color: #1464f4;
+}
+
+.support {
+  position: fixed;
+  z-index: 80;
+  right: 18px;
+  bottom: 19px;
+  display: grid;
+  justify-items: end;
+  gap: 12px;
+}
+
+.support > button {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: #fff;
+  background: #1464f4;
+  border: 0;
+  border-radius: 50%;
+  box-shadow: 0 5px 16px rgb(0 0 0 / 25%);
+}
+
+.support > button svg {
+  width: 28px;
+  height: 28px;
+  stroke-width: 2;
+}
+
+.supportPanel {
+  width: min(330px, calc(100vw - 36px));
+  padding: 20px;
+  color: #333;
+  background: #fff;
+  border: 1px solid #e2e7e9;
+  border-radius: 8px;
+  box-shadow: 0 16px 45px rgb(0 0 0 / 20%);
+}
+
+.supportPanel > strong {
+  font-size: 16px;
+}
+
+.supportPanel > p {
+  margin: 6px 0 15px;
+  color: #6b7076;
+  font-size: 12px;
+}
+
+.supportPanel > a {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 8px;
+  border-top: 1px solid #edf0f1;
+}
+
+.supportPanel > a > svg {
+  width: 38px;
+  height: 38px;
+  padding: 8px;
+  color: #1464f4;
+  background: #edf4ff;
+  border-radius: 50%;
+}
+
+.supportPanel span,
+.supportPanel strong,
+.supportPanel small {
+  display: block;
+}
+
+.supportPanel small {
+  margin-top: 3px;
+  color: #6b7076;
+  font-size: 11px;
+}
+
+@media (max-width: 1020px) {
+  .footerMain {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .footerCompany {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .footerMain {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    padding: 42px 22px 34px;
+  }
+
+  .footerCompany {
+    grid-column: auto;
+  }
+
+  .footerLinks,
+  .footerContact {
+    padding-top: 25px;
+    border-top: 1px solid #dfe4e6;
+  }
+
+  .footerBottom,
+  .footerBottom > div {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .footerBottom {
+    padding: 22px;
+  }
+
+  .footerBottom > div {
+    gap: 10px;
+  }
+
+  .support {
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .support > button {
+    width: 54px;
+    height: 54px;
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "model": "VF MPV 7",
+  "source_page": "https://vinfastauto.com/vn_vi/dat-coc-xe-vf-mpv7",
+  "assets": [
+    {
+      "file": "gallery-1.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/pdp/vf_mpv_7/D_01.webp",
+      "role": "hero",
+      "alt": "VinFast VF MPV 7 đồng hành cùng gia đình",
+      "width": 2400,
+      "height": 1167,
+      "sha256": "e52d1a6b6b8dd355335d04c76581b85572433cd8def453cfde0b8a6aa3c0f376"
+    },
+    {
+      "file": "gallery-2.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/pdp/vf_mpv_7/D_02.webp",
+      "role": "exterior",
+      "alt": "VinFast VF MPV 7 Solar Ruby nhìn từ phía trước",
+      "width": 1440,
+      "height": 700,
+      "sha256": "d8c2aaaf169a7770fe39bd71c2505cc9397cf604375cdb6af53cb3c47e2dd89b"
+    },
+    {
+      "file": "gallery-3.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/pdp/vf_mpv_7/D_03.webp",
+      "role": "exterior",
+      "alt": "VinFast VF MPV 7 Solar Ruby nhìn từ phía sau",
+      "width": 1440,
+      "height": 700,
+      "sha256": "cfe1760d145cc2621a379f5bafe1fa9c79ed39f57875d946e3e807dc2b3dd198"
+    },
+    {
+      "file": "gallery-4.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/pdp/vf_mpv_7/D_04.webp",
+      "role": "interior",
+      "alt": "Khoang ghế trước VinFast VF MPV 7",
+      "width": 2400,
+      "height": 1167,
+      "sha256": "813b456b637ef4ea2c32a16a9095fc7931b6669aa4c6e9e5307b7432c731570b"
+    },
+    {
+      "file": "gallery-5.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/pdp/vf_mpv_7/D_05.webp",
+      "role": "interior",
+      "alt": "Không gian ba hàng ghế VinFast VF MPV 7",
+      "width": 1440,
+      "height": 700,
+      "sha256": "ded1ca5982fdf59760fae9ceb0e34cf019b93fff07ee86d23218f0bd5409367d"
+    },
+    {
+      "file": "logo.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/pdp/vf_mpv_7/logo.webp",
+      "role": "logo",
+      "alt": "VF MPV 7",
+      "width": 175,
+      "height": 20,
+      "sha256": "fcb2e7536845ecdb3565c94a80735515d77b0bb9a55884f136f46cd22d84f15a"
+    },
+    {
+      "file": "comparison-car.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/vf-mpv-7_infinity-blanc-1_0.png",
+      "role": "comparison",
+      "alt": "VinFast VF MPV 7 màu Infinity Blanc",
+      "width": 230,
+      "height": 128,
+      "sha256": "0bd30a9059c48802145894d864f9c5f19076382708c2604a02fc68e35394beec"
+    }
+  ]
+}

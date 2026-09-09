@@ -1,0 +1,33 @@
+services:
+  postgres-test:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${TEST_POSTGRES_USER:-p150_test_admin}
+      POSTGRES_PASSWORD: ${TEST_POSTGRES_PASSWORD:-p150_test_only_password}
+      POSTGRES_DB: postgres
+    ports:
+      - "${TEST_POSTGRES_PORT:-55432}:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+
+  minio-test:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${TEST_MINIO_USER:-p150_test_minio}
+      MINIO_ROOT_PASSWORD: ${TEST_MINIO_PASSWORD:-p150_test_minio_password}
+    ports:
+      - "${TEST_MINIO_PORT:-19000}:9000"
+      - "${TEST_MINIO_CONSOLE_PORT:-19001}:9001"
+    tmpfs:
+      - /data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 2s
+      timeout: 5s
+      retries: 20

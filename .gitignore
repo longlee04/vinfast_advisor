@@ -1,0 +1,77 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment variables
+.env
+.env.local
+.env.production
+cookies_customer.txt
+cookies_*.txt
+*.cookies
+*.cookiejar
+*.har
+*.har.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data (never commit large data)
+data/
+# Mã nguồn, không phải dữ liệu: `data/` ở trên nuốt mất thư mục này nên
+# `frontend/src/data/vinfast-models.ts` chưa bao giờ lên được repo.
+!frontend/src/data/
+data-p150/
+*.db
+*.sqlite3
+
+# Logs
+logs/
+*.log
+.omo/
+
+# Test coverage
+htmlcov/
+.coverage
+coverage.xml
+
+# Docker
+docker-compose.override.yml
+
+# Node (frontend)
+node_modules/
+.next/
+out/
+.nuxt/
+
+# Build
+*.pyc
+*.pyo
+note.md
+telemetry
+.mimocode
+prompt_*.md
+refactor_csv_to_schema.py
+scripts/_archive
+src/agents/agent_stages
+# Playwright MCP snapshot output (tool temp, gay nham lan du lieu cu)
+.playwright-mcp/
+eval/blind/blind_cases.json

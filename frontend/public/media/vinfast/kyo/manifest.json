@@ -1,0 +1,96 @@
+{
+  "model": "Kyo",
+  "source_page": "https://vinfastauto.com/vn_vi/xe-may-dien-vinfast-kyo",
+  "assets": [
+    {
+      "file": "hero.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/vinfast-kyo-mau-nau.webp",
+      "role": "hero",
+      "alt": "VinFast Kyo màu Nâu Ánh Kim",
+      "width": 1920,
+      "height": 1093,
+      "sha256": "d266e9f4a842c9b9e4667472abc4595c097a6a3148543fdb96abf3b284539831"
+    },
+    {
+      "file": "color-white.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/vinfast-kyo-mau-trang.webp",
+      "role": "color",
+      "alt": "VinFast Kyo màu Trắng Ngọc Trai",
+      "width": 1920,
+      "height": 1093,
+      "sha256": "9d2ee6157579306bfa48e59fc15c4d68b212f024b57d088b61c377c4fe5db9ae"
+    },
+    {
+      "file": "color-red.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/vinfast-kyo-mau-do.webp",
+      "role": "color",
+      "alt": "VinFast Kyo màu Đỏ",
+      "width": 1230,
+      "height": 700,
+      "sha256": "678be65910faa786082878147416f636a50fba334efcec0d1cfaef4cbe706f5c"
+    },
+    {
+      "file": "color-black.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/vinfast-kyo-mau-den.webp",
+      "role": "color",
+      "alt": "VinFast Kyo màu Đen Bóng",
+      "width": 1230,
+      "height": 700,
+      "sha256": "d822d6699234115faa77f5dd84701c64688c5644779baf32473aa18d12485679"
+    },
+    {
+      "file": "color-green.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/vinfast-kyo-mau-xanh.webp",
+      "role": "color",
+      "alt": "VinFast Kyo màu Xanh Oliu",
+      "width": 1920,
+      "height": 1093,
+      "sha256": "ab9ff090136db4537c8aea6f8231b952380f3bc43b1dc77ef90eb1a0dc1f7a12"
+    },
+    {
+      "file": "technology-01.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/vinfast-kyo-mau-nau-sau.webp",
+      "role": "technology",
+      "alt": "Màn hình và tay lái VinFast Kyo",
+      "width": 1044,
+      "height": 1800,
+      "sha256": "45773573ccca22dae015f57646324152ddb75f3352df66d0802d95a43868cf3b"
+    },
+    {
+      "file": "storage-01.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/vinfast-kyo-mau-nau-cop.webp",
+      "role": "detail",
+      "alt": "Cốp xe VinFast Kyo",
+      "width": 1044,
+      "height": 1800,
+      "sha256": "d63afbaf0ee39ccc5ef20455a96dd66fe03709c288e7196eae45e4d1ca5574d6"
+    },
+    {
+      "file": "comfort-01.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/vinfast-kyo-mau-nau-san.webp",
+      "role": "detail",
+      "alt": "Sàn để chân VinFast Kyo",
+      "width": 1044,
+      "height": 1800,
+      "sha256": "1b2739c490ca6b8fdd88fa5e8fbf48bf29365d4671840f85583e7b27ab3f97ea"
+    },
+    {
+      "file": "safety-01.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/vinfast-kyo-mau-nau-banh.webp",
+      "role": "safety",
+      "alt": "Bánh và hệ thống phanh VinFast Kyo",
+      "width": 1044,
+      "height": 1800,
+      "sha256": "510a12b10fe872790866e5862a46ad462520f4e9d47729fc72668a3b5ec8f502"
+    },
+    {
+      "file": "battery-01.webp",
+      "source_url": "https://static-cms-prod.vinfastauto.com/vinfast-kyo-mau-nau-nghieng-phai.webp",
+      "role": "battery",
+      "alt": "VinFast Kyo nhìn nghiêng",
+      "width": 1920,
+      "height": 1782,
+      "sha256": "6af2e93fdadf823580e42ec27d6cec54335a67770de60dedd86ac94529da8079"
+    }
+  ]
+}

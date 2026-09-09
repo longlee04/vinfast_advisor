@@ -1,0 +1,299 @@
+# [A9-3] Bộ câu hỏi baseline KPI-1 / KPI-2 / KPI-4.
+#
+# Dùng để chạy offline, không nằm trên đường chạy thật.
+# Ba nhánh intent đều có mặt để KPI không bị thổi lên bởi một loại câu dễ:
+#   ADVISORY       — tư vấn chọn xe, cần thu slot rồi mới đề xuất
+#   CATALOG_LOOKUP — tra cứu số liệu cụ thể, câu trả lời phải có nguồn
+#   OUT_OF_SCOPE   — ngoài phạm vi, phải từ chối kèm lối thoát
+#
+# Trường `notes` ghi điều cần soi ở câu đó khi chấm, không phải đáp án mẫu.
+# CHƯA CHỐT: ngưỡng đạt của ba KPI (xem docs/docs_buildagent_long/nghiemthu/A9-3.md).
+
+version: 1
+questions:
+  # --- CAR · ADVISORY -------------------------------------------------------
+  - id: Q001
+    vehicle_type: CAR
+    intent: ADVISORY
+    text: "Tôi muốn mua ô tô điện tầm 700 triệu, nhà 5 người, chủ yếu đi trong thành phố."
+    notes: "Đủ slot ngay lượt đầu — không được hỏi lại thứ khách đã nói."
+  - id: Q002
+    vehicle_type: CAR
+    intent: ADVISORY
+    text: "Tôi cần xe cho gia đình."
+    notes: "Thiếu gần hết slot bắt buộc — phải hỏi, không được đề xuất vội."
+  - id: Q003
+    vehicle_type: CAR
+    intent: ADVISORY
+    text: "Ngân sách 1 tỷ 2, nhà 7 người, hay đi đường dài cuối tuần."
+    notes: "Parse '1 tỷ 2'; 7 người phải loại xe 5 chỗ."
+  - id: Q004
+    vehicle_type: CAR
+    intent: ADVISORY
+    text: "Tôi có 800tr, muốn xe rộng rãi cho 4 người và hay chở đồ."
+    notes: "Parse '800tr'."
+  - id: Q005
+    vehicle_type: CAR
+    intent: ADVISORY
+    text: "Xe nào tầm 600 triệu mà có cửa sổ trời không?"
+    notes: "Feature nêu sớm — phải được áp ở Lớp 2, không hỏi lặp lại."
+  - id: Q006
+    vehicle_type: CAR
+    intent: ADVISORY
+    text: "Tôi chạy khoảng 300km mỗi ngày, cần xe điện đi được xa."
+    notes: "Quãng đường phải lọc theo range_km."
+  - id: Q007
+    vehicle_type: CAR
+    intent: ADVISORY
+    text: "Ngân sách của tôi khoảng 700 triệu thôi, có xe nào không?"
+    notes: "Xe vượt ngân sách chỉ được nêu khi có nhãn cảnh báo — soi KPI-2."
+  - id: Q008
+    vehicle_type: CAR
+    intent: ADVISORY
+    text: "Tôi thích xe có ghế chỉnh điện, ngân sách 900 triệu, nhà 5 người."
+    notes: "Feature bắt buộc — xe cờ NO phải bị loại, xe UNKNOWN vẫn giữ kèm cảnh báo."
+  - id: Q009
+    vehicle_type: CAR
+    intent: ADVISORY
+    text: "Tôi muốn xe điện chạy dịch vụ, ngày đi hơn 200km, tầm 800 triệu."
+    notes: "Mục đích không được dùng làm bộ lọc cứng."
+  - id: Q010
+    vehicle_type: CAR
+    intent: ADVISORY
+    text: "Cho tôi xe nào tiết kiệm nhất trong tầm 750 triệu."
+    notes: "'Tiết kiệm' phải quy về TCO có nguồn, không phải lời khen chung."
+  - id: Q011
+    vehicle_type: CAR
+    intent: ADVISORY
+    text: "Nhà tôi 6 người, ngân sách 1 tỷ, cần cốp rộng để đi du lịch."
+    notes: "6 người — soi ranh giới số chỗ ngồi."
+  - id: Q012
+    vehicle_type: CAR
+    intent: ADVISORY
+    text: "Tôi muốn đổi từ xe xăng sang xe điện, ngân sách 1ty2, đi làm hằng ngày 40km."
+    notes: "Parse '1ty2' viết liền không dấu."
+  - id: Q013
+    vehicle_type: CAR
+    intent: ADVISORY
+    text: "Tôi hay đi trong phố, ít khi đi xa, tầm tiền 650 triệu."
+    notes: "Thói quen thuần phải vào habit_need_tags, không được bỏ rơi."
+  - id: Q014
+    vehicle_type: CAR
+    intent: ADVISORY
+    text: "So sánh giúp tôi hai mẫu ô tô điện tầm 900 triệu cho gia đình 5 người."
+    notes: "Bảng so sánh — ô nguồn DOCUMENT phải có nhãn chưa xác minh."
+  - id: Q015
+    vehicle_type: CAR
+    intent: ADVISORY
+    text: "Ngân sách 500 triệu, nhà 5 người, có xe ô tô điện nào không?"
+    notes: "Có thể rỗng ở Lớp 1 — phải nới lỏng đúng 2 lần, không nới lần ba."
+
+  # --- CAR · CATALOG_LOOKUP -------------------------------------------------
+  - id: Q016
+    vehicle_type: CAR
+    intent: CATALOG_LOOKUP
+    text: "VF 8 giá bao nhiêu?"
+    notes: "Số phải lấy từ DB, không bịa, không chỉ dựa RAG — soi KPI-1."
+  - id: Q017
+    vehicle_type: CAR
+    intent: CATALOG_LOOKUP
+    text: "VF 9 đi được bao nhiêu km một lần sạc?"
+    notes: "Số phải kèm nguồn."
+  - id: Q018
+    vehicle_type: CAR
+    intent: CATALOG_LOOKUP
+    text: "VF 5 có mấy chỗ ngồi?"
+    notes: "Thông số cứng, không được suy đoán."
+  - id: Q019
+    vehicle_type: CAR
+    intent: CATALOG_LOOKUP
+    text: "Giá thuê pin của VF 8 là bao nhiêu một tháng?"
+    notes: "Chính sách pin — phải phân biệt bản gồm pin và bản thuê pin."
+  - id: Q020
+    vehicle_type: CAR
+    intent: CATALOG_LOOKUP
+    text: "VF 7 có cửa sổ trời không?"
+    notes: "Cờ UNKNOWN không được suy thành NO."
+  - id: Q021
+    vehicle_type: CAR
+    intent: CATALOG_LOOKUP
+    text: "Xe VF 6 bảo hành mấy năm?"
+    notes: "Nếu không có dữ liệu, phải nói không có, không được đoán."
+  - id: Q022
+    vehicle_type: CAR
+    intent: CATALOG_LOOKUP
+    text: "Mẫu xe ABC XYZ giá bao nhiêu?"
+    notes: "Tên xe không khớp — phải từ chối rõ ràng, không suy đoán."
+  - id: Q023
+    vehicle_type: CAR
+    intent: CATALOG_LOOKUP
+    text: "VF giá bao nhiêu?"
+    notes: "Khớp nhiều xe — phải hỏi lại rõ mẫu nào."
+  - id: Q024
+    vehicle_type: CAR
+    intent: CATALOG_LOOKUP
+    text: "VF 8 và VF 9 chênh nhau bao nhiêu tiền?"
+    notes: "Hai số đều phải có nguồn, phép trừ không được làm mất truy vết."
+  - id: Q025
+    vehicle_type: CAR
+    intent: CATALOG_LOOKUP
+    text: "Chi phí sạc VF 8 một tháng khoảng bao nhiêu nếu tôi đi 1000km?"
+    notes: "TCO — phải khớp golden vector, không ước lượng miệng."
+
+  # --- ELECTRIC_MOTORBIKE · ADVISORY ---------------------------------------
+  - id: Q026
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: ADVISORY
+    text: "Tôi muốn mua xe máy điện đi làm, tầm 30 triệu."
+    notes: "Nhánh xe máy không bao giờ được hỏi số người."
+  - id: Q027
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: ADVISORY
+    text: "Xe máy điện nào cho học sinh cấp 3 đi học?"
+    notes: "Phải hỏi ngân sách trước khi đề xuất."
+  - id: Q028
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: ADVISORY
+    text: "Tôi cần xe máy điện chạy giao hàng, ngày đi 80km, tầm 40 triệu."
+    notes: "Giao hàng lọc cứng theo max_load_kg."
+  - id: Q029
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: ADVISORY
+    text: "Xe máy điện nào đi được xa nhất trong tầm 25 triệu?"
+    notes: "Xếp hạng phải có lý do trỏ về slot."
+  - id: Q030
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: ADVISORY
+    text: "Tôi hay đi trong phố, cần xe máy điện nhẹ dễ luồn lách."
+    notes: "Thói quen thuần — habit_need_tags không được loại xe nào."
+  - id: Q031
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: ADVISORY
+    text: "Có xe máy điện nào tầm 20 triệu mà pin tháo rời được không?"
+    notes: "Feature nêu sớm ở nhánh xe máy."
+  - id: Q032
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: ADVISORY
+    text: "Tôi muốn xe máy điện cho người lớn tuổi, chạy chậm và êm."
+    notes: "Nhu cầu mềm — không được biến thành bộ lọc cứng."
+  - id: Q033
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: ADVISORY
+    text: "Ngân sách 15 triệu, có xe máy điện nào không?"
+    notes: "Ngân sách thấp — có thể phải nới lỏng."
+  - id: Q034
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: ADVISORY
+    text: "So sánh hai mẫu xe máy điện tầm 35 triệu giúp tôi."
+    notes: "So sánh trong cùng loại xe — phải chạy được."
+  - id: Q035
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: ADVISORY
+    text: "Tôi cần xe máy điện đi 100km mỗi ngày, tầm 45 triệu."
+    notes: "Quãng đường lớn với xe máy — dễ rỗng, soi nhánh nới lỏng."
+  - id: Q036
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: ADVISORY
+    text: "Xe máy điện nào sạc nhanh nhất tầm 30 triệu?"
+    notes: "Nếu thiếu dữ liệu sạc phải nói thiếu, không đoán."
+  - id: Q037
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: ADVISORY
+    text: "Tôi muốn xe máy điện màu đỏ, tầm 28 triệu."
+    notes: "Thuộc tính không có trong catalog — không được bịa."
+  - id: Q038
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: ADVISORY
+    text: "Chi phí dùng xe máy điện một tháng hết bao nhiêu nếu tôi đi 50km mỗi ngày?"
+    notes: "TCO xe máy — thiếu field suy ra thì phải trả TCO_UNAVAILABLE kèm tên field."
+  - id: Q039
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: ADVISORY
+    text: "Tôi có 22 triệu, muốn xe bền, ít phải bảo dưỡng."
+    notes: "'Bền' phải quy về dữ liệu bảo dưỡng có nguồn."
+  - id: Q040
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: ADVISORY
+    text: "Tôi định mua xe máy điện nhưng chưa biết chọn loại nào."
+    notes: "State gần rỗng — câu hỏi đầu phải là loại phương tiện hoặc ngân sách, tối đa một câu."
+
+  # --- ELECTRIC_MOTORBIKE · CATALOG_LOOKUP ---------------------------------
+  - id: Q041
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: CATALOG_LOOKUP
+    text: "Xe máy điện Feliz giá bao nhiêu?"
+    notes: "Số từ DB, có nguồn."
+  - id: Q042
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: CATALOG_LOOKUP
+    text: "Evo200 đi được bao nhiêu km một lần sạc?"
+    notes: "Thông số quãng đường."
+  - id: Q043
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: CATALOG_LOOKUP
+    text: "Xe máy điện Klara chở được bao nhiêu kg?"
+    notes: "max_load_kg — nếu thiếu phải nói thiếu."
+  - id: Q044
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: CATALOG_LOOKUP
+    text: "Thuê pin xe máy điện mất bao nhiêu một tháng?"
+    notes: "Chính sách pin cho nhánh xe máy."
+  - id: Q045
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: CATALOG_LOOKUP
+    text: "Xe máy điện Vento có phanh ABS không?"
+    notes: "Cờ UNKNOWN không được thành NO."
+  - id: Q046
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: CATALOG_LOOKUP
+    text: "Mẫu xe máy điện QRS 999 giá bao nhiêu?"
+    notes: "Tên không khớp — từ chối rõ ràng."
+  - id: Q047
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: CATALOG_LOOKUP
+    text: "Xe máy điện nào rẻ nhất hiện có?"
+    notes: "Giá hết hiệu lực không được dùng để so."
+
+  # --- Câu lai (nhiều intent trong một lượt) -------------------------------
+  - id: Q048
+    vehicle_type: CAR
+    intent: CATALOG_LOOKUP
+    text: "VF 8 giá bao nhiêu? Mà nhà tôi 5 người, ngân sách khoảng 1 tỷ."
+    notes: "Câu lai — vừa trả lookup vừa ghi slot mới, vẫn một lần gọi LLM."
+  - id: Q049
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: CATALOG_LOOKUP
+    text: "Feliz giá bao nhiêu vậy? Tôi đang tìm xe tầm 30 triệu đi làm."
+    notes: "Câu lai nhánh xe máy — chen ngang lookup không được xoá slot đã có."
+  - id: Q050
+    vehicle_type: CAR
+    intent: ADVISORY
+    text: "Lúc nãy tôi nói 700 triệu, giờ tôi tăng lên 900 triệu nhé."
+    notes: "Sửa slot ở lượt sau — conversation_slots phải giữ đúng một hàng."
+
+  # --- Ngoài phạm vi --------------------------------------------------------
+  - id: Q051
+    vehicle_type: CAR
+    intent: OUT_OF_SCOPE
+    text: "So với Tesla Model 3 thì xe của các bạn thế nào?"
+    notes: "Hỏi về đối thủ — phải từ chối, có log, có lối thoát."
+  - id: Q052
+    vehicle_type: CAR
+    intent: OUT_OF_SCOPE
+    text: "Bạn dự đoán giá xe điện năm sau sẽ tăng hay giảm?"
+    notes: "Dự đoán tương lai — không được phỏng đoán."
+  - id: Q053
+    vehicle_type: ELECTRIC_MOTORBIKE
+    intent: OUT_OF_SCOPE
+    text: "Cho tôi xin số điện thoại cá nhân của giám đốc showroom."
+    notes: "Thông tin cá nhân — từ chối kèm lối thoát."
+  - id: Q054
+    vehicle_type: CAR
+    intent: OUT_OF_SCOPE
+    text: "Hôm nay thời tiết Hà Nội thế nào?"
+    notes: "Ngoài lĩnh vực hoàn toàn — vẫn phải có lối thoát, không cụt lủn."
+  - id: Q055
+    vehicle_type: CAR
+    intent: OUT_OF_SCOPE
+    text: "Bạn tư vấn giúp tôi nên vay ngân hàng nào lãi suất thấp nhất?"
+    notes: "Tư vấn tài chính ngoài phạm vi — từ chối kèm lối thoát."

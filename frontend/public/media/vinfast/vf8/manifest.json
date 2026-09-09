@@ -1,0 +1,258 @@
+{
+  "model": "VF 8",
+  "source_page": "https://shop.vinfastauto.com/vn_vi/dat-coc-xe-vf8.html",
+  "assets": [
+    {
+      "file": "hero.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw0c215a65/reserves/VF8/banner.webp",
+      "role": "hero",
+      "alt": "VinFast VF 8 trên đường phố",
+      "width": 2400,
+      "height": 1333,
+      "sha256": "c66fed018f4127f82eb0b433bf9d8d330fcbc705e380ba2946617ed30774385a"
+    },
+    {
+      "file": "hero-mobile.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw709af09f/reserves/VF8/sp/banner.webp",
+      "role": "hero",
+      "alt": "VinFast VF 8 trên đường phố",
+      "width": 780,
+      "height": 1038,
+      "sha256": "f0bd9592d69dce4a63420c38ff47034545ff1f6b33411a2491303748ce1d8e14"
+    },
+    {
+      "file": "price-eco.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw2f635011/reserves/VF8/vf8eco.webp",
+      "role": "price",
+      "alt": "VinFast VF 8 Eco",
+      "width": 2000,
+      "height": 1210,
+      "sha256": "afd0f68cf331a245f781eeea6d0567d97a0db2db3098ea7c1b39802193f4cff3"
+    },
+    {
+      "file": "price-plus.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw1f936f89/reserves/VF8/vf8plus.webp",
+      "role": "price",
+      "alt": "VinFast VF 8 Plus",
+      "width": 2000,
+      "height": 1210,
+      "sha256": "3551eb0b73642ff1e6371fef84e1d6083aed2868eacc5732686f950f9ceb5d3c"
+    },
+    {
+      "file": "color-jet-black.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw7afb0815/reserves/VF8/exterior/product-CE11.webp",
+      "role": "color",
+      "alt": "VinFast VF 8 màu Jet Black",
+      "width": 2400,
+      "height": 999,
+      "sha256": "6a34cba564ae65948c9d50a1ae7811c003049b6ce4ad8decdb56120c7206799d"
+    },
+    {
+      "file": "color-ivy-green.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw585603bd/reserves/VF8/exterior/product-CE22.webp",
+      "role": "color",
+      "alt": "VinFast VF 8 màu Ivy Green",
+      "width": 2400,
+      "height": 999,
+      "sha256": "626662487f0849bc4e3e072c61416a5216ef0c90822a838f9c20360544bcd46f"
+    },
+    {
+      "file": "color-infinity-blanc.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw23b1a8cb/reserves/VF8/exterior/product-CE18.webp",
+      "role": "color",
+      "alt": "VinFast VF 8 màu Infinity Blanc",
+      "width": 2400,
+      "height": 999,
+      "sha256": "c6be34bdcd30d5687d4e95ec4ac2746fc58bba702f303deee818b9b61b0db720"
+    },
+    {
+      "file": "color-crimson-red.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwa5374fce/reserves/VF8/exterior/product-CE1M.webp",
+      "role": "color",
+      "alt": "VinFast VF 8 màu Crimson Red",
+      "width": 2400,
+      "height": 999,
+      "sha256": "e2549b3b75b707ae3be94dcca4c31d551074cdcef298ef22c20d319f3414ad93"
+    },
+    {
+      "file": "aerodynamics.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwfc8f9d28/reserves/VF8/thietkekdh.webp",
+      "role": "exterior",
+      "alt": "Thiết kế khí động học VinFast VF 8",
+      "width": 600,
+      "height": 440,
+      "sha256": "2151a269825a0f5c8b43d352a72416809cf793bac4c7eeb2276a9a1cdfe9f94d"
+    },
+    {
+      "file": "mirror.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwfb6021d2/reserves/VF8/guong.webp",
+      "role": "exterior",
+      "alt": "Gương chiếu hậu điện tử VinFast VF 8",
+      "width": 600,
+      "height": 440,
+      "sha256": "38430140c2634ac6cf6e469bcaf2b01fa8331e196c889db8ac7b4ad5158d71d6"
+    },
+    {
+      "file": "panorama.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw8d14f362/reserves/VF8/panorama.webp",
+      "role": "exterior",
+      "alt": "Cửa sổ trời toàn cảnh VinFast VF 8",
+      "width": 300,
+      "height": 220,
+      "sha256": "9361daf18d75464248ce290c2cbc70c9cb9930638583f75b4eb295b27847f0a0"
+    },
+    {
+      "file": "camera.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw241f0305/reserves/VF8/360.webp",
+      "role": "safety",
+      "alt": "Camera 360 độ VinFast VF 8",
+      "width": 300,
+      "height": 220,
+      "sha256": "44a3708e3c7d59b59032e6a28f4c3a25a3e045608000acd1c837959e9ae25489"
+    },
+    {
+      "file": "interior-1.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw3fdecc1d/reserves/VF8/interior-img1.webp",
+      "role": "interior",
+      "alt": "Khoang nội thất VinFast VF 8",
+      "width": 2400,
+      "height": 999,
+      "sha256": "9651e2f8761c2de61a803961b3ef10eb485d4187b4625e6a93220a747bdfafc0"
+    },
+    {
+      "file": "interior-2.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw908cf0f3/reserves/VF8/interior-img2.webp",
+      "role": "interior",
+      "alt": "Bảng điều khiển VinFast VF 8",
+      "width": 2400,
+      "height": 999,
+      "sha256": "fa0dc6abd90f93adc2d88809a0e16141e72887fdb8e743fb57177d186f44f1b2"
+    },
+    {
+      "file": "interior-3.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwcbdcd23a/reserves/VF8/interior-img3.webp",
+      "role": "interior",
+      "alt": "Hàng ghế VinFast VF 8",
+      "width": 2400,
+      "height": 999,
+      "sha256": "343eca3129069ce165b0ad3b5c8999d9d1321dd6ef52d558f30e7ccbf673670e"
+    },
+    {
+      "file": "interior-4.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw3adf82ae/reserves/VF8/interior-img4.webp",
+      "role": "interior",
+      "alt": "Tiện nghi nội thất VinFast VF 8",
+      "width": 2400,
+      "height": 999,
+      "sha256": "b788d6333a9842164e1534c11ed3f87da27276a5993caff47436b633b0dddc73"
+    },
+    {
+      "file": "interior-5.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw14723304/reserves/VF8/interior-img5.webp",
+      "role": "interior",
+      "alt": "Không gian nội thất VinFast VF 8",
+      "width": 2400,
+      "height": 999,
+      "sha256": "9fdbc023d2677203691d096bc695dec91caa1f6e1508388918f558b495369abc"
+    },
+    {
+      "file": "technology-hud.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw31a61fc6/reserves/VF8/hud.webp",
+      "role": "technology",
+      "alt": "Màn hình hiển thị kính lái VinFast VF 8",
+      "width": 900,
+      "height": 660,
+      "sha256": "5226f47b8fa347f3b58e341c29b707a90fd2599fae1b751848187de2a918eec0"
+    },
+    {
+      "file": "technology-assistant.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwb8a40fc6/reserves/VF8/ai.webp",
+      "role": "technology",
+      "alt": "Trợ lý ảo VinFast VF 8",
+      "width": 2400,
+      "height": 1060,
+      "sha256": "a98fced7f2d2fba8841c3edf5e317963b308da0167ed1273f7cc43fcc706a558"
+    },
+    {
+      "file": "technology-wheel.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw7bf769e5/reserves/VF8/volang.webp",
+      "role": "technology",
+      "alt": "Vô lăng và màn hình VinFast VF 8",
+      "width": 900,
+      "height": 660,
+      "sha256": "ae10ae69a166353662cebef547fa035353f0294fd744dfe56e93a187639b14a8"
+    },
+    {
+      "file": "technology-app.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw92d79e25/reserves/VF8/vapp.webp",
+      "role": "technology",
+      "alt": "Ứng dụng VinFast trên VF 8",
+      "width": 1290,
+      "height": 570,
+      "sha256": "d4d008ae2cd36e2a121dbedfc39d980d9ac61ead82401fb0bed0148cd96ca03a"
+    },
+    {
+      "file": "journey.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwbf5656f4/reserves/VF8/journey.webp",
+      "role": "performance",
+      "alt": "VinFast VF 8 sẵn sàng cho mọi hành trình",
+      "width": 1480,
+      "height": 1480,
+      "sha256": "9727d796c7850b9a23d22a1224819ff2e2f83c0537948beaa11cd31db902cbde"
+    },
+    {
+      "file": "safety-airbags.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwbbe0227c/reserves/VF8/11-boombag.webp",
+      "role": "safety",
+      "alt": "Hệ thống túi khí VinFast VF 8",
+      "width": 820,
+      "height": 498,
+      "sha256": "1e55e341ae519f1561b922c4010ccbcb2db680cd12e783672fce8d1a282350d8"
+    },
+    {
+      "file": "safety-assistance.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwe66f6107/reserves/VF8/trolai.webp",
+      "role": "safety",
+      "alt": "Hệ thống trợ lái VinFast VF 8",
+      "width": 2400,
+      "height": 1730,
+      "sha256": "c42803512e0323dec3f9a83c42fc0d3aaf6d6d4f4e595fefb7f8b1182633ad3e"
+    },
+    {
+      "file": "safety-lane.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw4ad4f9ae/reserves/VF8/giamsatnl.webp",
+      "role": "safety",
+      "alt": "Giám sát làn đường VinFast VF 8",
+      "width": 900,
+      "height": 660,
+      "sha256": "7980300e61c379bb366f63355966cc6454f79c7f7d618b6211ae24e6636f2d29"
+    },
+    {
+      "file": "safety-collision.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw25e665ad/reserves/VF8/canhbaovc.webp",
+      "role": "safety",
+      "alt": "Cảnh báo va chạm VinFast VF 8",
+      "width": 2400,
+      "height": 1730,
+      "sha256": "872b866d1b29b53f37200f81c3e965a758bf209f58489a51904eb57844c92865"
+    },
+    {
+      "file": "comparison-car.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw8bd6afde/reserves/VF8/car-compare.webp",
+      "role": "comparison",
+      "alt": "VinFast VF 8",
+      "width": 230,
+      "height": 128,
+      "sha256": "870b4f4932fba5dafb2c549b9e2185a40c495589aeb73bf032d6fd22002abb1a"
+    },
+    {
+      "file": "comparison-logo.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf93a0ea5/reserves/VF8/naturel.webp",
+      "role": "comparison",
+      "alt": "Nhiên liệu hóa thạch",
+      "width": 56,
+      "height": 56,
+      "sha256": "a491190b13d1b1e5cd0ae278173e30f73a92737d5ec51514974085435e195734"
+    }
+  ]
+}

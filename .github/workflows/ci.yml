@@ -1,0 +1,218 @@
+name: CI
+
+on:
+  workflow_call:
+  push:
+    branches: [main, develop]
+  # Gate CẢ HAI nhánh đích. Git flow của dự án là `feature/* -> develop -> main`,
+  # nên `develop` là nơi code lạ vào ĐẦU TIÊN. Chỉ gate `main` nghĩa là regression
+  # đã nằm trong `develop` rồi CI mới chạy (qua `push` bên trên) — lúc đó nó
+  # không còn chặn được gì, chỉ báo tin.
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        # `pgvector/pgvector:pg16` chứ không `postgres:16` trần: migration của
+        # `document`/`images` tạo cột vector, và Postgres trần trả
+        # `extension "vector" is not available` — đo tại chỗ 2026-08-28: 262 lỗi
+        # thu hồi hết chỉ vì đổi image này.
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: p150_auth
+          POSTGRES_PASSWORD: p150_local_dev
+          POSTGRES_DB: p150_auth
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U p150_auth -d p150_auth"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.11.21"
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Verify lockfile
+        run: uv lock --check
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Apply Auth migrations
+        run: uv run alembic -c alembic-auth.ini upgrade head
+        env:
+          AUTH_ENABLED: "true"
+          AUTH_DATABASE_URL: postgresql+asyncpg://p150_auth:p150_local_dev@localhost:5432/p150_auth
+
+      - name: Start private MinIO test service
+        run: >-
+          docker run --detach --rm --name p150-minio
+          --publish 9000:9000
+          --env MINIO_ROOT_USER=p150_minio
+          --env MINIO_ROOT_PASSWORD=p150_minio_test_secret
+          minio/minio:RELEASE.2025-04-22T22-12-26Z server /data
+
+      - name: Wait for MinIO
+        run: >-
+          for attempt in $(seq 1 30); do
+          curl --fail --silent --show-error http://localhost:9000/minio/health/live && exit 0;
+          sleep 1;
+          done;
+          exit 1
+
+      - name: Lint with ruff
+        run: uv run ruff check src/ tests/
+
+      - name: Verify Auth architecture
+        run: uv run pytest tests/auth/integration/test_ci_gates.py -v
+
+      # MVP policy: fail on known vulnerabilities in the locked runtime and dev
+      # dependency graph. Any temporary advisory exception requires a reviewed,
+      # time-bounded `--ignore-vuln` entry; none are currently approved.
+      - name: Audit locked dependencies
+        run: uv run pip-audit
+
+      - name: Run Auth-enabled tests
+        run: uv run pytest tests/auth -v --tb=short
+        env:
+          APP_ENV: test
+          AUTH_ENABLED: "true"
+          AUTH_DATABASE_URL: postgresql+asyncpg://p150_auth:p150_local_dev@localhost:5432/p150_auth
+          AUTH_JWT_SIGNING_KEY: ci-jwt-signing-key-7R-v2mQ9-xK4pL8-sD6fH3nZ
+          AUTH_CSRF_SECRET: ci-csrf-secret-3Y-q8wE2-rT7uI5-oP9aS4dF
+          AUTH_CORS_ORIGINS: https://test.example
+          AUTH_FRONTEND_ORIGIN: https://test.example
+          AUTH_SENDGRID_API_KEY: ci-test-sendgrid-key
+          AUTH_SENDGRID_FROM_EMAIL: auth@test.example
+
+      - name: Run legacy Auth-disabled regression
+        run: AUTH_ENABLED=false uv run pytest tests/test_api/test_routes.py -v
+        env:
+          APP_ENV: test
+          OPENAI_API_KEY: test-key
+
+      # Bốn migration còn lại. Thiếu chúng thì bước full suite chạy trên một CSDL
+      # KHÔNG có bảng `vehicles`, và hàng loạt test integration đỏ vì lý do cấu
+      # hình chứ không phải vì code — một cổng gác báo động giả thì người ta học
+      # cách bỏ qua nó.
+      - name: Apply Product, Locations, Document and Agent migrations
+        run: |
+          for ini in alembic-products.ini alembic-locations.ini alembic-document.ini alembic-agent.ini; do
+            uv run alembic -c "$ini" upgrade head
+          done
+        env:
+          AUTH_DATABASE_URL: postgresql+asyncpg://p150_auth:p150_local_dev@localhost:5432/p150_auth
+          PRODUCT_DATABASE_URL: postgresql+asyncpg://p150_auth:p150_local_dev@localhost:5432/p150_auth
+          LOCATIONS_DATABASE_URL: postgresql+asyncpg://p150_auth:p150_local_dev@localhost:5432/p150_auth
+          DOCUMENT_DATABASE_URL: postgresql+asyncpg://p150_auth:p150_local_dev@localhost:5432/p150_auth
+          AGENT_DATABASE_URL: postgresql+asyncpg://p150_auth:p150_local_dev@localhost:5432/p150_auth
+
+      - name: Run full test suite
+        run: uv run pytest tests/ -v --tb=short
+        env:
+          APP_ENV: test
+          OPENAI_API_KEY: test-key
+          AUTH_DATABASE_URL: postgresql+asyncpg://p150_auth:p150_local_dev@localhost:5432/p150_auth
+          PRODUCT_DATABASE_URL: postgresql+asyncpg://p150_auth:p150_local_dev@localhost:5432/p150_auth
+          LOCATIONS_DATABASE_URL: postgresql+asyncpg://p150_auth:p150_local_dev@localhost:5432/p150_auth
+          DOCUMENT_DATABASE_URL: postgresql+asyncpg://p150_auth:p150_local_dev@localhost:5432/p150_auth
+          AGENT_DATABASE_URL: postgresql+asyncpg://p150_auth:p150_local_dev@localhost:5432/p150_auth
+          MINIO_ENDPOINT: http://localhost:9000
+          MINIO_ROOT_USER: p150_minio
+          MINIO_ROOT_PASSWORD: p150_minio_test_secret
+          TEST_DATABASE_ADMIN_URL: postgresql+asyncpg://p150_auth:p150_local_dev@localhost:5432/postgres
+
+      - name: Verify disposable databases were removed
+        if: always()
+        run: |
+          uv run python - <<'PY'
+          import asyncio
+          import os
+
+          import asyncpg
+
+
+          async def main() -> None:
+              url = os.environ["TEST_DATABASE_ADMIN_URL"].replace(
+                  "postgresql+asyncpg://", "postgresql://", 1
+              )
+              connection = await asyncpg.connect(url)
+              try:
+                  rows = await connection.fetch(
+                      "SELECT datname FROM pg_database "
+                      "WHERE datname ~ "
+                      "'^p150_(document|image)_test_[0-9a-f]{32}$'"
+                  )
+              finally:
+                  await connection.close()
+              leftovers = [row["datname"] for row in rows]
+              if leftovers:
+                  raise SystemExit(f"Disposable test databases were not removed: {leftovers}")
+
+
+          asyncio.run(main())
+          PY
+        env:
+          TEST_DATABASE_ADMIN_URL: postgresql+asyncpg://p150_auth:p150_local_dev@localhost:5432/postgres
+
+      - name: Build locked runtime image
+        run: docker build --no-cache -t p150-auth-mvp .
+
+      - name: Smoke-test Auth runtime imports
+        run: >-
+          docker run --rm p150-auth-mvp python -c
+          'import sqlalchemy, asyncpg, alembic, argon2, jwt; from src.auth.infrastructure.email import SendGridEmailSender; import src.main'
+
+  # Cổng FRONTEND, tách JOB riêng.
+  #
+  # Tách chứ không nối vào `lint-and-test`: bộ backend đang có 7 lỗi tồn đọng
+  # (migrations, catalog browse, staff identity, vehicle overview, auth) thuộc
+  # một mảng việc khác. Gộp chung thì tín hiệu frontend bị chôn dưới màu đỏ có
+  # sẵn, và không ai đọc được "frontend có xanh hay không".
+  #
+  # Bốn bước, KHÔNG bước nào được `continue-on-error`: một cổng báo xanh trong
+  # khi có lỗi còn tệ hơn không có cổng — nó dạy người đọc bỏ qua màu xanh.
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # `npm ci` chứ không `npm install`: cài đúng cây khoá trong lockfile, và
+      # hỏng ngay nếu lockfile lệch `package.json`.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # `--max-warnings=0` đã nằm trong script — cảnh báo cũng là đỏ.
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build

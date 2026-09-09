@@ -1,0 +1,22 @@
+{
+  "_ghi_chu": "FILE MẪU — chép thành blind_cases.json rồi điền case THẬT. Hai case dưới chỉ minh hoạ định dạng, KHÔNG dùng làm đề.",
+  "cases": [
+    {
+      "id": "VD-01",
+      "persona": "Người lần đầu mua ô tô, sợ công nghệ, ngân sách lưng chừng",
+      "turns": [
+        "chao em, chi it dung cong nghe lam",
+        "chị có khoảng 500, à mà 550 triệu, đi chợ với đón cháu thôi",
+        "cái này sạc ở nhà kiểu gì nhỉ, chung cư chị không có ổ",
+        "thôi được, cho chị thử con rẻ hơn xem"
+      ],
+      "muc_tieu": "Nhận được gợi ý xe hợp ngân sách + được trấn an chuyện sạc + đổi sang mẫu rẻ hơn mà không phải nhắc lại nhu cầu."
+    },
+    {
+      "id": "VD-02",
+      "persona": "Người vội, gõ cụt lủn, muốn chốt nhanh",
+      "turns": ["vf3 lan banh bn", "hn", "ok dat lai thu luon"],
+      "muc_tieu": "Ra giá lăn bánh VF 3 tại Hà Nội rồi vào được luồng đặt lái thử, không bị hỏi lại thứ đã nói."
+    }
+  ]
+}

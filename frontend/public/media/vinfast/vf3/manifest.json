@@ -1,0 +1,2346 @@
+{
+  "model": "VF 3",
+  "source_page": "https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf3.html",
+  "assets": [
+    {
+      "file": "campaign-hero.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw609351bf/reserves/VF3/vf3.jpg",
+      "role": "hero",
+      "alt": "VinFast VF 3 - Chiếc xe đô thị dành cho thế hệ người Việt mới",
+      "width": 1920,
+      "height": 900,
+      "sha256": "56b5adb2fef39a5ccd60fa3f6dde60e47cba032658a88fe1359959c441205a9c"
+    },
+    {
+      "file": "campaign-feature.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw874b91f0/reserves/VF3/vf3-uu-diem-3.webp",
+      "role": "feature",
+      "alt": "VinFast VF 3 - Sáng tạo chất riêng",
+      "width": 2400,
+      "height": 1125,
+      "sha256": "aace8e6fdb9bb3a7518f76d895d59c46b53aa7df1e4d16fb932ea090fb238212"
+    },
+    {
+      "file": "side-profile.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw08f52c31/reserves/VF3/vf3-1.png",
+      "role": "exterior",
+      "alt": "VinFast VF 3 màu Summer Yellow nhìn ngang",
+      "width": 1824,
+      "height": 775,
+      "sha256": "e35cbb8975111e7951ae87c47c9de5ad3905e3641795b656c39460226a5532cc"
+    },
+    {
+      "file": "exterior-rear.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw764b4e72/reserves/VF3/vf3section-4.jpg",
+      "role": "exterior",
+      "alt": "Ngoại thất phía sau VinFast VF 3",
+      "width": 1824,
+      "height": 713,
+      "sha256": "88c515944b74a6643516bc5c6181cd98007c1e15bb6448e578ae0659fbccb8d3"
+    },
+    {
+      "file": "exterior-front.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dweab41b5f/reserves/VF3/vf3section-5.jpg",
+      "role": "exterior",
+      "alt": "Ngoại thất phía trước VinFast VF 3",
+      "width": 1824,
+      "height": 1027,
+      "sha256": "53f590007e6d68380835ad9b74d5ca629d4e893c8dc78d0758949ff87531fd9e"
+    },
+    {
+      "file": "interior.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw4f0b29fa/reserves/VF3/VF3_Interior_Hero.jpg",
+      "role": "interior",
+      "alt": "Khoang nội thất VinFast VF 3",
+      "width": 1216,
+      "height": 685,
+      "sha256": "94ce6f7abb915fe58d3c9e2268cd3dec8d41d7629868655f093095d011d75555"
+    },
+    {
+      "file": "charging-map.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwafcac90d/reserves/VF3/map.jpg",
+      "role": "charging",
+      "alt": "Mạng lưới trạm sạc VinFast trên toàn quốc",
+      "width": 890,
+      "height": 1026,
+      "sha256": "383309dd3bc9cc1a569410ab3302965a3a1fa7e182ce62fc607c26f42e5ef744"
+    },
+    {
+      "file": "comparison-car.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwb98ce658/reserves/VF3/car-compare.webp",
+      "role": "comparison",
+      "alt": "VinFast VF 3",
+      "width": 230,
+      "height": 128,
+      "sha256": "c31a14849af84470c2d846eeda8d17fe4685bf514740a0e211fc9b14cb076ec3"
+    },
+    {
+      "file": "color-solar-ruby.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F1.png",
+      "role": "color",
+      "alt": "VinFast VF 3 màu Solar Ruby",
+      "width": 1024,
+      "height": 576,
+      "sha256": "17d27b16e2be6ccd3b6029a9d2b079ea54718ee6274ab8279ac53b56248dae1d"
+    },
+    {
+      "file": "color-summer-yellow.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F1.png",
+      "role": "color",
+      "alt": "VinFast VF 3 màu Summer Yellow",
+      "width": 1024,
+      "height": 576,
+      "sha256": "dfca76df9e57c9b499747bee8fd4c8b8e4750bd4cdbd74d7d80a4abad95407e5"
+    },
+    {
+      "file": "color-sky-blue.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F1.png",
+      "role": "color",
+      "alt": "VinFast VF 3 màu Sky Blue",
+      "width": 1024,
+      "height": 576,
+      "sha256": "2659ac24d30e08f74230919ba51f68fcd6e405b97f3982047dd4c0126f5996af"
+    },
+    {
+      "file": "color-urban-mint.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F1.png",
+      "role": "color",
+      "alt": "VinFast VF 3 màu Urban Mint",
+      "width": 1024,
+      "height": 576,
+      "sha256": "fe4427af40389df0178f3abcb609759d18d2fe457e0b6e84b5b73cd4ce795a2a"
+    },
+    {
+      "file": "color-zenith-grey.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F1.png",
+      "role": "color",
+      "alt": "VinFast VF 3 màu Zenith Grey",
+      "width": 1024,
+      "height": 576,
+      "sha256": "2a454f5499138700bf8600cd6faa48473e6cd0ca8a9bd32ef61237931f3fafea"
+    },
+    {
+      "file": "color-infinity-blanc.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F1.png",
+      "role": "color",
+      "alt": "VinFast VF 3 màu Infinity Blanc",
+      "width": 1024,
+      "height": 576,
+      "sha256": "a085814c575276697582a770079428db0c142273faf561747f8f761dae0a8002"
+    },
+    {
+      "file": "color-rose-pink.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F1.png",
+      "role": "color",
+      "alt": "VinFast VF 3 màu Rose Pink",
+      "width": 1024,
+      "height": 576,
+      "sha256": "b9ad336e776be6bb5ed514c4c06b5d01af417df1ac8a5b92ed2e6989ae0e1880"
+    },
+    {
+      "file": "color-solar-ruby-f02.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F2.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 2",
+      "width": 1024,
+      "height": 576,
+      "sha256": "152baa345e93c3d4f84842cf661d2c2f2b1224376c31f20867828ac2aa1bc1c2"
+    },
+    {
+      "file": "color-solar-ruby-f03.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F3.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 3",
+      "width": 1024,
+      "height": 576,
+      "sha256": "38401ca48c07e9a88b2783457d78d5989566c8eba6c8c19599a09c32f7994b04"
+    },
+    {
+      "file": "color-solar-ruby-f04.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F4.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 4",
+      "width": 1024,
+      "height": 576,
+      "sha256": "1186dd8612f610c4a197ba5b2286dbc3207a3f1568281cd54792623cc8be8fdb"
+    },
+    {
+      "file": "color-solar-ruby-f05.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F5.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 5",
+      "width": 1024,
+      "height": 576,
+      "sha256": "f90a18f60474f9ea54f1cecfd64969d2dcf2c06eda8d838aae5c2aba9992aac7"
+    },
+    {
+      "file": "color-solar-ruby-f06.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F6.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 6",
+      "width": 1024,
+      "height": 576,
+      "sha256": "b90520a7fb08584796e76b8b77148a06882d085bc62cd340dd70f8ef09866817"
+    },
+    {
+      "file": "color-solar-ruby-f07.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F7.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 7",
+      "width": 1024,
+      "height": 576,
+      "sha256": "0c4d958bb23cb9899bcba8fa195286df0be521a010c21018dab91a2e455ca35c"
+    },
+    {
+      "file": "color-solar-ruby-f08.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F8.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 8",
+      "width": 1024,
+      "height": 576,
+      "sha256": "24bdae05fe0b28618fa06efac27a4ca1d3b701031172639f0fdb9928c33f9b86"
+    },
+    {
+      "file": "color-solar-ruby-f09.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F9.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 9",
+      "width": 1024,
+      "height": 576,
+      "sha256": "cd1118b7a2b3c43c7f1927d1f354f2b52807c4d769e6aee70f354f4ad4eeafd2"
+    },
+    {
+      "file": "color-solar-ruby-f10.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F10.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 10",
+      "width": 1024,
+      "height": 576,
+      "sha256": "2b6fda5d3765e746f826e0cb6e2892b46a08282151e88a77248728170bed31a0"
+    },
+    {
+      "file": "color-solar-ruby-f11.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F11.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 11",
+      "width": 1024,
+      "height": 576,
+      "sha256": "910b38c3ede968a3418aa6e02ae590700c2d069a3b1fee345ed509cd64fc04ff"
+    },
+    {
+      "file": "color-solar-ruby-f12.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F12.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 12",
+      "width": 1024,
+      "height": 576,
+      "sha256": "f981d4b65d4f7aa6c53066e00a1be7cb8880f201dbb8206130da5b1fac4348a8"
+    },
+    {
+      "file": "color-solar-ruby-f13.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F13.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 13",
+      "width": 1024,
+      "height": 576,
+      "sha256": "8bbd9b10b41c683db732e1b8165367c3b1fb2b0b261d7a28080ade408d767d99"
+    },
+    {
+      "file": "color-solar-ruby-f14.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F14.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 14",
+      "width": 1024,
+      "height": 576,
+      "sha256": "4b739923ec9b40659ee55861ebc03bcce047cb52c41f2ef639ccb1570bcc556d"
+    },
+    {
+      "file": "color-solar-ruby-f15.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F15.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 15",
+      "width": 1024,
+      "height": 576,
+      "sha256": "75fed55c28b8228d555dd0ce3c3634ee25b5c4d8d20d093b86d67fa9a2ad3ef4"
+    },
+    {
+      "file": "color-solar-ruby-f16.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F16.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 16",
+      "width": 1024,
+      "height": 576,
+      "sha256": "3bfc801c62a719fcd39b47377f37536752d68d658d5dd68e54b6fbf3f1f5f1db"
+    },
+    {
+      "file": "color-solar-ruby-f17.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F17.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 17",
+      "width": 1024,
+      "height": 576,
+      "sha256": "d0218c30260cd0657a483c73be64ca64ddb232b61b2b0d5861034f9fbfb5cd4b"
+    },
+    {
+      "file": "color-solar-ruby-f18.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F18.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 18",
+      "width": 1024,
+      "height": 576,
+      "sha256": "795a700a98dcf0396e3a5ac0ca58fced02ce91331914e8f8bb8b9a34667a27e4"
+    },
+    {
+      "file": "color-solar-ruby-f19.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F19.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 19",
+      "width": 1024,
+      "height": 576,
+      "sha256": "60e94a1862fc024ca41a5fe0bf751645021d89fefa5184dec377de982333d3db"
+    },
+    {
+      "file": "color-solar-ruby-f20.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F20.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 20",
+      "width": 1024,
+      "height": 576,
+      "sha256": "f4cb43718df9f2039549ffcec72d93ee432d7e9b48677176bf94a394b40b5ba9"
+    },
+    {
+      "file": "color-solar-ruby-f21.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F21.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 21",
+      "width": 1024,
+      "height": 576,
+      "sha256": "58fc224f37afc6749c5f8a29db5aa29c498587f3fd6a90555efbe5ce8253ce9b"
+    },
+    {
+      "file": "color-solar-ruby-f22.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F22.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 22",
+      "width": 1024,
+      "height": 576,
+      "sha256": "4586792db1a6ee2c384e50c23f601e50e51dd04cc92b697159518cbce460e16f"
+    },
+    {
+      "file": "color-solar-ruby-f23.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F23.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 23",
+      "width": 1024,
+      "height": 576,
+      "sha256": "04c5436ea29512e2fcda10b995ed63598ae191f58a12151d0c5130e63dde1493"
+    },
+    {
+      "file": "color-solar-ruby-f24.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F24.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 24",
+      "width": 1024,
+      "height": 576,
+      "sha256": "77e2553a26ef4727029fa9ee9e53a7b8de01bab1e78edf046ba9e156c4232bae"
+    },
+    {
+      "file": "color-solar-ruby-f25.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F25.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 25",
+      "width": 1024,
+      "height": 576,
+      "sha256": "faadb000496c687e5076f2922b2771c6f49315a3db16e83292696f5fafcb750b"
+    },
+    {
+      "file": "color-solar-ruby-f26.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F26.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 26",
+      "width": 1024,
+      "height": 576,
+      "sha256": "0473d37c1628d286541e742d228825c74ee13c5cceaada5fb26eecaa29f6176d"
+    },
+    {
+      "file": "color-solar-ruby-f27.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F27.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 27",
+      "width": 1024,
+      "height": 576,
+      "sha256": "e02c3498c866c2ce0e35f07fcdd397687922fb76ca46c7c8be0b6164401a9e16"
+    },
+    {
+      "file": "color-solar-ruby-f28.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F28.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 28",
+      "width": 1024,
+      "height": 576,
+      "sha256": "979462a95a1f0c9d74643bec45f4c6ec80d2bc56e6abf054b39597ca5f866ce2"
+    },
+    {
+      "file": "color-solar-ruby-f29.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F29.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 29",
+      "width": 1024,
+      "height": 576,
+      "sha256": "64dea16e7961c011a027d87b8c1847a8b9eacd6dcfdbb275b609af86b46e8d77"
+    },
+    {
+      "file": "color-solar-ruby-f30.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F30.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 30",
+      "width": 1024,
+      "height": 576,
+      "sha256": "afa790e902e3c22bd54ec18057c73267206d5b322caaa83894150fcb82251650"
+    },
+    {
+      "file": "color-solar-ruby-f31.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F31.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 31",
+      "width": 1024,
+      "height": 576,
+      "sha256": "608a26814281eaece56c74290a3600b0e9bccb6936892d4d57b57ba2886c3a7d"
+    },
+    {
+      "file": "color-solar-ruby-f32.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F32.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 32",
+      "width": 1024,
+      "height": 576,
+      "sha256": "80a96c52b110f23c73cf1da92957c6730d387480ebf748e95e491c1488b721e7"
+    },
+    {
+      "file": "color-solar-ruby-f33.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F33.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 33",
+      "width": 1024,
+      "height": 576,
+      "sha256": "7520b15106213bd374b8a024f4e920fe6420e9d438939caa0b5f3d91bbb90ee2"
+    },
+    {
+      "file": "color-solar-ruby-f34.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F34.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 34",
+      "width": 1024,
+      "height": 576,
+      "sha256": "221e9b18d01634e942746105fa86c5f3490fc808b10f03543c28c946b7b3d762"
+    },
+    {
+      "file": "color-solar-ruby-f35.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F35.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 35",
+      "width": 1024,
+      "height": 576,
+      "sha256": "4e0e02e362f5927c7c7f5ef9dca5919db7f4d91ef2a97eed1e03e90882b136a0"
+    },
+    {
+      "file": "color-solar-ruby-f36.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE2Q/F36.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Solar Ruby, khung hình 36",
+      "width": 1024,
+      "height": 576,
+      "sha256": "887d43200d75072111f02b969ac90452914b1280d9eb328876168e3d193c8f71"
+    },
+    {
+      "file": "color-summer-yellow-f02.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F2.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 2",
+      "width": 1024,
+      "height": 576,
+      "sha256": "6e2212059cba4b70d9daa813ffd864a59bdd85f3eb91611c29cc03c0e4042447"
+    },
+    {
+      "file": "color-summer-yellow-f03.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F3.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 3",
+      "width": 1024,
+      "height": 576,
+      "sha256": "7fd57857932bab52d6cffbf183b7b34cde8563bab24fb24b78f6a0845dafdae0"
+    },
+    {
+      "file": "color-summer-yellow-f04.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F4.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 4",
+      "width": 1024,
+      "height": 576,
+      "sha256": "52b8f10877abb35a65e43477f8eb2a194304de16b07011d502e58582ac3f1582"
+    },
+    {
+      "file": "color-summer-yellow-f05.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F5.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 5",
+      "width": 1024,
+      "height": 576,
+      "sha256": "6807eb98e130a403e3a92629cda9a1b2bb1d7a71824fbc267f6f618555de0b2a"
+    },
+    {
+      "file": "color-summer-yellow-f06.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F6.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 6",
+      "width": 1024,
+      "height": 576,
+      "sha256": "0ecac6811c839c38f2396f3568538c51035d823b8cdb54c9c1d3171b4d167c81"
+    },
+    {
+      "file": "color-summer-yellow-f07.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F7.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 7",
+      "width": 1024,
+      "height": 576,
+      "sha256": "9451e18eaf341ccc970a482d2252570f04329eee91b1df3f96c486b07bb3135e"
+    },
+    {
+      "file": "color-summer-yellow-f08.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F8.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 8",
+      "width": 1024,
+      "height": 576,
+      "sha256": "cdb87b7320ebee55c8a22c88caaaf4188f2a41ea247cae0c9c79cb4e6bbf5b51"
+    },
+    {
+      "file": "color-summer-yellow-f09.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F9.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 9",
+      "width": 1024,
+      "height": 576,
+      "sha256": "f0c71fd6517d6d53be2a3624fa9a7c180f528098519887eb1882278e02ee60fc"
+    },
+    {
+      "file": "color-summer-yellow-f10.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F10.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 10",
+      "width": 1024,
+      "height": 576,
+      "sha256": "a7991f1f103f7f575e31de078d589633f3a47d3ee717f66610686df115c3f534"
+    },
+    {
+      "file": "color-summer-yellow-f11.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F11.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 11",
+      "width": 1024,
+      "height": 576,
+      "sha256": "292e5155122c6896f195c903e17cf06eee7a91c5ed0828e96f212ee5bab3ed70"
+    },
+    {
+      "file": "color-summer-yellow-f12.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F12.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 12",
+      "width": 1024,
+      "height": 576,
+      "sha256": "fb9715dd92caba4626c4ecb5dced3717e83261f458ed905219ca13278e6cd002"
+    },
+    {
+      "file": "color-summer-yellow-f13.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F13.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 13",
+      "width": 1024,
+      "height": 576,
+      "sha256": "156c15f024d151c62ef4e3ef010608fda8316b1ea67e245b922611dc15b46da6"
+    },
+    {
+      "file": "color-summer-yellow-f14.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F14.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 14",
+      "width": 1024,
+      "height": 576,
+      "sha256": "00c49d4a3c7c853adc8cb628e82dbfcb2c50f1966e49b473c546770331896d54"
+    },
+    {
+      "file": "color-summer-yellow-f15.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F15.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 15",
+      "width": 1024,
+      "height": 576,
+      "sha256": "cd3ff7393e737f2f3031702ce3d059f0c305547a62c6d0156411c08c23686cc0"
+    },
+    {
+      "file": "color-summer-yellow-f16.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F16.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 16",
+      "width": 1024,
+      "height": 576,
+      "sha256": "adaf1feb55a40136055f3f0e8e1866b4c3c4175c2ec3f857c9fe8f6065c5edd7"
+    },
+    {
+      "file": "color-summer-yellow-f17.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F17.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 17",
+      "width": 1024,
+      "height": 576,
+      "sha256": "8c6c78c1a3ff558bd37282bc7d51c28c3b2163bd61ed1c432f2773f8b18c6893"
+    },
+    {
+      "file": "color-summer-yellow-f18.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F18.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 18",
+      "width": 1024,
+      "height": 576,
+      "sha256": "217a107c4086b0dbf7258cdd4b3fa18b301341926608eba2275fd205134cde31"
+    },
+    {
+      "file": "color-summer-yellow-f19.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F19.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 19",
+      "width": 1024,
+      "height": 576,
+      "sha256": "17d2870a436de7e80b6a1e4bff719d316759980787e1cae48a9e5c493490e4ec"
+    },
+    {
+      "file": "color-summer-yellow-f20.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F20.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 20",
+      "width": 1024,
+      "height": 576,
+      "sha256": "fca742095a9c5465f20c0c5f6fcb6582b09f8e57694e6345d39e912e49605e62"
+    },
+    {
+      "file": "color-summer-yellow-f21.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F21.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 21",
+      "width": 1024,
+      "height": 576,
+      "sha256": "978f2faf63d91e2c0794c72fcca38891046087eaa1317dc5551a969344a56143"
+    },
+    {
+      "file": "color-summer-yellow-f22.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F22.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 22",
+      "width": 1024,
+      "height": 576,
+      "sha256": "97ebcaee64aed398d8723d40b8196f1e895125dcc18e31344ed86c95ef0aed26"
+    },
+    {
+      "file": "color-summer-yellow-f23.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F23.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 23",
+      "width": 1024,
+      "height": 576,
+      "sha256": "cf61de5b88dab13716699004b07e9771c115af534d290446bcf39d217fd412e6"
+    },
+    {
+      "file": "color-summer-yellow-f24.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F24.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 24",
+      "width": 1024,
+      "height": 576,
+      "sha256": "0e725534a7ecf4639b18c230cb1deba12f97edc4a3426fd678de4a137f491aa9"
+    },
+    {
+      "file": "color-summer-yellow-f25.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F25.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 25",
+      "width": 1024,
+      "height": 576,
+      "sha256": "565bd5da4a9f008bcb66bc39fe039bcaed95931944fafe1403101e78d7c10fa8"
+    },
+    {
+      "file": "color-summer-yellow-f26.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F26.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 26",
+      "width": 1024,
+      "height": 576,
+      "sha256": "8c4c0cf88b1dd08199be3d67abe9274c388b22a6772d293794d6a8deb247f24a"
+    },
+    {
+      "file": "color-summer-yellow-f27.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F27.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 27",
+      "width": 1024,
+      "height": 576,
+      "sha256": "9287bc53b72bd7311157c213f4f23d875271f883a6e32cad91b51375d08b510e"
+    },
+    {
+      "file": "color-summer-yellow-f28.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F28.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 28",
+      "width": 1024,
+      "height": 576,
+      "sha256": "859f3f8a57a87281af90bc80c879d8584aef3006ca10641e2e7746b8b511147c"
+    },
+    {
+      "file": "color-summer-yellow-f29.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F29.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 29",
+      "width": 1024,
+      "height": 576,
+      "sha256": "f04f8f9e7a827d58eb0ac1a67397acdf4aa4e8963bd144a885d727ceca711cb5"
+    },
+    {
+      "file": "color-summer-yellow-f30.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F30.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 30",
+      "width": 1024,
+      "height": 576,
+      "sha256": "2b337e79092663268f56cb2644effbe7ce1461076829b86e58304bad51615da6"
+    },
+    {
+      "file": "color-summer-yellow-f31.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F31.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 31",
+      "width": 1024,
+      "height": 576,
+      "sha256": "6c5711e3b62b743256bec4140dac126aa5d05c1e4fe33021ec904303eec5d409"
+    },
+    {
+      "file": "color-summer-yellow-f32.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F32.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 32",
+      "width": 1024,
+      "height": 576,
+      "sha256": "591eeb3254625690171cabf71e889c7ad787c47cd8b9601277792ceda8f5e545"
+    },
+    {
+      "file": "color-summer-yellow-f33.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F33.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 33",
+      "width": 1024,
+      "height": 576,
+      "sha256": "11f31b12a751f15b80ef24ad7b520863c32a852a11d77826af61245679addc72"
+    },
+    {
+      "file": "color-summer-yellow-f34.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F34.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 34",
+      "width": 1024,
+      "height": 576,
+      "sha256": "cbf11567eaac4e0be9828f15f062fcbfcfdfb37fb4681a1f5eeac17e538178f7"
+    },
+    {
+      "file": "color-summer-yellow-f35.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F35.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 35",
+      "width": 1024,
+      "height": 576,
+      "sha256": "7d4c1fec097fc4af2839fc9530439766544ed4f3215da15529111ebf4fc206b9"
+    },
+    {
+      "file": "color-summer-yellow-f36.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181U/F36.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Summer Yellow, khung hình 36",
+      "width": 1024,
+      "height": 576,
+      "sha256": "ab3a9d96c92fc99587af6a750cface06746598b6a017a4a2c63270093bf42998"
+    },
+    {
+      "file": "color-sky-blue-f02.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F2.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 2",
+      "width": 1024,
+      "height": 576,
+      "sha256": "c77d7827f81a4a16f12c0b8a24a29fa0b8f09edf895575b2cefde9fb64808f9d"
+    },
+    {
+      "file": "color-sky-blue-f03.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F3.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 3",
+      "width": 1024,
+      "height": 576,
+      "sha256": "a908b85c59432bc23f90339394c655adc1b3f803c66815305411f951c0408cfc"
+    },
+    {
+      "file": "color-sky-blue-f04.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F4.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 4",
+      "width": 1024,
+      "height": 576,
+      "sha256": "86811800fd197acec29fec2f5e9948628a06017f6c4a2d8a0a11aaeba2bbbd90"
+    },
+    {
+      "file": "color-sky-blue-f05.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F5.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 5",
+      "width": 1024,
+      "height": 576,
+      "sha256": "b49ffd9e680b3d28108a5e5649882202819d1fa4330bc2b1cfddc74cc9daca0b"
+    },
+    {
+      "file": "color-sky-blue-f06.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F6.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 6",
+      "width": 1024,
+      "height": 576,
+      "sha256": "5f3289f0d64a1e4c36b4520437fc2ca6a83ad2d3773629564abfa9d72be63da7"
+    },
+    {
+      "file": "color-sky-blue-f07.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F7.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 7",
+      "width": 1024,
+      "height": 576,
+      "sha256": "bb9311a6960424f2f0178ca79d8f97b510aae0df99c09671137ab629b54df58a"
+    },
+    {
+      "file": "color-sky-blue-f08.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F8.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 8",
+      "width": 1024,
+      "height": 576,
+      "sha256": "aa45ecb9d6a7282853542492ebd05c5a712b232d0db4ac4b693748013c52fc07"
+    },
+    {
+      "file": "color-sky-blue-f09.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F9.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 9",
+      "width": 1024,
+      "height": 576,
+      "sha256": "01961ffbfb85f68e81e465367de8eaf7dcce017b7f61bdfe6d7270c903e53709"
+    },
+    {
+      "file": "color-sky-blue-f10.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F10.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 10",
+      "width": 1024,
+      "height": 576,
+      "sha256": "3f761c89c84731db89f36a92775aee33d4eca2d5f76cc4baa470a51949108c2d"
+    },
+    {
+      "file": "color-sky-blue-f11.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F11.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 11",
+      "width": 1024,
+      "height": 576,
+      "sha256": "dee5994e1b85349e39c01dac0a740943bc7dc9cf176ecfb0da79e818f954031a"
+    },
+    {
+      "file": "color-sky-blue-f12.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F12.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 12",
+      "width": 1024,
+      "height": 576,
+      "sha256": "ba1a6bbf532c35c9176cbadc045bd986e82bc43f9fbc9fb27c924a2133742f42"
+    },
+    {
+      "file": "color-sky-blue-f13.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F13.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 13",
+      "width": 1024,
+      "height": 576,
+      "sha256": "c1e39ec9027f700cb442febc2d166be33ac89bafc6c2c30f51d530bbc2e5c006"
+    },
+    {
+      "file": "color-sky-blue-f14.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F14.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 14",
+      "width": 1024,
+      "height": 576,
+      "sha256": "5a4095fec0b49919a2854d8dfc0dd6186627ae3c307690df9e30b259b0fda420"
+    },
+    {
+      "file": "color-sky-blue-f15.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F15.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 15",
+      "width": 1024,
+      "height": 576,
+      "sha256": "61e18a27bf234219c7917c049f9a808e0f77ab1291eceda3804ced064e3d1810"
+    },
+    {
+      "file": "color-sky-blue-f16.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F16.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 16",
+      "width": 1024,
+      "height": 576,
+      "sha256": "c3edc2d502255fc3f12e20dd7826509e9e799ed6da53dbc9be767ce66fbb9193"
+    },
+    {
+      "file": "color-sky-blue-f17.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F17.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 17",
+      "width": 1024,
+      "height": 576,
+      "sha256": "1c099b25bf46774284cad06007f6e3f53697ec11d0d3fca6f39c44a2799e530f"
+    },
+    {
+      "file": "color-sky-blue-f18.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F18.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 18",
+      "width": 1024,
+      "height": 576,
+      "sha256": "8c07980a7efbc50838fa2cafbe3781ba881a678c97ce2accca47761a8ea859b3"
+    },
+    {
+      "file": "color-sky-blue-f19.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F19.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 19",
+      "width": 1024,
+      "height": 576,
+      "sha256": "d44a072f788732211fcb6b3943f14d9dea404e647dabe36e13ab554aedcaf871"
+    },
+    {
+      "file": "color-sky-blue-f20.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F20.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 20",
+      "width": 1024,
+      "height": 576,
+      "sha256": "054c8d0f6264d37f7e49f08444d4e8d402730401a46afb73c85bc81a0e706827"
+    },
+    {
+      "file": "color-sky-blue-f21.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F21.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 21",
+      "width": 1024,
+      "height": 576,
+      "sha256": "df69e5fdb4a4a3663bce571b1f52e295ea7266f070d16143edac6cdf81b5e10f"
+    },
+    {
+      "file": "color-sky-blue-f22.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F22.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 22",
+      "width": 1024,
+      "height": 576,
+      "sha256": "32e989e0bb9f36859370d14a310125b8066ceadb540eb0e183d126d0de841a8b"
+    },
+    {
+      "file": "color-sky-blue-f23.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F23.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 23",
+      "width": 1024,
+      "height": 576,
+      "sha256": "38fc19f9391717da0d68ef271847c59180e7979bfcb4f8e6b10263d5d176b312"
+    },
+    {
+      "file": "color-sky-blue-f24.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F24.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 24",
+      "width": 1024,
+      "height": 576,
+      "sha256": "c6da043c5cc40e304771c3cc60484f0c7537534a268dc2ec13eca0899348cca4"
+    },
+    {
+      "file": "color-sky-blue-f25.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F25.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 25",
+      "width": 1024,
+      "height": 576,
+      "sha256": "28cde18eadd76f0556e60432cfc227e05775341df1c10425be260e59f7b4b99a"
+    },
+    {
+      "file": "color-sky-blue-f26.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F26.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 26",
+      "width": 1024,
+      "height": 576,
+      "sha256": "ad624eb8e92b4a249ba892676a71fb37c8899c7a5da63c3a8f934bd1638c6293"
+    },
+    {
+      "file": "color-sky-blue-f27.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F27.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 27",
+      "width": 1024,
+      "height": 576,
+      "sha256": "55c49dfebf0fa5efcd1bfec416c91b63252cbc5ee24a6ddfe14842e30efced31"
+    },
+    {
+      "file": "color-sky-blue-f28.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F28.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 28",
+      "width": 1024,
+      "height": 576,
+      "sha256": "3fa37f923739f98645d8d6c5a5ac8ac3c5633d44ebdc6e09d5dc01d392f2c2ae"
+    },
+    {
+      "file": "color-sky-blue-f29.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F29.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 29",
+      "width": 1024,
+      "height": 576,
+      "sha256": "2f567ba7c72a904d3bccb966c0a5086be208c02d84b6e26590f57b63d20b6eeb"
+    },
+    {
+      "file": "color-sky-blue-f30.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F30.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 30",
+      "width": 1024,
+      "height": 576,
+      "sha256": "ea9a6546da3cf9f0f254791638856b1c11ce6b257081021be0b80c078d3dfc77"
+    },
+    {
+      "file": "color-sky-blue-f31.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F31.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 31",
+      "width": 1024,
+      "height": 576,
+      "sha256": "a970dd0bfd7fb264310b278e38124b559e43df90166bf5fae2a618d58dceaf1a"
+    },
+    {
+      "file": "color-sky-blue-f32.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F32.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 32",
+      "width": 1024,
+      "height": 576,
+      "sha256": "1c976374d425fff1f18bde4e5d2715879f280bd3581b04550166d2c8ee5d0fff"
+    },
+    {
+      "file": "color-sky-blue-f33.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F33.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 33",
+      "width": 1024,
+      "height": 576,
+      "sha256": "196299872e41298570d28354c0355e78518d0874ad9f7999242257ef0d3652af"
+    },
+    {
+      "file": "color-sky-blue-f34.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F34.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 34",
+      "width": 1024,
+      "height": 576,
+      "sha256": "cf13112037afcd8c9a23fc1de923184270994736698d196eb7db4ffd43d0104b"
+    },
+    {
+      "file": "color-sky-blue-f35.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F35.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 35",
+      "width": 1024,
+      "height": 576,
+      "sha256": "e76637fe2386c6ba86c9070c9f1498561dadfd5b4f40c9d9c1e4293719972d91"
+    },
+    {
+      "file": "color-sky-blue-f36.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/181Y/F36.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Sky Blue, khung hình 36",
+      "width": 1024,
+      "height": 576,
+      "sha256": "94b7eac25ef783636accbf22d5835bb76ce6f3ea3bb67ac56f1cceb5a68a1191"
+    },
+    {
+      "file": "color-urban-mint-f02.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F2.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 2",
+      "width": 1024,
+      "height": 576,
+      "sha256": "0a1e26d22e3eef05558335fee815f1aa27dd400715fdd067fab81f919672658c"
+    },
+    {
+      "file": "color-urban-mint-f03.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F3.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 3",
+      "width": 1024,
+      "height": 576,
+      "sha256": "d12ef532f40c66398b20fffba3b1201225b656fde69278d833f8e9e4bea0a36e"
+    },
+    {
+      "file": "color-urban-mint-f04.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F4.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 4",
+      "width": 1024,
+      "height": 576,
+      "sha256": "7f7783228adbb87a4d606917c8d351c19acd03e01050500040f950504b07bdd2"
+    },
+    {
+      "file": "color-urban-mint-f05.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F5.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 5",
+      "width": 1024,
+      "height": 576,
+      "sha256": "9758a6f5fd044b97538f53b4eccd996e9c7c21547c9761b0657bb102cfb1fb22"
+    },
+    {
+      "file": "color-urban-mint-f06.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F6.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 6",
+      "width": 1024,
+      "height": 576,
+      "sha256": "66d7406c0ce5d9a5a0280681b6df1d332bb87e501e1c19a43598607713278a93"
+    },
+    {
+      "file": "color-urban-mint-f07.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F7.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 7",
+      "width": 1024,
+      "height": 576,
+      "sha256": "4a2082cf0f2fcbc5c8790187a96a8c87ae2dab26150840c597748ad04b43626c"
+    },
+    {
+      "file": "color-urban-mint-f08.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F8.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 8",
+      "width": 1024,
+      "height": 576,
+      "sha256": "cf3657095891cb3e36c6552fa1d85d7030e826de362e2f70e4c9105f1b3213b1"
+    },
+    {
+      "file": "color-urban-mint-f09.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F9.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 9",
+      "width": 1024,
+      "height": 576,
+      "sha256": "955bb2953ff8c539426cb23845a4f37d8824de36612febae5ad6ca20e4a1ef36"
+    },
+    {
+      "file": "color-urban-mint-f10.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F10.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 10",
+      "width": 1024,
+      "height": 576,
+      "sha256": "a46b35010976e39df4b3280b4300c462273ac281e3a76ebc3dfb6dd0569b64dd"
+    },
+    {
+      "file": "color-urban-mint-f11.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F11.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 11",
+      "width": 1024,
+      "height": 576,
+      "sha256": "31f8277e2f11e3e3551b4f835ab7266da7866f4438ff21f082287ec5d623f8cd"
+    },
+    {
+      "file": "color-urban-mint-f12.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F12.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 12",
+      "width": 1024,
+      "height": 576,
+      "sha256": "7d481cb5c61fbdc6d01008e4bb6daf3b8b898df3ed1b67b80bea6ad42a385605"
+    },
+    {
+      "file": "color-urban-mint-f13.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F13.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 13",
+      "width": 1024,
+      "height": 576,
+      "sha256": "e6a00160c767455347a8a1668377f211207e2ee96791e8443dd630360d6716bc"
+    },
+    {
+      "file": "color-urban-mint-f14.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F14.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 14",
+      "width": 1024,
+      "height": 576,
+      "sha256": "0fd2aca49e3378dad06a423f88e4f3c946020983f714da3585d79d65cf22344c"
+    },
+    {
+      "file": "color-urban-mint-f15.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F15.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 15",
+      "width": 1024,
+      "height": 576,
+      "sha256": "b2a761e593456e2efd54a54c2697fe9e1b6f700cac482d2e4d71c89f644ef54c"
+    },
+    {
+      "file": "color-urban-mint-f16.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F16.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 16",
+      "width": 1024,
+      "height": 576,
+      "sha256": "b6252405220f12ea5a7f9c9cfda0b9a1ee6c741d0e7f1946276c1464c3333add"
+    },
+    {
+      "file": "color-urban-mint-f17.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F17.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 17",
+      "width": 1024,
+      "height": 576,
+      "sha256": "3e2c6dcdbac717d8986bbfac0e9c137c5b717aecd174c029074fece9d96bb761"
+    },
+    {
+      "file": "color-urban-mint-f18.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F18.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 18",
+      "width": 1024,
+      "height": 576,
+      "sha256": "b50e24f0bf4511b51dcb57ec0a2d01597f18fc81b18c783326e4da0c9ee6b477"
+    },
+    {
+      "file": "color-urban-mint-f19.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F19.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 19",
+      "width": 1024,
+      "height": 576,
+      "sha256": "aa8544011b2abcf82d8027616151fe500a935f98e5c3a842eb2162509e36fec9"
+    },
+    {
+      "file": "color-urban-mint-f20.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F20.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 20",
+      "width": 1024,
+      "height": 576,
+      "sha256": "3b09634505be95822dd0edaf29ead26f2d9a700b9d9083a93c7597c95871872f"
+    },
+    {
+      "file": "color-urban-mint-f21.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F21.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 21",
+      "width": 1024,
+      "height": 576,
+      "sha256": "8399b2fe71b53343cfe09a252fbb785a9adceb3258cb94cb026f1245d7a37d1d"
+    },
+    {
+      "file": "color-urban-mint-f22.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F22.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 22",
+      "width": 1024,
+      "height": 576,
+      "sha256": "45ac70b1da664ad5fa15aa0aadd608ebe4c8a25e6c427b8170be0d60fd32b5aa"
+    },
+    {
+      "file": "color-urban-mint-f23.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F23.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 23",
+      "width": 1024,
+      "height": 576,
+      "sha256": "7f74b5aac0d5d3cc96e566fcb76f494273c5008a172f4b7e83e90608b8f1bb70"
+    },
+    {
+      "file": "color-urban-mint-f24.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F24.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 24",
+      "width": 1024,
+      "height": 576,
+      "sha256": "f8ba2d0e71d9cfebb1ff72880e878a58713bd8f5992fabfb6734e1c7a19a7f02"
+    },
+    {
+      "file": "color-urban-mint-f25.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F25.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 25",
+      "width": 1024,
+      "height": 576,
+      "sha256": "1f058e952cf193f85dbf9b3c94e9be9503759dc5090888df1f83400ba0813b8c"
+    },
+    {
+      "file": "color-urban-mint-f26.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F26.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 26",
+      "width": 1024,
+      "height": 576,
+      "sha256": "508a834f0761daa0c94f4a00ab1c78d5188e6899466c3dca771a28e713ff612b"
+    },
+    {
+      "file": "color-urban-mint-f27.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F27.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 27",
+      "width": 1024,
+      "height": 576,
+      "sha256": "893ce75c54676ed407b11e12c26578feee2cfe7c705e8425ce7e67a304861c88"
+    },
+    {
+      "file": "color-urban-mint-f28.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F28.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 28",
+      "width": 1024,
+      "height": 576,
+      "sha256": "22d2e606e4db73bd715c940433c0166467be53c1f2fb2b98837aef17a5f3f0fd"
+    },
+    {
+      "file": "color-urban-mint-f29.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F29.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 29",
+      "width": 1024,
+      "height": 576,
+      "sha256": "da7e28fe4195c73cb00e1215a6264ff476a6ec0696813c6b96faa2e31846158f"
+    },
+    {
+      "file": "color-urban-mint-f30.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F30.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 30",
+      "width": 1024,
+      "height": 576,
+      "sha256": "50d129804b98a7a17c79f837bd0d8357dd17b344720b288384bd2da6a26dc666"
+    },
+    {
+      "file": "color-urban-mint-f31.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F31.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 31",
+      "width": 1024,
+      "height": 576,
+      "sha256": "531002db9d60f8ca0e3d899ec1a4e7aca413e371d758fc5b58eddfea025b0f60"
+    },
+    {
+      "file": "color-urban-mint-f32.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F32.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 32",
+      "width": 1024,
+      "height": 576,
+      "sha256": "ca8e9637cb7d39626cbf71c12a7516e8d8c2fe66f8a28e05a8c116e6864df689"
+    },
+    {
+      "file": "color-urban-mint-f33.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F33.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 33",
+      "width": 1024,
+      "height": 576,
+      "sha256": "069e7d1a3efbcbca0ec47ca86c0cf3db754a01c30b24339ae3fbcdeeaa717b9c"
+    },
+    {
+      "file": "color-urban-mint-f34.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F34.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 34",
+      "width": 1024,
+      "height": 576,
+      "sha256": "e744e579edfdff3707717efaeddf503492056bcb73b03683844b51e19b9a3896"
+    },
+    {
+      "file": "color-urban-mint-f35.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F35.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 35",
+      "width": 1024,
+      "height": 576,
+      "sha256": "df3e0140a668d3907bbf554e8d3515d1e49b82039a2f5205b40d7937f9f3fbe3"
+    },
+    {
+      "file": "color-urban-mint-f36.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1W/F36.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Urban Mint, khung hình 36",
+      "width": 1024,
+      "height": 576,
+      "sha256": "395b068e47fb676c34c99268904aef8c5c81ec55c5c33bb081771053f752945f"
+    },
+    {
+      "file": "color-zenith-grey-f02.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F2.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 2",
+      "width": 1024,
+      "height": 576,
+      "sha256": "a9cdd80c80c88126d951210b849a02518207981bbad77a6f09414192bc06ce67"
+    },
+    {
+      "file": "color-zenith-grey-f03.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F3.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 3",
+      "width": 1024,
+      "height": 576,
+      "sha256": "ca376931c82320bd6238b0b1d00a58a7f5d4021dc3ce287cf70a84fab1388b76"
+    },
+    {
+      "file": "color-zenith-grey-f04.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F4.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 4",
+      "width": 1024,
+      "height": 576,
+      "sha256": "65439b498243e28c9240feaab73f2ef842b1b529ace4fa91fe60ebf9e4245d66"
+    },
+    {
+      "file": "color-zenith-grey-f05.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F5.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 5",
+      "width": 1024,
+      "height": 576,
+      "sha256": "08b1e10ea9946746b72f8afb4ba8f5f1480c4572713da15c968b7192a8a4cb9a"
+    },
+    {
+      "file": "color-zenith-grey-f06.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F6.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 6",
+      "width": 1024,
+      "height": 576,
+      "sha256": "d5accfeada4f4f402abc2b0c4e5ee9d93c7942a1c3eb6c675351fb51a1a82121"
+    },
+    {
+      "file": "color-zenith-grey-f07.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F7.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 7",
+      "width": 1024,
+      "height": 576,
+      "sha256": "c6ba2042dd1bfd1b6daeb5c32c0ea5b3e1f1a7706b477b46d3d539c1801e8703"
+    },
+    {
+      "file": "color-zenith-grey-f08.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F8.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 8",
+      "width": 1024,
+      "height": 576,
+      "sha256": "3df7a8e8121514b24418f0632dc87a30ec7aac00782568ca0b65cf90f6ef6e08"
+    },
+    {
+      "file": "color-zenith-grey-f09.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F9.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 9",
+      "width": 1024,
+      "height": 576,
+      "sha256": "02646abef5862df3de296c3da9471e8cd015441d4eddbfec088bf630d8abbf27"
+    },
+    {
+      "file": "color-zenith-grey-f10.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F10.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 10",
+      "width": 1024,
+      "height": 576,
+      "sha256": "176d02ee3a58890ea640baedc34fe4e19173d79c5612bfbcc99d62a2907bcd6b"
+    },
+    {
+      "file": "color-zenith-grey-f11.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F11.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 11",
+      "width": 1024,
+      "height": 576,
+      "sha256": "22f75d24a2d9ccc531c2e34208412798a7adce129fc01c1802a673bf44359e6d"
+    },
+    {
+      "file": "color-zenith-grey-f12.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F12.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 12",
+      "width": 1024,
+      "height": 576,
+      "sha256": "ffdc332faccb48f1f4c1beb517986d517f5ec41225e50d66c072b0627bf06b40"
+    },
+    {
+      "file": "color-zenith-grey-f13.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F13.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 13",
+      "width": 1024,
+      "height": 576,
+      "sha256": "94b5a1b8b00f2447161839ab823079048b8849fd4cdff50d948294e28c49a3d9"
+    },
+    {
+      "file": "color-zenith-grey-f14.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F14.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 14",
+      "width": 1024,
+      "height": 576,
+      "sha256": "f0607d35f4fb7e0625ab73dfeeaed5d8b71913eefa80d47920baba7c5c815f00"
+    },
+    {
+      "file": "color-zenith-grey-f15.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F15.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 15",
+      "width": 1024,
+      "height": 576,
+      "sha256": "ae575ad5bdabc183cb728e246f506f5f2eb79b53be616bb6d3a2f3e496abbe5d"
+    },
+    {
+      "file": "color-zenith-grey-f16.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F16.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 16",
+      "width": 1024,
+      "height": 576,
+      "sha256": "9c96c42267370b512eb421eec6966009b159b837fa50a1cb7e0902b8b802ee85"
+    },
+    {
+      "file": "color-zenith-grey-f17.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F17.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 17",
+      "width": 1024,
+      "height": 576,
+      "sha256": "a820560df9d5f428daba750ee2c10f72449afe11645e45f28c07c08a33e4836d"
+    },
+    {
+      "file": "color-zenith-grey-f18.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F18.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 18",
+      "width": 1024,
+      "height": 576,
+      "sha256": "f11616831a3d7741e9ca8ad80ac55eeb7edefc0cd8a13a7dda30a217af9f8dae"
+    },
+    {
+      "file": "color-zenith-grey-f19.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F19.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 19",
+      "width": 1024,
+      "height": 576,
+      "sha256": "d5fa077096ee24de185dcb0551802b824845a432520d97156f05f0523645ebae"
+    },
+    {
+      "file": "color-zenith-grey-f20.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F20.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 20",
+      "width": 1024,
+      "height": 576,
+      "sha256": "6cc92ef865ca563062576c96c54efd2a451a232b2cfc1001add99ff7c32324fa"
+    },
+    {
+      "file": "color-zenith-grey-f21.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F21.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 21",
+      "width": 1024,
+      "height": 576,
+      "sha256": "27a87e88417a1a8b5df078b21c7365f0f86fedebec0fbfb51dd9265ebc82ace3"
+    },
+    {
+      "file": "color-zenith-grey-f22.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F22.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 22",
+      "width": 1024,
+      "height": 576,
+      "sha256": "05585dc211b60755096b57adbeef22028c519cb5b55de233d1fdc10648bec297"
+    },
+    {
+      "file": "color-zenith-grey-f23.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F23.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 23",
+      "width": 1024,
+      "height": 576,
+      "sha256": "5b1852f4d3dd31e90ff1ccdfa8a7a49640be99b58680dc16885436d86459167a"
+    },
+    {
+      "file": "color-zenith-grey-f24.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F24.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 24",
+      "width": 1024,
+      "height": 576,
+      "sha256": "e59a793f40b2ced79e57328c404d0c43128a96063aa5b79662aa40805830f0a7"
+    },
+    {
+      "file": "color-zenith-grey-f25.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F25.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 25",
+      "width": 1024,
+      "height": 576,
+      "sha256": "e7da44c8f7f604b92d1812f813ac3b0a7519791f4734bc6347250751af20c674"
+    },
+    {
+      "file": "color-zenith-grey-f26.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F26.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 26",
+      "width": 1024,
+      "height": 576,
+      "sha256": "dd9bf52db5aed8cc7e616bb51f5926bfdc317f8958239e3ecaacc526edda2b32"
+    },
+    {
+      "file": "color-zenith-grey-f27.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F27.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 27",
+      "width": 1024,
+      "height": 576,
+      "sha256": "2a465a81791e6d66f63a10144940bb9b784589a44bf36024d0b16dac5d8db6a1"
+    },
+    {
+      "file": "color-zenith-grey-f28.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F28.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 28",
+      "width": 1024,
+      "height": 576,
+      "sha256": "0594346faea2bbc657173cac95fb8e99867a22b5ecc4ec6d7f2f886a791310fa"
+    },
+    {
+      "file": "color-zenith-grey-f29.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F29.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 29",
+      "width": 1024,
+      "height": 576,
+      "sha256": "4f70423ba8ed156f268f4043343f6ebd8e20d520b7031348338ecd2fcb60b300"
+    },
+    {
+      "file": "color-zenith-grey-f30.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F30.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 30",
+      "width": 1024,
+      "height": 576,
+      "sha256": "d0c83f49a4fcf6b3a0420325ff7cc5a8c6a0e3121d72a3f12463bfc02a2e286d"
+    },
+    {
+      "file": "color-zenith-grey-f31.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F31.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 31",
+      "width": 1024,
+      "height": 576,
+      "sha256": "f44784c885e3161fff85865cc70bbf80d64e41b65c8716874a7fdc8a56a591f0"
+    },
+    {
+      "file": "color-zenith-grey-f32.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F32.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 32",
+      "width": 1024,
+      "height": 576,
+      "sha256": "71dd9b977a7350d8c4f219deb99e544b888d3c9501c521c7dc88c3dbc6932f55"
+    },
+    {
+      "file": "color-zenith-grey-f33.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F33.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 33",
+      "width": 1024,
+      "height": 576,
+      "sha256": "62f7d2cf36265b8289ee5c3dd39db182702ff2334901f9a2f32e19b48ddc7a0a"
+    },
+    {
+      "file": "color-zenith-grey-f34.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F34.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 34",
+      "width": 1024,
+      "height": 576,
+      "sha256": "435d6a80b9da9066cda7470426db19cbabce4ed828de34a28c251989bc9d9e8c"
+    },
+    {
+      "file": "color-zenith-grey-f35.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F35.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 35",
+      "width": 1024,
+      "height": 576,
+      "sha256": "b343cf9f9274ecd054ed729416829a9ac66a037d9aa38967f8bb059bedce8826"
+    },
+    {
+      "file": "color-zenith-grey-f36.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE1V/F36.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Zenith Grey, khung hình 36",
+      "width": 1024,
+      "height": 576,
+      "sha256": "4e8317bf42d2724e526ada092641f958f252875b63b6cacb7c151afe858ccac0"
+    },
+    {
+      "file": "color-infinity-blanc-f02.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F2.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 2",
+      "width": 1024,
+      "height": 576,
+      "sha256": "fc7d146b996e4a5430c4981cc4879816b32fd1e585f181e645a79d33d952672d"
+    },
+    {
+      "file": "color-infinity-blanc-f03.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F3.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 3",
+      "width": 1024,
+      "height": 576,
+      "sha256": "e4c030c2cc189779de2690ba339a41d239987afa56fe5d3588125cb800b14a9c"
+    },
+    {
+      "file": "color-infinity-blanc-f04.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F4.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 4",
+      "width": 1024,
+      "height": 576,
+      "sha256": "4f0a5535a1afdfdde31c7e40e04f9e4014652b03221faf10459c0f8f97019054"
+    },
+    {
+      "file": "color-infinity-blanc-f05.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F5.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 5",
+      "width": 1024,
+      "height": 576,
+      "sha256": "fef0cecbb6e34042f013fc35fdba5238774a9a00bf0cecb40d7732764a69b3d6"
+    },
+    {
+      "file": "color-infinity-blanc-f06.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F6.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 6",
+      "width": 1024,
+      "height": 576,
+      "sha256": "8d7e69d6c649372859589778e0eb9a9a72fd01682061ab64ed6447f9918a5841"
+    },
+    {
+      "file": "color-infinity-blanc-f07.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F7.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 7",
+      "width": 1024,
+      "height": 576,
+      "sha256": "2221db1429cd752d2e20a1ceeb8414aab0f58b2f8b3487904d39a7a5516cde0e"
+    },
+    {
+      "file": "color-infinity-blanc-f08.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F8.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 8",
+      "width": 1024,
+      "height": 576,
+      "sha256": "5b51c7727e6ccb7eab8d18fc4b35c91e9ea16bfa25a055d616511f371c8c5c6f"
+    },
+    {
+      "file": "color-infinity-blanc-f09.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F9.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 9",
+      "width": 1024,
+      "height": 576,
+      "sha256": "7ee644dc7ce98781007dbec592a24eb419f4a6164daac05fd6bfc5b7303acd08"
+    },
+    {
+      "file": "color-infinity-blanc-f10.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F10.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 10",
+      "width": 1024,
+      "height": 576,
+      "sha256": "34d05740dafd694121cbdb04339caa208db0365bcc2162e456163e60332fad16"
+    },
+    {
+      "file": "color-infinity-blanc-f11.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F11.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 11",
+      "width": 1024,
+      "height": 576,
+      "sha256": "829472141e280eab1f7d40c94fd4c9b9d4844b1710cd2e2355d592a420e01465"
+    },
+    {
+      "file": "color-infinity-blanc-f12.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F12.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 12",
+      "width": 1024,
+      "height": 576,
+      "sha256": "ca93567c7c8d0fa81b0ac4f5b1d6f8b69b1d7f258960c8bd2fc2fe053bbe079a"
+    },
+    {
+      "file": "color-infinity-blanc-f13.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F13.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 13",
+      "width": 1024,
+      "height": 576,
+      "sha256": "c2e9ab5941b2022727251cccb47ada9f739ecdb4aa32c0b6a0a099265f60d938"
+    },
+    {
+      "file": "color-infinity-blanc-f14.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F14.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 14",
+      "width": 1024,
+      "height": 576,
+      "sha256": "b5bc0a55893874f2c7c90ea24f7eeb258906e2a5342c062024b7cb04d195bc27"
+    },
+    {
+      "file": "color-infinity-blanc-f15.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F15.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 15",
+      "width": 1024,
+      "height": 576,
+      "sha256": "b899abe7474a682ef087ce6ae4ada1220d96c6c50df06a2b7d2b9d7d210d256f"
+    },
+    {
+      "file": "color-infinity-blanc-f16.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F16.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 16",
+      "width": 1024,
+      "height": 576,
+      "sha256": "1cbf2b938b8b9fee0e0dc6ba571538eae860d5a4ca1a5ff91e0a29e9654f97fa"
+    },
+    {
+      "file": "color-infinity-blanc-f17.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F17.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 17",
+      "width": 1024,
+      "height": 576,
+      "sha256": "1e0d939a965696904965708190c7c0c848e1e64c48daff8d0a8a510e0a76ffe6"
+    },
+    {
+      "file": "color-infinity-blanc-f18.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F18.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 18",
+      "width": 1024,
+      "height": 576,
+      "sha256": "c502a31d5357b7bd54677d57da0e0628a36a2361d66ffaea6254bfe5148839e6"
+    },
+    {
+      "file": "color-infinity-blanc-f19.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F19.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 19",
+      "width": 1024,
+      "height": 576,
+      "sha256": "53dcbf33749ebdceeca4ff4d6b6a71f721a43cee20361f8e499ffa477842d0fd"
+    },
+    {
+      "file": "color-infinity-blanc-f20.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F20.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 20",
+      "width": 1024,
+      "height": 576,
+      "sha256": "669be07b3b463546b07089071b514802a40f18fb496191b90a362698c62f15d4"
+    },
+    {
+      "file": "color-infinity-blanc-f21.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F21.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 21",
+      "width": 1024,
+      "height": 576,
+      "sha256": "3a0676d577e97528c64f4391db8e52541a86c963c13c7d5bbce2381e0bf602e3"
+    },
+    {
+      "file": "color-infinity-blanc-f22.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F22.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 22",
+      "width": 1024,
+      "height": 576,
+      "sha256": "c23069800f0c379e337a9ae9df1d489f8d0946f1dfcac195c269f48e8032ecbb"
+    },
+    {
+      "file": "color-infinity-blanc-f23.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F23.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 23",
+      "width": 1024,
+      "height": 576,
+      "sha256": "bde5aab5fccd9f10ccb62e9cfd37d491c62236f6ee4972ebba758ea6ada0d372"
+    },
+    {
+      "file": "color-infinity-blanc-f24.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F24.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 24",
+      "width": 1024,
+      "height": 576,
+      "sha256": "0df6d9d40ca8f126b6c36efc4172d7ad9021e9e8003c10f4f2b84c583da22847"
+    },
+    {
+      "file": "color-infinity-blanc-f25.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F25.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 25",
+      "width": 1024,
+      "height": 576,
+      "sha256": "30e54027b0b6e52f139a7ae5f480d6f693e82b644a63e09ae152bb5e3e8799a3"
+    },
+    {
+      "file": "color-infinity-blanc-f26.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F26.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 26",
+      "width": 1024,
+      "height": 576,
+      "sha256": "28249261872d6461dfd13e2f02ca846a8b71f44a6a1f23ce2530095ab1a02024"
+    },
+    {
+      "file": "color-infinity-blanc-f27.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F27.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 27",
+      "width": 1024,
+      "height": 576,
+      "sha256": "27ca4ecccb7401d1cc10d17ed57c2b4f45868a35f7a96cecf18290ed555c34eb"
+    },
+    {
+      "file": "color-infinity-blanc-f28.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F28.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 28",
+      "width": 1024,
+      "height": 576,
+      "sha256": "614b878d518a9de95142947aa5a779d3f1ade29edfd9567c1dd973675cafcc7e"
+    },
+    {
+      "file": "color-infinity-blanc-f29.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F29.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 29",
+      "width": 1024,
+      "height": 576,
+      "sha256": "740dbf47b439290af622789577fe392f8123fa1e7a8428f5e83f020f4d8d472f"
+    },
+    {
+      "file": "color-infinity-blanc-f30.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F30.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 30",
+      "width": 1024,
+      "height": 576,
+      "sha256": "1680959165a29020f34859723749a9ec8053d210dae4e32914657de614942d48"
+    },
+    {
+      "file": "color-infinity-blanc-f31.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F31.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 31",
+      "width": 1024,
+      "height": 576,
+      "sha256": "ac5fecae6c50983f232b6f1fcabea91db191abd504efbcb437cb87be2ca28d18"
+    },
+    {
+      "file": "color-infinity-blanc-f32.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F32.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 32",
+      "width": 1024,
+      "height": 576,
+      "sha256": "911c9d0195fae9d67fa3da20521127c1654dadd32b50d829fffd8f33fd49bf1b"
+    },
+    {
+      "file": "color-infinity-blanc-f33.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F33.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 33",
+      "width": 1024,
+      "height": 576,
+      "sha256": "949cdbc59adc145a25422e3e6a1fed29b2e6a05107d25a64d31bb759ca4b3e1f"
+    },
+    {
+      "file": "color-infinity-blanc-f34.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F34.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 34",
+      "width": 1024,
+      "height": 576,
+      "sha256": "2e13d338f5ee974920fb29bd2bf9967309ade841763cb02949e0701aea3726a7"
+    },
+    {
+      "file": "color-infinity-blanc-f35.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F35.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 35",
+      "width": 1024,
+      "height": 576,
+      "sha256": "238d94023310f4252b10a69adcaaad335fda2096b213dec4b219bf45f19b3d37"
+    },
+    {
+      "file": "color-infinity-blanc-f36.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/CE18/F36.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Infinity Blanc, khung hình 36",
+      "width": 1024,
+      "height": 576,
+      "sha256": "d3c02e2dc9fad254f0b9ec75e0662d24f0d26b37a51ce67bcc3fa3263d561267"
+    },
+    {
+      "file": "color-rose-pink-f02.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F2.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 2",
+      "width": 1024,
+      "height": 576,
+      "sha256": "f9ac754663c6ba37e8c7a7c226fda12264e7b7788afd75069ab42f665b73abd5"
+    },
+    {
+      "file": "color-rose-pink-f03.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F3.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 3",
+      "width": 1024,
+      "height": 576,
+      "sha256": "968dfd103a6ec62365ce931941e5439e9dc020c32786a7a37017d8235d68ac2c"
+    },
+    {
+      "file": "color-rose-pink-f04.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F4.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 4",
+      "width": 1024,
+      "height": 576,
+      "sha256": "bae39a6489588d1ea5608444eb2b7a6af6ccb883717403af938132d6572cb663"
+    },
+    {
+      "file": "color-rose-pink-f05.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F5.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 5",
+      "width": 1024,
+      "height": 576,
+      "sha256": "618bdd3018d0d67a671046f7557fe626402e7646fef825d8448c22533d4a6e30"
+    },
+    {
+      "file": "color-rose-pink-f06.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F6.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 6",
+      "width": 1024,
+      "height": 576,
+      "sha256": "8961bcc15f434c649208cb2eb91f4825e72a7c7f2b00f7d9a55d5832857efe76"
+    },
+    {
+      "file": "color-rose-pink-f07.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F7.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 7",
+      "width": 1024,
+      "height": 576,
+      "sha256": "bf662e1f48893e09e48bd07945669921ae2204a1ad1eb0259b964767f2f8dbf8"
+    },
+    {
+      "file": "color-rose-pink-f08.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F8.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 8",
+      "width": 1024,
+      "height": 576,
+      "sha256": "631ea512e4cda9ad69896fc1c498c12f2da0b176726d1ce28256579234f190f4"
+    },
+    {
+      "file": "color-rose-pink-f09.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F9.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 9",
+      "width": 1024,
+      "height": 576,
+      "sha256": "a2b3394a0f381ce6d94dd8f7fc208542d9e74203b585f32388ce32e8ce94e07a"
+    },
+    {
+      "file": "color-rose-pink-f10.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F10.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 10",
+      "width": 1024,
+      "height": 576,
+      "sha256": "8d4a9490cad237f37359483c31c2c8d5a3fbfadc76ed7accd9790cc42f688232"
+    },
+    {
+      "file": "color-rose-pink-f11.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F11.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 11",
+      "width": 1024,
+      "height": 576,
+      "sha256": "e06b39095cacf2a76f302f8dee6481b3f11d75a903ec7d66eab05146d36e72d9"
+    },
+    {
+      "file": "color-rose-pink-f12.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F12.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 12",
+      "width": 1024,
+      "height": 576,
+      "sha256": "243fb381e9db2fc842423bd54ce67e502d23f31dc5f003212d3909bbac081976"
+    },
+    {
+      "file": "color-rose-pink-f13.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F13.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 13",
+      "width": 1024,
+      "height": 576,
+      "sha256": "66ab144e0fc4c975f7017810c1382fea67de20065ada4876f61df41cca899fb7"
+    },
+    {
+      "file": "color-rose-pink-f14.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F14.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 14",
+      "width": 1216,
+      "height": 684,
+      "sha256": "ea316d1c3cce2268a68731d441025d36c10968319abbcabc4a810ec12926535a"
+    },
+    {
+      "file": "color-rose-pink-f15.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F15.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 15",
+      "width": 1024,
+      "height": 576,
+      "sha256": "b44b963a2b8ce823ebd188e929d3048a0c3976f14181a17c7925789da17666ed"
+    },
+    {
+      "file": "color-rose-pink-f16.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F16.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 16",
+      "width": 1024,
+      "height": 576,
+      "sha256": "c2cf4b11854cd16e55b8542f5cfe5a721ead28bf0ec180d48c8cd86d8aa9cfc1"
+    },
+    {
+      "file": "color-rose-pink-f17.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F17.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 17",
+      "width": 1024,
+      "height": 576,
+      "sha256": "515f2fdb2a3b28c74a2f9cc310f62c34ecfaa7a192f807f42d608fe4a7048310"
+    },
+    {
+      "file": "color-rose-pink-f18.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F18.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 18",
+      "width": 1024,
+      "height": 576,
+      "sha256": "89f3cdf57fa0de3054e3eca4fcf7ef259fd6f092daa5670bc882629bd5de8991"
+    },
+    {
+      "file": "color-rose-pink-f19.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F19.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 19",
+      "width": 1024,
+      "height": 576,
+      "sha256": "21f931d7e6625794cd3f64149d7a6e448e9b140b03c59ad78fc1cfb105225120"
+    },
+    {
+      "file": "color-rose-pink-f20.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F20.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 20",
+      "width": 1024,
+      "height": 576,
+      "sha256": "496e9670381a65ba75a9759639364ada8b021bde87d0dcd215bee0e8cacc80bf"
+    },
+    {
+      "file": "color-rose-pink-f21.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F21.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 21",
+      "width": 1024,
+      "height": 576,
+      "sha256": "974c83cc9dbbb510265cd1d7c9ec933a064dfecf771c809d6df7616a7b3ab7f3"
+    },
+    {
+      "file": "color-rose-pink-f22.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F22.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 22",
+      "width": 1024,
+      "height": 576,
+      "sha256": "ab24ead15db844b8531ab44d521d3dcbf25c6c120a7c7104c491271f98b82f7b"
+    },
+    {
+      "file": "color-rose-pink-f23.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F23.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 23",
+      "width": 1024,
+      "height": 576,
+      "sha256": "e0fc17b6e2d299a1fb703d42f96e9b700ca713b8c3c5e3e60f7ab2f660744a5c"
+    },
+    {
+      "file": "color-rose-pink-f24.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F24.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 24",
+      "width": 1024,
+      "height": 576,
+      "sha256": "7f2003ef65bf24db7aaf0c7d9d20e7143b173e5a6757b85e0c34fe1a78b2e9d5"
+    },
+    {
+      "file": "color-rose-pink-f25.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F25.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 25",
+      "width": 1024,
+      "height": 576,
+      "sha256": "3727e3627a3b3f2b338b508654c623138c7fd2cb8f0e64e402de33c4d1518038"
+    },
+    {
+      "file": "color-rose-pink-f26.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F26.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 26",
+      "width": 1024,
+      "height": 576,
+      "sha256": "9bd8ddd5d4c273a2c87bc975e8dfa8b12057782d0874acd46348a9b223ffceca"
+    },
+    {
+      "file": "color-rose-pink-f27.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F27.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 27",
+      "width": 1024,
+      "height": 576,
+      "sha256": "7af5048007fe267294db104640c5829776385fb88ea1b7258fa37070eadbe643"
+    },
+    {
+      "file": "color-rose-pink-f28.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F28.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 28",
+      "width": 1024,
+      "height": 576,
+      "sha256": "efc8fe8a2313964a5e96921501653e1f2c026d035a6f38a4612401d383c4b08b"
+    },
+    {
+      "file": "color-rose-pink-f29.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F29.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 29",
+      "width": 1024,
+      "height": 576,
+      "sha256": "bee052395cca5ff91a6fec09f4fd34583ee29ecb2cc31e35522f0d4ec3bfdcab"
+    },
+    {
+      "file": "color-rose-pink-f30.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F30.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 30",
+      "width": 1024,
+      "height": 576,
+      "sha256": "bdecb966ca09802d59e609addf3fc739d5e7a4d0c5f0134897058365b9dae214"
+    },
+    {
+      "file": "color-rose-pink-f31.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F31.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 31",
+      "width": 1024,
+      "height": 576,
+      "sha256": "63e439ecbf180ac6ed025a269a103f9551e4707c82de1791be827c2da2037e82"
+    },
+    {
+      "file": "color-rose-pink-f32.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F32.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 32",
+      "width": 1024,
+      "height": 576,
+      "sha256": "976f778f63539afc2ff636446edaefc19b9e183057d4792be09c78739aa002b2"
+    },
+    {
+      "file": "color-rose-pink-f33.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F33.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 33",
+      "width": 1024,
+      "height": 576,
+      "sha256": "6d017470fe6a5f58e44aa65cc9b7f90e48c88f72bbb6160d48b62796d18b3db7"
+    },
+    {
+      "file": "color-rose-pink-f34.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F34.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 34",
+      "width": 1024,
+      "height": 576,
+      "sha256": "3a53b5b953f1281d255c94431bcff8a6f20f10195e2c2411301ce6297c72817f"
+    },
+    {
+      "file": "color-rose-pink-f35.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F35.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 35",
+      "width": 1024,
+      "height": 576,
+      "sha256": "85989c18dcb354b27cc0c6b40f5d30321730bb629f4d15451f347852d7658667"
+    },
+    {
+      "file": "color-rose-pink-f36.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/vi_VN/v1787574416930/ldp-all-cars/360/VF3/exterior/1821/F36.png",
+      "role": "color-spin",
+      "alt": "VinFast VF 3 màu Rose Pink, khung hình 36",
+      "width": 1024,
+      "height": 576,
+      "sha256": "524348c57ed2cf2b254c58760c8a129e6a74ebff38d0ee90b665ea2383b7d551"
+    }
+  ]
+}

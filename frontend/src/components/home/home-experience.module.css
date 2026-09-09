@@ -1,0 +1,723 @@
+@font-face {
+  font-family: "Mulish VinFast";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/media/vinfast/fonts/mulish-regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Mulish VinFast";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/media/vinfast/fonts/mulish-semibold.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Mulish VinFast";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/media/vinfast/fonts/mulish-bold.woff2") format("woff2");
+}
+
+.root {
+  width: 100%;
+  overflow: hidden;
+  color: #3b3b3b;
+  background: #fff;
+  font-family: "Mulish VinFast", Arial, sans-serif;
+}
+
+.root button,
+.root input {
+  font-family: inherit;
+}
+
+.revealBlock {
+  width: 100%;
+}
+
+.vehicleSection {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  overflow: hidden;
+  background: linear-gradient(180deg, #fff 0%, #fff 66%, #fbfcfc 100%);
+}
+
+.carSection {
+  min-height: 1024px;
+  padding-top: 66px;
+}
+
+.motorbikeSection {
+  min-height: 969px;
+  padding-top: 55px;
+}
+
+.vehicleVisual {
+  position: relative;
+  width: min(1000px, 78vw);
+  height: 605px;
+  flex: 0 0 auto;
+  animation: homeVehicleIn 480ms ease both;
+}
+
+.motorbikeSection .vehicleVisual {
+  width: min(960px, 76vw);
+  height: 620px;
+}
+
+.vehicleVisual img {
+  object-fit: contain;
+}
+
+.vehicleArrow {
+  position: absolute;
+  z-index: 2;
+  top: 52%;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: #131313;
+  background: #f7f9f9;
+  border: 0;
+  border-radius: 50%;
+  transform: translateY(-50%);
+}
+
+.vehicleArrow:hover {
+  color: #1464f4;
+  background: #eff4ff;
+}
+
+.vehicleArrow svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 1.8;
+}
+
+.vehicleArrowPrevious {
+  left: 40px;
+}
+
+.vehicleArrowNext {
+  right: 40px;
+}
+
+.vehicleMetrics {
+  width: calc(100% - 62px);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  padding: 16px 32px 0;
+  border-top: 1px solid #d9e0e2;
+}
+
+.vehicleMetrics > div {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+}
+
+.vehicleMetrics dt {
+  margin-bottom: 3px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.vehicleMetrics dd {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.vehicleMetrics del {
+  margin-top: 2px;
+  font-size: 13px;
+}
+
+.vehicleActions {
+  display: flex;
+  gap: 29px;
+  margin-top: 29px;
+}
+
+.primaryButton,
+.secondaryButton,
+.lightButton {
+  min-height: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  border-radius: 2px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .1em;
+}
+
+.primaryButton {
+  color: #fff;
+  background: #1464f4;
+  border: 1px solid #1464f4;
+}
+
+.secondaryButton {
+  color: #1464f4;
+  background: #fff;
+  border: 1px solid #1464f4;
+}
+
+.lightButton {
+  color: #fff;
+  background: transparent;
+  border: 1px solid #fff;
+}
+
+.vehicleActions > a {
+  width: 200px;
+}
+
+.vehicleDots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 29px;
+}
+
+.vehicleDots button {
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  background: #dce4e6;
+  border: 0;
+  border-radius: 50%;
+}
+
+.vehicleDots button[aria-pressed="true"] {
+  background: #1464f4;
+}
+
+.vehicleDisclaimer {
+  margin: 17px 0 0;
+  color: #222;
+  font-size: 15px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  color: #333;
+  font-size: 27px;
+  font-weight: 400;
+}
+
+.sectionHeader a,
+.mobileCharger a {
+  color: #1464f4;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .1em;
+}
+
+.accessories {
+  min-height: 576px;
+  padding: 52px 31px 46px;
+  background: #fff;
+}
+
+.accessoryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.accessoryCard {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.accessoryImage {
+  position: relative;
+  width: 100%;
+  height: 346px;
+  display: block;
+  margin-bottom: 20px;
+  overflow: hidden;
+  background: #f7f9f9;
+}
+
+.accessoryImage img {
+  padding: 24px;
+  object-fit: contain;
+  transition: transform 420ms ease;
+}
+
+.accessoryCard:hover .accessoryImage img {
+  transform: scale(1.035);
+}
+
+.accessoryCard strong {
+  margin-bottom: 8px;
+  color: #3a3a3a;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.accessoryCard > span:last-child {
+  color: #424242;
+  font-size: 15px;
+}
+
+.charging {
+  min-height: 935px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  padding: 96px 15px 0;
+  background: #fff;
+}
+
+.chargingStack {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 29px;
+}
+
+.chargingCard {
+  position: relative;
+  min-height: 0;
+  display: block;
+  overflow: hidden;
+}
+
+.chargingCard::after,
+.exploreCard::after {
+  position: absolute;
+  inset: 50% 0 0;
+  content: "";
+  background: linear-gradient(0deg, rgb(0 0 0 / 45%), transparent);
+}
+
+.chargingCard img,
+.exploreCard img,
+.service > img,
+.greenFuture > img,
+.newsletter > img {
+  object-fit: cover;
+}
+
+.chargingCard img,
+.exploreCard img {
+  transition: transform 650ms ease;
+}
+
+.chargingCard:hover img,
+.exploreCard:hover img {
+  transform: scale(1.02);
+}
+
+.chargingCard strong {
+  position: absolute;
+  z-index: 1;
+  bottom: 14px;
+  left: 30px;
+  color: #fff;
+  font-size: 23px;
+  font-weight: 400;
+}
+
+.mobileCharger {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  padding: 30px 60px 0;
+  overflow: hidden;
+  background: #f7f9f9;
+}
+
+.mobileCharger h2 {
+  margin: 0 0 14px;
+  color: #222;
+  font-size: 26px;
+  font-weight: 400;
+}
+
+.mobileCharger p {
+  max-width: 600px;
+  margin: 0 0 15px;
+  color: #333;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.mobileCharger > span {
+  position: relative;
+  min-height: 0;
+  display: block;
+}
+
+.mobileCharger img {
+  object-fit: contain;
+}
+
+.service,
+.greenFuture {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+}
+
+.service {
+  min-height: 701px;
+}
+
+.service::after,
+.greenFuture::after {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  content: "";
+}
+
+.service::after {
+  background: linear-gradient(90deg, rgb(2 12 23 / 68%) 0%, rgb(2 12 23 / 18%) 54%, transparent 80%);
+}
+
+.serviceContent {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 7.8%;
+  width: min(470px, 42vw);
+  transform: translateY(-50%);
+}
+
+.serviceContent h2,
+.greenContent h2 {
+  margin: 0 0 24px;
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.serviceContent p,
+.greenContent p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.62;
+}
+
+.serviceContent > div {
+  display: flex;
+  gap: 18px;
+  margin-top: 34px;
+}
+
+.serviceContent > div a:first-child {
+  width: 220px;
+}
+
+.serviceContent > div a:last-child {
+  width: 150px;
+}
+
+.greenFuture {
+  min-height: 758px;
+}
+
+.greenFuture::after {
+  background: linear-gradient(90deg, transparent 28%, rgb(0 14 32 / 18%) 52%, rgb(0 14 32 / 72%) 100%);
+}
+
+.greenContent {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  right: 7.2%;
+  width: min(560px, 42vw);
+  transform: translateY(-50%);
+}
+
+.greenContent p {
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.greenContent > a {
+  width: 160px;
+  margin-top: 30px;
+}
+
+.exploreGrid {
+  min-height: 451px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  padding: 0 15px;
+  background: #fff;
+}
+
+.exploreCard {
+  position: relative;
+  min-width: 0;
+  display: block;
+  overflow: hidden;
+}
+
+.exploreCard > span {
+  position: absolute;
+  z-index: 1;
+  right: 30px;
+  bottom: 29px;
+  left: 30px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  color: #fff;
+}
+
+.exploreCard strong {
+  font-size: 26px;
+  font-weight: 400;
+}
+
+.exploreCard small {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .1em;
+}
+
+.newsletter {
+  position: relative;
+  min-height: 370px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: #fff;
+  text-align: center;
+}
+
+.newsletter::after {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  content: "";
+  background: rgb(0 21 53 / 36%);
+}
+
+.newsletter > div {
+  position: relative;
+  z-index: 1;
+  width: min(720px, calc(100% - 40px));
+}
+
+.newsletter h2 {
+  margin: 0 0 12px;
+  font-size: 32px;
+  font-weight: 400;
+}
+
+.newsletter p {
+  margin: 0 0 21px;
+  font-size: 16px;
+}
+
+.newsletter form {
+  width: min(620px, 100%);
+  display: grid;
+  grid-template-columns: 1fr 126px;
+  gap: 12px;
+  margin: 0 auto;
+}
+
+.newsletter input,
+.newsletter button {
+  min-height: 48px;
+  border-radius: 2px;
+}
+
+.newsletter input {
+  padding: 0 17px;
+  color: #222;
+  background: #fff;
+  border: 1px solid #fff;
+  font-size: 14px;
+}
+
+.newsletter button {
+  color: #fff;
+  background: #1464f4;
+  border: 1px solid #1464f4;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.newsletter small {
+  display: block;
+  margin-top: 18px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.newsletter .newsletterSuccess {
+  margin: 10px 0 -7px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@keyframes homeVehicleIn {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (max-width: 900px) {
+  .carSection,
+  .motorbikeSection {
+    min-height: 820px;
+    padding-top: 35px;
+  }
+
+  .vehicleVisual,
+  .motorbikeSection .vehicleVisual {
+    width: 90vw;
+    height: 480px;
+  }
+
+  .vehicleArrowPrevious { left: 16px; }
+  .vehicleArrowNext { right: 16px; }
+  .vehicleMetrics { width: calc(100% - 32px); padding-inline: 12px; }
+  .vehicleMetrics dt { font-size: 13px; }
+  .vehicleMetrics dd { font-size: 17px; }
+
+  .accessoryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .accessories { padding-inline: 20px; }
+  .accessoryImage { height: 300px; }
+
+  .charging {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    padding-top: 40px;
+  }
+
+  .chargingStack { min-height: 750px; }
+  .mobileCharger { min-height: 720px; }
+
+  .serviceContent,
+  .greenContent {
+    right: 30px;
+    left: 30px;
+    width: auto;
+  }
+
+  .greenFuture::after {
+    background: rgb(0 14 32 / 58%);
+  }
+}
+
+@media (max-width: 640px) {
+  .carSection,
+  .motorbikeSection {
+    min-height: 760px;
+    padding-top: 20px;
+  }
+
+  .vehicleVisual,
+  .motorbikeSection .vehicleVisual {
+    width: 100vw;
+    height: 390px;
+  }
+
+  .vehicleArrow {
+    top: 28%;
+    width: 38px;
+    height: 38px;
+  }
+
+  .vehicleMetrics {
+    width: calc(100% - 24px);
+    grid-template-columns: 1fr 1fr;
+    row-gap: 20px;
+    padding-top: 18px;
+  }
+
+  .vehicleMetrics dt { font-size: 12px; }
+  .vehicleMetrics dd { font-size: 15px; }
+  .vehicleMetrics del { font-size: 11px; }
+  .vehicleActions { gap: 10px; margin-top: 25px; }
+  .vehicleActions > a { width: 150px; padding-inline: 10px; }
+  .vehicleDots { width: calc(100% - 36px); gap: 6px; overflow-x: auto; padding-block: 3px; }
+  .vehicleDots button { width: 10px; height: 10px; flex: 0 0 auto; }
+  .vehicleDisclaimer { width: calc(100% - 40px); font-size: 11px; text-align: center; }
+
+  .accessories { padding: 46px 16px 40px; }
+  .sectionHeader h2 { font-size: 24px; }
+  .accessoryGrid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
+  .accessoryCard { flex: 0 0 82vw; scroll-snap-align: start; }
+  .accessoryImage { height: 320px; }
+
+  .charging { gap: 18px; padding-inline: 0; }
+  .chargingStack { min-height: 630px; gap: 18px; }
+  .chargingCard strong { left: 20px; font-size: 20px; }
+  .mobileCharger { min-height: 650px; padding: 28px 24px 0; }
+  .mobileCharger h2 { font-size: 24px; }
+  .mobileCharger p { font-size: 14px; }
+
+  .service,
+  .greenFuture { min-height: 680px; }
+  .service::after { background: rgb(2 12 23 / 58%); }
+  .serviceContent,
+  .greenContent { right: 20px; left: 20px; }
+  .serviceContent h2,
+  .greenContent h2 { font-size: 32px; }
+  .serviceContent p,
+  .greenContent p { font-size: 14px; }
+  .serviceContent > div { align-items: stretch; flex-direction: column; }
+  .serviceContent > div a:first-child,
+  .serviceContent > div a:last-child { width: 100%; }
+
+  .exploreGrid {
+    min-height: 760px;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 0;
+  }
+  .exploreCard strong { font-size: 22px; }
+  .exploreCard > span { right: 20px; bottom: 20px; left: 20px; }
+
+  .newsletter { min-height: 430px; }
+  .newsletter h2 { font-size: 27px; }
+  .newsletter p { font-size: 14px; }
+  .newsletter form { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vehicleVisual { animation: none; }
+  .accessoryImage img,
+  .chargingCard img,
+  .exploreCard img { transition: none; }
+}

@@ -1,0 +1,330 @@
+{
+  "model": "VF 7",
+  "source_page": "https://shop.vinfastauto.com/vn_vi/dat-coc-xe-dien-vf7.html",
+  "assets": [
+    {
+      "file": "hero.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw7b8725cd/reserves/VF7/vf7-hero-banner.webp",
+      "role": "hero",
+      "alt": "VinFast VF 7 - Đam mê tạo phi thường",
+      "width": 2400,
+      "height": 750,
+      "sha256": "9393475a9330743aa8dc6e36790be0e37ef9279f3187d1c318180e531e4c738a"
+    },
+    {
+      "file": "hero-mobile.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw4fa68900/reserves/VF7/vf7-hero-banner-sp.webp",
+      "role": "hero",
+      "alt": "VinFast VF 7 - Đam mê tạo phi thường",
+      "width": 1125,
+      "height": 1410,
+      "sha256": "4dcdebb8167a4a81934580bfacc5b9a23c1f10f7a180c00bb162b4b3ff9cf112"
+    },
+    {
+      "file": "hero-car.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw6dd001b4/reserves/VF7/vf7-hero-car.webp",
+      "role": "hero",
+      "alt": "VinFast VF 7 Solar Ruby",
+      "width": 2400,
+      "height": 913,
+      "sha256": "4e83eb6ebe942b1f562d88c05acf97c602d8653cbd5aede0c2b5cce3c4a40d50"
+    },
+    {
+      "file": "price-car.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw131fe44f/reserves/VF7/vf7-tuy-chon-gia.webp",
+      "role": "price",
+      "alt": "VinFast VF 7 nhìn ngang",
+      "width": 2400,
+      "height": 688,
+      "sha256": "d4db10babe138736e8e4114c3b09e657b94def83785a908cb71cbad313248f75"
+    },
+    {
+      "file": "lead-banner.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwb2073c10/reserves/VF7/vf7-lead-banner.webp",
+      "role": "feature",
+      "alt": "VinFast VF 7 - Bước tiến đột phá trong thiết kế",
+      "width": 2400,
+      "height": 799,
+      "sha256": "e7c3dcb6f440bc4960c675bbba53ed3813d75de5938277d83ccfa9664af3a445"
+    },
+    {
+      "file": "feature-slide.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw74d3d2c9/reserves/VF7/vf7-slide-in-croped.webp",
+      "role": "feature",
+      "alt": "VinFast VF 7 chuyển động trong ánh sáng",
+      "width": 2400,
+      "height": 1018,
+      "sha256": "5e11d39d63f3a9c7e258aaa39c9f7a704870c3418c7085369d26a2cac73ab8fa"
+    },
+    {
+      "file": "feature-1.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwb8503fdb/reserves/VF7/vf7-uu-diem-1.webp",
+      "role": "feature",
+      "alt": "Trải nghiệm lái phấn khích với VinFast VF 7",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "63e30a65e32dccfd03a1681859ecd92fa6664fedd2f14fcee2c54026410fb3bc"
+    },
+    {
+      "file": "feature-2.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw68439e4d/reserves/VF7/vf7-uu-diem-2.webp",
+      "role": "feature",
+      "alt": "Chi phí lăn bánh hấp dẫn của VinFast VF 7",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "28672847b9cedeabe8551bd088dec5bb59d51c0eb60ef6f8a10b10f0f82d2ef0"
+    },
+    {
+      "file": "feature-3.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwa32334bb/reserves/VF7/vf7-uu-diem-3.webp",
+      "role": "feature",
+      "alt": "Chi phí vận hành tối ưu của VinFast VF 7",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "df99aeb77ade7cb00e2fd73b7b063b7c80bcccafe52b4e91c658b3274fd27e34"
+    },
+    {
+      "file": "feature-4.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwd20eda94/reserves/VF7/vf7-uu-diem-4.webp",
+      "role": "feature",
+      "alt": "Hậu mãi VinFast thuận tiện",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "b62da66b09674d46c522b88c58939b3aabd7bf09d671e5a3e6d91f48fa215a8f"
+    },
+    {
+      "file": "feature-5.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwe7e61fdb/reserves/VF7/vf7-uu-diem-5.webp",
+      "role": "feature",
+      "alt": "Dịch vụ sạc VinFast",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "aa6a91062a3d19f7b985e9ec571948478db33f0797e1d1d787b4f44997c68da0"
+    },
+    {
+      "file": "feature-6.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw28fb6184/reserves/VF7/vf7-uu-diem-6.webp",
+      "role": "feature",
+      "alt": "Dịch vụ lưu động VinFast",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "70f972971ee9e00ab125ae1f295425b3e544e368229cad1ba1945e714449ba2d"
+    },
+    {
+      "file": "color-solar-ruby.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw4c3e07c9/reserves/VF7/exterior/product-CE1M.webp",
+      "role": "color",
+      "alt": "VinFast VF 7 màu Solar Ruby",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "e6d0e0124b1a7925f56c003ae62007db1458093f5ab48fdbfdab6718b1d5a3d4"
+    },
+    {
+      "file": "color-zenith-grey.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwfee77d40/reserves/VF7/exterior/product-CE1V.webp",
+      "role": "color",
+      "alt": "VinFast VF 7 màu Zenith Grey",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "75c33d23b57b7e66edc9391968546450f49ca4b054a26f5e6696c19e353907a8"
+    },
+    {
+      "file": "color-urban-mint.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw613293fe/reserves/VF7/exterior/product-CE1W.webp",
+      "role": "color",
+      "alt": "VinFast VF 7 màu Urban Mint",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "df03926cde4fe363b4be9061e5436640e07fe209f10ad8fedd35c138817c936e"
+    },
+    {
+      "file": "color-infinity-blanc.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw0c109403/reserves/VF7/exterior/product-CE18.webp",
+      "role": "color",
+      "alt": "VinFast VF 7 màu Infinity Blanc",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "c73f8b687b548caf6aa94098cf7da98cd8e7b095d711d289606db32c4061b09e"
+    },
+    {
+      "file": "color-jet-black.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwbe2e95be/reserves/VF7/exterior/product-CE11.webp",
+      "role": "color",
+      "alt": "VinFast VF 7 màu Jet Black",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "38903e8020c635bae460f76ab1db097395e74832bc0a76473bc1b4fa11ad9481"
+    },
+    {
+      "file": "design.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwa8463fe3/reserves/VF7/vf7-img-tech.webp",
+      "role": "exterior",
+      "alt": "Thiết kế ngoại thất VinFast VF 7",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "2e9c4f1e00e64ba8929bbc0283caffb8c14d03e98f2979d1f6eabd7dc19cc6b7"
+    },
+    {
+      "file": "masterpiece-1.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw4a2b0002/reserves/VF7/vf7-masterpiece-1.webp",
+      "role": "gallery",
+      "alt": "VinFast VF 7 - tác phẩm nghệ thuật số 1",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "5f1853541b8eb192259df54e7958b976aa554e1589d0c0fc697f849a2de7ef8d"
+    },
+    {
+      "file": "masterpiece-2.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwd1f60e64/reserves/VF7/vf7-masterpiece-2.webp",
+      "role": "gallery",
+      "alt": "VinFast VF 7 - tác phẩm nghệ thuật số 2",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "f23e38143d50346172a78df3e73c5d8234280957b870a6199a1920d44aaa1215"
+    },
+    {
+      "file": "masterpiece-3.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw7001a727/reserves/VF7/vf7-masterpiece-3.webp",
+      "role": "gallery",
+      "alt": "VinFast VF 7 - tác phẩm nghệ thuật số 3",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "b0cef28a265d533f247f933ea86f976b360e303205f81efc18e866e4ffe12842"
+    },
+    {
+      "file": "masterpiece-4.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwcbf685e8/reserves/VF7/vf7-masterpiece-4.webp",
+      "role": "gallery",
+      "alt": "VinFast VF 7 - tác phẩm nghệ thuật số 4",
+      "width": 1216,
+      "height": 684,
+      "sha256": "454a91ee68acc3dd832c4dc294fc50096fc217d31d43bda756f6e6a0d430c119"
+    },
+    {
+      "file": "masterpiece-5.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw279996e6/reserves/VF7/vf7-masterpiece-5.webp",
+      "role": "gallery",
+      "alt": "VinFast VF 7 - tác phẩm nghệ thuật số 5",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "204c84cb8e9397f179b1ff76db2da222c601d688304bd2cea74b0524e7da3bb1"
+    },
+    {
+      "file": "interior-overview.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw13003da2/reserves/VF7/interior/vf7-noi-that-overview.webp",
+      "role": "interior",
+      "alt": "Khoang nội thất VinFast VF 7",
+      "width": 2400,
+      "height": 1352,
+      "sha256": "9d4bf022b435fb70baa1f41e1c62948244df96453f4a565dae614a88d63ce7dd"
+    },
+    {
+      "file": "interior-left.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw799c891e/reserves/VF7/interior/vf7-noi-that-compare-left.webp",
+      "role": "interior",
+      "alt": "Tiện nghi hướng vào người lái trên VinFast VF 7",
+      "width": 1276,
+      "height": 1186,
+      "sha256": "40aef1a2da062adf4a6e8cce3bfc1bbc90ded993b31b552f2c2ec1bddf578b05"
+    },
+    {
+      "file": "interior-right.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw99e22da8/reserves/VF7/interior/vf7-noi-that-compare-right.webp",
+      "role": "interior",
+      "alt": "Trần kính toàn cảnh VinFast VF 7",
+      "width": 1096,
+      "height": 1186,
+      "sha256": "461a61d8cd7cfb95f04496a756b4d51c0aa449378cd9669a7756332e00b2bd03"
+    },
+    {
+      "file": "comfort-1.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwd27cbd3e/reserves/VF7/vf7-tien-nghi-1.webp",
+      "role": "interior",
+      "alt": "Bệ điều khiển trung tâm VinFast VF 7",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "dc444e3197ec51477bafe59313aa3fafb1b4c6f5aa4ec15e84ec0f0c1af89630"
+    },
+    {
+      "file": "comfort-2.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw26957e75/reserves/VF7/vf7-tien-nghi-2.webp",
+      "role": "interior",
+      "alt": "Hàng ghế sau VinFast VF 7",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "2861268340ecf06e843fc65e63bc1ac562b0dd2cc9e0c50526cc914a7f2fe770"
+    },
+    {
+      "file": "comfort-3.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwf823a052/reserves/VF7/vf7-tien-nghi-3.webp",
+      "role": "interior",
+      "alt": "Ghế lái VinFast VF 7",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "15d4bea4c83de0a44428d72d920b3d3332d465be53ac7d9b63293432fde83f6e"
+    },
+    {
+      "file": "comfort-4.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw703b94ca/reserves/VF7/vf7-tien-nghi-4.webp",
+      "role": "interior",
+      "alt": "Không gian hành lý VinFast VF 7",
+      "width": 2400,
+      "height": 1350,
+      "sha256": "caed61fe535876bd2fe8cb0916c50f3e6f4f1065b259d28bf73bc77166e78fa0"
+    },
+    {
+      "file": "passion.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwb6ff6250/reserves/VF7/vf7-passion.webp",
+      "role": "performance",
+      "alt": "VinFast VF 7 - Cầm lái với đam mê",
+      "width": 1186,
+      "height": 1368,
+      "sha256": "b543017cc723c316d03000c0ab47b5229d7612b48cafe730a20e8558f1f4a184"
+    },
+    {
+      "file": "commitment.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw402d813f/reserves/VF7/vf7-cam-ket-tien-ich.webp",
+      "role": "charging",
+      "alt": "Mạng lưới trạm sạc và dịch vụ VinFast",
+      "width": 1186,
+      "height": 1368,
+      "sha256": "b1c90be5c2f64d18b3c825e3fcd19f5c1467e68cf974062cf95ef08bfccbe4a1"
+    },
+    {
+      "file": "comparison-car.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw05f9458c/reserves/VF7/car-compare.webp",
+      "role": "comparison",
+      "alt": "VinFast VF 7",
+      "width": 230,
+      "height": 128,
+      "sha256": "c0b179626a77661b1c716f4b7b140252f7d8b32c010db317d1f55c6cd3824d57"
+    },
+    {
+      "file": "comparison-logo.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dwdca33a4f/reserves/VF7/naturel.webp",
+      "role": "comparison",
+      "alt": "Nhiên liệu hóa thạch",
+      "width": 56,
+      "height": 56,
+      "sha256": "a491190b13d1b1e5cd0ae278173e30f73a92737d5ec51514974085435e195734"
+    },
+    {
+      "file": "tagline-light.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw10bd833b/reserves/VF7/vf7-logo-tagline-light.webp",
+      "role": "logo",
+      "alt": "VF 7 - Đam mê tạo phi thường",
+      "width": 1704,
+      "height": 460,
+      "sha256": "48662b3cdee6539ee3b56e3a973f5d08586ff5a2f1efb1b4e79b18da58389178"
+    },
+    {
+      "file": "tagline.webp",
+      "source_url": "https://shop.vinfastauto.com/on/demandware.static/-/Sites-app_vinfast_vn-Library/default/dw1517e263/reserves/VF7/vf7-logo-tagline.webp",
+      "role": "logo",
+      "alt": "VF 7 - Đam mê tạo phi thường",
+      "width": 1704,
+      "height": 460,
+      "sha256": "ddfc73fff7adabc84f2cd20cb0c46c66e6592d526a7589dd19714aee84f5a124"
+    }
+  ]
+}

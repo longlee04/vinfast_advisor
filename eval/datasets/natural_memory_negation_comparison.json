@@ -1,0 +1,492 @@
+{
+  "version": 1,
+  "scenarios": [
+    {
+      "id": "SC062",
+      "description": "Khách sửa số người nhưng giữ nguyên ngân sách đã nói",
+      "groups": [
+        "natural_dialogue",
+        "multi_turn",
+        "stateful",
+        "correction"
+      ],
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "Nhà anh năm người, đang kiếm ô tô tầm 800 triệu.",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "budget_max_vnd": "800 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "budget_max_vnd": 800000000
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count",
+            "budget_max_vnd"
+          ],
+          "expected_next_slot": null
+        },
+        {
+          "user_message": "À anh nhớ nhầm, lâu lâu có thêm ông bà nữa, tính bảy người giúp anh nhé.",
+          "llm_payload": {
+            "passenger_count": 7,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 7,
+            "budget_max_vnd": 800000000
+          },
+          "provided_slots": [
+            "passenger_count"
+          ],
+          "correction_slots": [
+            "passenger_count"
+          ],
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC063",
+      "description": "Phủ định bảy chỗ rồi chốt năm chỗ trong cùng câu",
+      "groups": [
+        "natural_dialogue",
+        "negation",
+        "seat_phrasing",
+        "no_false_fill"
+      ],
+      "turns": [
+        {
+          "user_message": "Không cần loại 7 chỗ đâu em, xe 5 chỗ là vừa nhà anh rồi.",
+          "llm_payload": {
+            "passenger_count": 7,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC064",
+      "description": "Lookup chen ngang rồi quay lại tư vấn không làm mất slot cũ",
+      "groups": [
+        "natural_dialogue",
+        "multi_turn",
+        "lookup_interrupt",
+        "stateful"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "passenger_count": 5,
+        "budget_max_vnd": 800000000,
+        "purpose": "gia đình"
+      },
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "Tiện thể cho anh hỏi VF 8 giờ giá khoảng bao nhiêu?",
+          "llm_payload": {
+            "vehicle_name_mentions": [
+              "VF 8"
+            ],
+            "intents": [
+              "CATALOG_LOOKUP"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "budget_max_vnd": 800000000,
+            "purpose": "gia đình"
+          },
+          "expected_vehicle_mentions": [
+            "VF 8"
+          ],
+          "expected_intents": [
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": null
+        },
+        {
+          "user_message": "Rồi, quay lại nhu cầu lúc nãy và chọn xe hợp nhà anh nhé.",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "budget_max_vnd": 800000000,
+            "purpose": "gia đình"
+          },
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "RETRIEVE",
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC065",
+      "description": "Cách nói tự nhiên mẫu thứ hai được giải từ phần hội thoại gần đây",
+      "groups": [
+        "natural_dialogue",
+        "memory",
+        "referent_resolution",
+        "catalog_lookup"
+      ],
+      "turns": [
+        {
+          "user_message": "Mẫu thứ hai ấy, cốp có rộng không em?",
+          "recent_messages": [
+            {
+              "role": "USER",
+              "content": "Anh đang phân vân VF 6 với VF 7."
+            },
+            {
+              "role": "ASSISTANT",
+              "content": "Em sẽ so sánh VF 6 và VF 7 cho anh."
+            }
+          ],
+          "llm_payload": {
+            "intents": []
+          },
+          "expected_slots": {},
+          "expected_vehicle_mentions": [
+            "VF 7"
+          ],
+          "expected_intents": [
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC066",
+      "description": "Khách đổi ý quay lại đúng mẫu vừa bỏ",
+      "groups": [
+        "natural_dialogue",
+        "memory",
+        "negation",
+        "referent_resolution",
+        "correction"
+      ],
+      "turns": [
+        {
+          "user_message": "Không, nghĩ lại rồi, cho anh xem lại mẫu vừa bỏ đi.",
+          "memory_summary": "Khách cân nhắc VF 5 và VF 7. Đã loại: VF 5. Đang xem: VF 7.",
+          "llm_payload": {
+            "intents": []
+          },
+          "expected_slots": {},
+          "expected_vehicle_mentions": [
+            "VF 5"
+          ],
+          "expected_intents": [
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC067",
+      "description": "Không có memory thì mention ảo từ LLM không được lọt sang phiên mới",
+      "groups": [
+        "natural_dialogue",
+        "memory",
+        "session_isolation",
+        "no_false_fill"
+      ],
+      "turns": [
+        {
+          "user_message": "Mẫu vừa nói có bản màu xanh không em?",
+          "llm_payload": {
+            "vehicle_name_mentions": [
+              "VF 7"
+            ],
+            "intents": [
+              "CATALOG_LOOKUP"
+            ]
+          },
+          "expected_slots": {},
+          "expected_vehicle_mentions": [],
+          "expected_intents": [],
+          "forbidden_intents": [
+            "CATALOG_LOOKUP",
+            "ADVISORY"
+          ],
+          "expected_decision": "CLARIFY_INTENT",
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC068",
+      "description": "Phủ định khả năng sạc tại nhà bằng cách nói đời thường",
+      "groups": [
+        "natural_dialogue",
+        "negation",
+        "charging",
+        "stateful"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "passenger_count": 5
+      },
+      "turns": [
+        {
+          "user_message": "Không em, chung cư nhà anh không cho lắp sạc riêng dưới hầm.",
+          "llm_payload": {
+            "home_charging": false,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "home_charging": false
+          },
+          "provided_slots": [
+            "home_charging"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC069",
+      "description": "Sửa ngân sách bằng câu phủ định giá trị cũ",
+      "groups": [
+        "natural_dialogue",
+        "negation",
+        "budget",
+        "correction",
+        "stateful"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "budget_max_vnd": 500000000
+      },
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "Không phải năm trăm đâu em, anh chốt tối đa bảy trăm triệu nhé.",
+          "llm_payload": {
+            "budget_max_vnd": "700 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "budget_max_vnd": 700000000
+          },
+          "provided_slots": [
+            "budget_max_vnd"
+          ],
+          "correction_slots": [
+            "budget_max_vnd"
+          ],
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC070",
+      "description": "Đổi sang xe máy điện nhưng giữ đúng ngân sách cũ từ memory",
+      "groups": [
+        "natural_dialogue",
+        "memory",
+        "branch_switch",
+        "context_carry_over"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "budget_max_vnd": 700000000
+      },
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "Thôi đổi qua xe máy điện đi, còn mức tiền lúc nãy cứ giữ nguyên.",
+          "memory_summary": "Khách đang tìm ô tô và đã chốt ngân sách tối đa 700 triệu.",
+          "llm_payload": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "intents": []
+          },
+          "expected_slots": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "budget_max_vnd": 700000000
+          },
+          "provided_slots": [
+            "vehicle_type"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "RETRIEVE",
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC071",
+      "description": "Tên VF 7 và con số quãng đường không được biến thành số chỗ",
+      "groups": [
+        "natural_dialogue",
+        "catalog_lookup",
+        "no_false_fill",
+        "adversarial"
+      ],
+      "turns": [
+        {
+          "user_message": "VF 7 chạy thực tế được cỡ 400 km không em?",
+          "llm_payload": {
+            "passenger_count": 7,
+            "required_range_km": 400,
+            "vehicle_name_mentions": [
+              "VF 7"
+            ],
+            "intents": [
+              "CATALOG_LOOKUP"
+            ]
+          },
+          "expected_slots": {},
+          "forbidden_slots": [
+            "passenger_count",
+            "required_range_km"
+          ],
+          "expected_vehicle_mentions": [
+            "VF 7"
+          ],
+          "expected_intents": [
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC072",
+      "description": "Khoản trả góp mỗi tháng không ghi đè ngân sách mua xe đã nhớ",
+      "groups": [
+        "natural_dialogue",
+        "installment",
+        "stateful",
+        "no_false_fill"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "budget_max_vnd": 800000000
+      },
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "Ngân sách mua xe vẫn tám trăm, nhưng mỗi tháng anh chỉ muốn trả góp tầm mười hai triệu thôi.",
+          "llm_payload": {
+            "budget_max_vnd": "12 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "budget_max_vnd": 800000000
+          },
+          "forbidden_slots": [],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "RETRIEVE",
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC073",
+      "description": "Mẫu còn lại được giải sau một câu loại xe tự nhiên",
+      "groups": [
+        "natural_dialogue",
+        "memory",
+        "negation",
+        "referent_resolution"
+      ],
+      "turns": [
+        {
+          "user_message": "Con còn lại có hỗ trợ sạc nhanh không?",
+          "memory_summary": "Khách so VF 5 với VF 7 và đã loại VF 5 vì hàng ghế sau chật. Đang xem: VF 7.",
+          "llm_payload": {
+            "intents": []
+          },
+          "expected_slots": {},
+          "expected_vehicle_mentions": [
+            "VF 7"
+          ],
+          "expected_intents": [
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC074",
+      "description": "Tên mẫu cụ thể thắng nhãn browse sai từ cụm tất cả các mẫu",
+      "groups": [
+        "natural_dialogue",
+        "catalog_lookup",
+        "intent_reconciliation",
+        "adversarial"
+      ],
+      "turns": [
+        {
+          "user_message": "tất cả các mẫu vf8 hiện tại",
+          "llm_payload": {
+            "intents": [
+              "CATALOG_BROWSE"
+            ]
+          },
+          "expected_slots": {},
+          "expected_vehicle_mentions": [
+            "VF 8"
+          ],
+          "expected_intents": [
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    }
+  ]
+}

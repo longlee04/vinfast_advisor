@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "scenarios": [
+    {
+      "id": "SC101",
+      "description": "Thông số ô tô, ngân sách và số chỗ không có động từ nhu cầu",
+      "groups": ["implicit_need", "no_need_verb", "car"],
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "Ô tô, 500 triệu, 5 chỗ.",
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "budget_max_vnd": 500000000,
+            "passenger_count": 5
+          },
+          "provided_slots": ["vehicle_type", "budget_max_vnd", "passenger_count"],
+          "expected_intents": ["ADVISORY"],
+          "expected_decision": "RETRIEVE",
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC102",
+      "description": "Loại xe máy và ngân sách không có động từ nhu cầu",
+      "groups": ["implicit_need", "no_need_verb", "motorbike"],
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "Xe máy điện, tầm 40 triệu.",
+          "expected_slots": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "budget_max_vnd": 40000000
+          },
+          "provided_slots": ["vehicle_type", "budget_max_vnd"],
+          "expected_intents": ["ADVISORY"],
+          "expected_decision": "RETRIEVE",
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC103",
+      "description": "Số người và ngân sách ngầm xác định nhánh ô tô",
+      "groups": ["implicit_need", "no_need_verb", "car"],
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "Nhà 4 người, khoảng 600 triệu.",
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "budget_max_vnd": 600000000,
+            "passenger_count": 4
+          },
+          "provided_slots": ["passenger_count", "budget_max_vnd"],
+          "expected_intents": ["ADVISORY"],
+          "expected_decision": "RETRIEVE",
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC104",
+      "description": "Số chỗ và ngân sách ngầm xác định nhánh ô tô",
+      "groups": ["implicit_need", "no_need_verb", "car"],
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "5 chỗ, khoảng 500 triệu.",
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "budget_max_vnd": 500000000,
+            "passenger_count": 5
+          },
+          "provided_slots": ["passenger_count", "budget_max_vnd"],
+          "expected_intents": ["ADVISORY"],
+          "expected_decision": "RETRIEVE",
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC105",
+      "description": "Câu trả lời chỉ có ngân sách tiếp tục phiên tư vấn ô tô",
+      "groups": ["implicit_need", "no_need_verb", "context"],
+      "initial_slots": {"vehicle_type": "CAR"},
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "500 triệu.",
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "budget_max_vnd": 500000000
+          },
+          "provided_slots": ["budget_max_vnd"],
+          "expected_intents": ["ADVISORY"],
+          "expected_decision": "RETRIEVE",
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC106",
+      "description": "Câu trả lời chỉ có loại xe giữ ngân sách đã có",
+      "groups": ["implicit_need", "no_need_verb", "context"],
+      "initial_slots": {"budget_max_vnd": 500000000},
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "Ô tô nhé.",
+          "memory_summary": "Khách đã nêu ngân sách khoảng 500 triệu và đang chọn loại phương tiện.",
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "budget_max_vnd": 500000000
+          },
+          "provided_slots": ["vehicle_type"],
+          "expected_intents": ["ADVISORY"],
+          "expected_decision": "RETRIEVE",
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC107",
+      "description": "So sánh xe không bị biến thành nhu cầu tư vấn",
+      "groups": ["implicit_need", "no_need_verb", "catalog_boundary"],
+      "turns": [
+        {
+          "user_message": "VF 5 với VF 7 khác nhau thế nào?",
+          "expected_slots": {},
+          "expected_vehicle_mentions": ["VF 5", "VF 7"],
+          "expected_intents": ["CATALOG_LOOKUP"],
+          "forbidden_intents": ["ADVISORY"],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC108",
+      "description": "Câu mơ hồ không có dữ kiện phải yêu cầu làm rõ",
+      "groups": ["implicit_need", "no_need_verb", "ambiguity_boundary"],
+      "turns": [
+        {
+          "user_message": "Một chiếc ổn ổn.",
+          "expected_slots": {},
+          "expected_vehicle_mentions": [],
+          "expected_intents": [],
+          "expected_decision": "CLARIFY_INTENT",
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    }
+  ]
+}

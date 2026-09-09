@@ -1,0 +1,3339 @@
+{
+  "version": 1,
+  "scenarios": [
+    {
+      "id": "SC001",
+      "description": "Yêu cầu 5 chỗ ở lượt đầu dù LLM bỏ sót",
+      "groups": [
+        "seat_phrasing",
+        "first_turn"
+      ],
+      "turns": [
+        {
+          "user_message": "Tôi cần xe 5 chỗ",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC002",
+      "description": "Yêu cầu 7 cho không dấu",
+      "groups": [
+        "seat_phrasing",
+        "first_turn"
+      ],
+      "turns": [
+        {
+          "user_message": "Mình đang tìm ô tô 7 cho",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 7
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC003",
+      "description": "Gia đình năm người được LLM trích đủ",
+      "groups": [
+        "seat_phrasing",
+        "llm_semantics"
+      ],
+      "turns": [
+        {
+          "user_message": "Nhà tôi có năm người, cần mua ô tô điện",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC004",
+      "description": "Số thành viên được trích từ cách nói tự nhiên",
+      "groups": [
+        "seat_phrasing",
+        "llm_semantics"
+      ],
+      "turns": [
+        {
+          "user_message": "Tìm xe cho gia đình 4 thành viên",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "passenger_count": 4,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 4
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC005",
+      "description": "Cụm dòng 5 chỗ vẫn là nhu cầu ghế",
+      "groups": [
+        "seat_phrasing"
+      ],
+      "turns": [
+        {
+          "user_message": "Mình muốn dòng 5 chỗ",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC006",
+      "description": "Thông tin số chỗ tự nguyện vẫn được giữ sau khi đủ loại xe và giá",
+      "groups": [
+        "short_answer",
+        "stateful"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "budget_max_vnd": 500000000
+      },
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "5 chỗ nhé",
+          "llm_payload": {
+            "passenger_count": 5,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "budget_max_vnd": 500000000,
+            "passenger_count": 5
+          },
+          "provided_slots": [
+            "passenger_count"
+          ],
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC007",
+      "description": "Trả lời ngắn về sạc tại nhà",
+      "groups": [
+        "short_answer",
+        "stateful"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "passenger_count": 5
+      },
+      "turns": [
+        {
+          "user_message": "Có",
+          "llm_payload": {
+            "home_charging": true,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "home_charging": true
+          },
+          "provided_slots": [
+            "home_charging"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC008",
+      "description": "Trả lời ngắn ngân sách tiếng Việt",
+      "groups": [
+        "short_answer",
+        "budget"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "passenger_count": 5
+      },
+      "turns": [
+        {
+          "user_message": "800 triệu",
+          "llm_payload": {
+            "budget_max_vnd": "800 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "budget_max_vnd": 800000000
+          },
+          "provided_slots": [
+            "budget_max_vnd"
+          ],
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC009",
+      "description": "Trả lời ngắn mục đích đi làm",
+      "groups": [
+        "short_answer",
+        "purpose"
+      ],
+      "initial_slots": {
+        "vehicle_type": "ELECTRIC_MOTORBIKE",
+        "budget_max_vnd": 30000000
+      },
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "Để đi làm",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "budget_max_vnd": 30000000,
+            "purpose": "di lam"
+          },
+          "provided_slots": [
+            "purpose"
+          ],
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC010",
+      "description": "Ô tô có nhiều slot trong một lượt",
+      "groups": [
+        "multi_slot",
+        "completion"
+      ],
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "Tôi cần ô tô 5 chỗ, ngân sách 800 triệu để đi gia đình, ưu tiên đi phố",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "budget_max_vnd": "800 triệu",
+            "purpose": "gia đình",
+            "habit_need_tags": [
+              "đi phố"
+            ],
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "budget_max_vnd": 800000000,
+            "purpose": "gia đình",
+            "habit_need_tags": [
+              "đi phố"
+            ]
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count",
+            "budget_max_vnd",
+            "purpose",
+            "habit_need_tags"
+          ],
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC011",
+      "description": "Ô tô có ngân sách viết liền và bảy người",
+      "groups": [
+        "multi_slot",
+        "budget"
+      ],
+      "turns": [
+        {
+          "user_message": "Ô tô cho 7 người, tầm 1ty2, chủ yếu đi du lịch",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "passenger_count": 7,
+            "budget_max_vnd": "1ty2",
+            "purpose": "du lịch",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 7,
+            "budget_min_vnd": 1100000000,
+            "budget_max_vnd": 1200000000,
+            "purpose": "du lịch",
+            "budget_stated_vnd": 1200000000
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count",
+            "budget_max_vnd",
+            "budget_min_vnd",
+            "purpose"
+          ],
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC012",
+      "description": "Xe máy điện có đủ slot bắt buộc trong một lượt",
+      "groups": [
+        "multi_slot",
+        "motorbike",
+        "completion"
+      ],
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "Tôi cần xe máy điện tầm 30 triệu để đi làm",
+          "llm_payload": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "budget_max_vnd": "30 triệu",
+            "purpose": "đi làm",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "budget_min_vnd": 24000000,
+            "budget_max_vnd": 30000000,
+            "purpose": "đi làm",
+            "budget_stated_vnd": 30000000
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "budget_min_vnd",
+            "budget_max_vnd",
+            "purpose"
+          ],
+          "forbidden_slots": [
+            "passenger_count"
+          ],
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC013",
+      "description": "Feature nói sớm không làm mất slot cứng",
+      "groups": [
+        "multi_slot",
+        "feature_early"
+      ],
+      "turns": [
+        {
+          "user_message": "Tôi cần ô tô 5 chỗ có cửa sổ trời",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "feature_mentions": [
+              "PANORAMIC_ROOF"
+            ],
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC014",
+      "description": "Khách sửa từ năm lên bảy chỗ",
+      "groups": [
+        "correction",
+        "stateful"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "passenger_count": 5
+      },
+      "turns": [
+        {
+          "user_message": "À cần 7 chỗ mới đúng",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "passenger_count": 7,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 7
+          },
+          "provided_slots": [
+            "passenger_count"
+          ],
+          "correction_slots": [
+            "passenger_count"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC015",
+      "description": "Khách nâng ngân sách ở lượt sau",
+      "groups": [
+        "correction",
+        "budget",
+        "stateful"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "passenger_count": 5,
+        "budget_max_vnd": 700000000
+      },
+      "turns": [
+        {
+          "user_message": "Tôi tăng ngân sách lên 900 triệu nhé",
+          "llm_payload": {
+            "budget_max_vnd": "900 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "budget_max_vnd": 900000000
+          },
+          "provided_slots": [
+            "budget_max_vnd"
+          ],
+          "correction_slots": [
+            "budget_max_vnd"
+          ],
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC016",
+      "description": "Đổi nhánh sang xe máy không hỏi số người",
+      "groups": [
+        "correction",
+        "branch_switch",
+        "motorbike"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "passenger_count": 5
+      },
+      "turns": [
+        {
+          "user_message": "Đổi ý, tôi muốn xe máy điện để đi làm",
+          "llm_payload": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "purpose": "đi làm",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "passenger_count": 5,
+            "purpose": "đi làm"
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "purpose"
+          ],
+          "correction_slots": [
+            "vehicle_type"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC017",
+      "description": "Khách sửa mục đích sử dụng",
+      "groups": [
+        "correction",
+        "stateful"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "passenger_count": 5,
+        "budget_max_vnd": 800000000,
+        "purpose": "đi làm"
+      },
+      "turns": [
+        {
+          "user_message": "Thực ra chủ yếu dùng cho gia đình",
+          "llm_payload": {
+            "purpose": "gia đình",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "budget_max_vnd": 800000000,
+            "purpose": "gia đình"
+          },
+          "provided_slots": [
+            "purpose"
+          ],
+          "correction_slots": [
+            "purpose"
+          ],
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC018",
+      "description": "Hai lần sửa liên tiếp giữ giá trị cuối",
+      "groups": [
+        "correction",
+        "stateful",
+        "multi_turn"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "passenger_count": 4
+      },
+      "turns": [
+        {
+          "user_message": "Sửa thành 5 người",
+          "llm_payload": {
+            "passenger_count": 5,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5
+          },
+          "provided_slots": [
+            "passenger_count"
+          ],
+          "correction_slots": [
+            "passenger_count"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        },
+        {
+          "user_message": "Không, 6 người mới đúng",
+          "llm_payload": {
+            "passenger_count": 6,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 6
+          },
+          "provided_slots": [
+            "passenger_count"
+          ],
+          "correction_slots": [
+            "passenger_count"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC019",
+      "description": "Phủ định bảy chỗ không được ghi thành nhu cầu",
+      "groups": [
+        "negation",
+        "adversarial"
+      ],
+      "turns": [
+        {
+          "user_message": "Tôi không cần xe 7 chỗ",
+          "llm_payload": {
+            "passenger_count": 7,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {},
+          "forbidden_slots": [
+            "vehicle_type",
+            "passenger_count"
+          ],
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC020",
+      "description": "Phủ định bảy chỗ rồi xác nhận năm chỗ",
+      "groups": [
+        "negation",
+        "adversarial",
+        "seat_phrasing"
+      ],
+      "turns": [
+        {
+          "user_message": "Không cần 7 chỗ, 5 chỗ là đủ",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC021",
+      "description": "Phân vân giữa hai sức chứa không tự chốt",
+      "groups": [
+        "ambiguity",
+        "adversarial"
+      ],
+      "turns": [
+        {
+          "user_message": "Tôi đang phân vân giữa xe 5 chỗ và 7 chỗ",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR"
+          },
+          "forbidden_slots": [
+            "passenger_count"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC022",
+      "description": "Câu hỏi so sánh sức chứa không phải xác nhận nhu cầu",
+      "groups": [
+        "ambiguity",
+        "adversarial",
+        "lookup_interrupt"
+      ],
+      "turns": [
+        {
+          "user_message": "Xe 5 chỗ có rộng bằng xe 7 chỗ không?",
+          "llm_payload": {
+            "passenger_count": 5,
+            "intents": [
+              "CATALOG_LOOKUP"
+            ]
+          },
+          "expected_slots": {},
+          "forbidden_slots": [
+            "vehicle_type",
+            "passenger_count"
+          ],
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC023",
+      "description": "Không phải bảy chỗ không được ghi bảy",
+      "groups": [
+        "negation",
+        "adversarial"
+      ],
+      "turns": [
+        {
+          "user_message": "Không phải loại 7 chỗ nhé",
+          "llm_payload": {
+            "passenger_count": 7,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {},
+          "forbidden_slots": [
+            "passenger_count"
+          ],
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC024",
+      "description": "Khách chưa biết sức chứa thì không tự điền",
+      "groups": [
+        "ambiguity",
+        "no_false_fill"
+      ],
+      "turns": [
+        {
+          "user_message": "Tôi chưa biết nên chọn mấy chỗ",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR"
+          },
+          "forbidden_slots": [
+            "passenger_count"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC025",
+      "description": "Số 5 không có ngữ cảnh không tự biến thành slot",
+      "groups": [
+        "ambiguity",
+        "no_false_fill"
+      ],
+      "turns": [
+        {
+          "user_message": "5",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {},
+          "forbidden_slots": [
+            "passenger_count",
+            "budget_max_vnd"
+          ],
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC026",
+      "description": "Xe máy không lưu passenger_count do LLM trích nhầm",
+      "groups": [
+        "branch_isolation",
+        "motorbike"
+      ],
+      "turns": [
+        {
+          "user_message": "Xe máy điện cho hai người",
+          "llm_payload": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "passenger_count": 2,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE"
+          },
+          "forbidden_slots": [
+            "passenger_count"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC027",
+      "description": "Ô tô không lưu tải trọng xe máy",
+      "groups": [
+        "branch_isolation",
+        "car"
+      ],
+      "turns": [
+        {
+          "user_message": "Ô tô chở hàng khoảng 80kg",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "max_load_kg": 80,
+            "purpose": "chở hàng",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "purpose": "chở hàng"
+          },
+          "forbidden_slots": [
+            "max_load_kg"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC028",
+      "description": "Xe máy giao hàng được giữ tải trọng",
+      "groups": [
+        "branch_isolation",
+        "motorbike",
+        "multi_slot"
+      ],
+      "turns": [
+        {
+          "user_message": "Xe máy điện giao hàng, mỗi chuyến khoảng 60kg",
+          "llm_payload": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "max_load_kg": 60,
+            "purpose": "giao hàng",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "max_load_kg": 60,
+            "purpose": "giao hàng"
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "max_load_kg",
+            "purpose"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC029",
+      "description": "Ô tô năm chỗ không sinh tải trọng",
+      "groups": [
+        "branch_isolation",
+        "seat_phrasing"
+      ],
+      "turns": [
+        {
+          "user_message": "Xe 5 chỗ nhé",
+          "llm_payload": {
+            "max_load_kg": 5,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5
+          },
+          "forbidden_slots": [
+            "max_load_kg"
+          ],
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC030",
+      "description": "Lookup chen ngang không xoá slot ô tô",
+      "groups": [
+        "lookup_interrupt",
+        "stateful"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "passenger_count": 5
+      },
+      "turns": [
+        {
+          "user_message": "VF 8 giá bao nhiêu?",
+          "llm_payload": {
+            "vehicle_name_mentions": [
+              "VF 8"
+            ],
+            "intents": [
+              "CATALOG_LOOKUP"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5
+          },
+          "expected_next_slot": "budget_max_vnd"
+        },
+        {
+          "user_message": "Ngân sách của tôi là 900 triệu",
+          "llm_payload": {
+            "budget_max_vnd": "900 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "budget_max_vnd": 900000000
+          },
+          "provided_slots": [
+            "budget_max_vnd"
+          ],
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC031",
+      "description": "Lookup chen ngang không xoá slot xe máy",
+      "groups": [
+        "lookup_interrupt",
+        "stateful",
+        "motorbike"
+      ],
+      "initial_slots": {
+        "vehicle_type": "ELECTRIC_MOTORBIKE",
+        "purpose": "đi làm"
+      },
+      "turns": [
+        {
+          "user_message": "Feliz giá bao nhiêu?",
+          "llm_payload": {
+            "vehicle_name_mentions": [
+              "Feliz"
+            ],
+            "intents": [
+              "CATALOG_LOOKUP"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "purpose": "đi làm"
+          },
+          "expected_next_slot": "budget_max_vnd"
+        },
+        {
+          "user_message": "Tầm 30 triệu",
+          "llm_payload": {
+            "budget_max_vnd": "30 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "purpose": "đi làm",
+            "budget_min_vnd": 24000000,
+            "budget_max_vnd": 30000000,
+            "budget_stated_vnd": 30000000
+          },
+          "provided_slots": [
+            "budget_max_vnd",
+            "budget_min_vnd"
+          ],
+          "expected_next_slot": null
+        }
+      ],
+      "expects_completion": true
+    },
+    {
+      "id": "SC032",
+      "description": "Câu lai vừa lookup vừa ghi nhu cầu",
+      "groups": [
+        "lookup_interrupt",
+        "multi_slot"
+      ],
+      "turns": [
+        {
+          "user_message": "VF 9 giá bao nhiêu, nhà tôi 7 người và có 1 tỷ 2",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "passenger_count": 7,
+            "budget_max_vnd": "1 tỷ 2",
+            "vehicle_name_mentions": [
+              "VF 9"
+            ],
+            "intents": [
+              "CATALOG_LOOKUP",
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 7,
+            "budget_max_vnd": 1200000000
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count",
+            "budget_max_vnd"
+          ],
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC033",
+      "description": "Hai lookup liên tiếp không làm biến đổi nhu cầu",
+      "groups": [
+        "lookup_interrupt",
+        "stateful",
+        "multi_turn"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "passenger_count": 5,
+        "budget_max_vnd": 800000000
+      },
+      "turns": [
+        {
+          "user_message": "VF 7 có cửa sổ trời không?",
+          "llm_payload": {
+            "vehicle_name_mentions": [
+              "VF 7"
+            ],
+            "intents": [
+              "CATALOG_LOOKUP"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "budget_max_vnd": 800000000
+          },
+          "expected_next_slot": null
+        },
+        {
+          "user_message": "Còn VF 8 thì sao?",
+          "llm_payload": {
+            "vehicle_name_mentions": [
+              "VF 8"
+            ],
+            "intents": [
+              "CATALOG_LOOKUP"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "budget_max_vnd": 800000000
+          },
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC034",
+      "description": "Nhớ ngân sách khi khách trả lời ngắn loại ô tô ở lượt sau",
+      "groups": [
+        "multi_turn",
+        "completion",
+        "stateful"
+      ],
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "tôi muốn mua xe 500 triệu",
+          "llm_payload": {
+            "budget_max_vnd": "500 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "budget_max_vnd": 500000000,
+            "vehicle_type": "CAR"
+          },
+          "provided_slots": [
+            "budget_max_vnd",
+            "vehicle_type"
+          ],
+          "expected_next_slot": null
+        },
+        {
+          "user_message": "ô tô nhé",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "intents": []
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "budget_max_vnd": 500000000
+          },
+          "provided_slots": [
+            "vehicle_type"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "RETRIEVE",
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC035",
+      "description": "Nhớ ngân sách khi khách chuyển sang xe máy điện",
+      "groups": [
+        "multi_turn",
+        "completion",
+        "stateful",
+        "motorbike"
+      ],
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "tôi muốn mua xe 500 triệu",
+          "llm_payload": {
+            "budget_max_vnd": "500 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "budget_max_vnd": 500000000,
+            "vehicle_type": "CAR"
+          },
+          "provided_slots": [
+            "budget_max_vnd",
+            "vehicle_type"
+          ],
+          "expected_next_slot": null
+        },
+        {
+          "user_message": "xe máy điện cơ",
+          "llm_payload": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "intents": []
+          },
+          "expected_slots": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "budget_max_vnd": 500000000
+          },
+          "provided_slots": [
+            "vehicle_type"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "RETRIEVE",
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC036",
+      "description": "Slot tùy chọn được giữ qua các lượt",
+      "groups": [
+        "multi_turn",
+        "stateful",
+        "optional_slot"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "passenger_count": 5
+      },
+      "turns": [
+        {
+          "user_message": "Mỗi ngày đi khoảng 40km",
+          "llm_payload": {
+            "required_range_km": 40,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "required_range_km": 40
+          },
+          "provided_slots": [
+            "required_range_km"
+          ],
+          "expected_next_slot": "budget_max_vnd"
+        },
+        {
+          "user_message": "Khoảng 700 triệu",
+          "llm_payload": {
+            "budget_max_vnd": "700 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "required_range_km": 40,
+            "budget_min_vnd": 600000000,
+            "budget_max_vnd": 700000000,
+            "budget_stated_vnd": 700000000
+          },
+          "provided_slots": [
+            "budget_max_vnd",
+            "budget_min_vnd"
+          ],
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC037",
+      "description": "Không hỏi lại slot đã điền từ lượt đầu",
+      "groups": [
+        "multi_turn",
+        "redundant_question",
+        "stateful"
+      ],
+      "turns": [
+        {
+          "user_message": "Ô tô 5 chỗ ngân sách 800 triệu",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "budget_max_vnd": "800 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "budget_max_vnd": 800000000
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count",
+            "budget_max_vnd"
+          ],
+          "expected_next_slot": null
+        },
+        {
+          "user_message": "Chủ yếu đi gia đình",
+          "llm_payload": {
+            "purpose": "gia đình",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "budget_max_vnd": 800000000,
+            "purpose": "gia đình"
+          },
+          "provided_slots": [
+            "purpose"
+          ],
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC038",
+      "description": "Con số trong tên xe không thành số người",
+      "groups": [
+        "no_false_fill",
+        "catalog_lookup"
+      ],
+      "turns": [
+        {
+          "user_message": "VF 5 giá bao nhiêu?",
+          "llm_payload": {
+            "vehicle_name_mentions": [
+              "VF 5"
+            ],
+            "intents": [
+              "CATALOG_LOOKUP"
+            ]
+          },
+          "expected_slots": {},
+          "forbidden_slots": [
+            "passenger_count",
+            "budget_max_vnd"
+          ],
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC039",
+      "description": "Số quãng đường không thành số người",
+      "groups": [
+        "no_false_fill",
+        "range"
+      ],
+      "turns": [
+        {
+          "user_message": "Tôi đi khoảng 50km mỗi ngày",
+          "llm_payload": {
+            "required_range_km": 50,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "required_range_km": 50
+          },
+          "forbidden_slots": [
+            "passenger_count",
+            "budget_max_vnd"
+          ],
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC040",
+      "description": "Chào hỏi không tự điền nhu cầu",
+      "groups": [
+        "no_false_fill",
+        "empty_information"
+      ],
+      "turns": [
+        {
+          "user_message": "Xin chào, tư vấn giúp tôi với",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {},
+          "forbidden_slots": [
+            "vehicle_type",
+            "passenger_count",
+            "budget_max_vnd",
+            "purpose"
+          ],
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC041",
+      "description": "Câu hỏi về một mẫu xe đồng thời chứa đủ nhu cầu tư vấn",
+      "groups": [
+        "evidence_backed",
+        "hybrid_intent",
+        "multi_slot",
+        "real_customer_language"
+      ],
+      "evidence_ids": [
+        "E01"
+      ],
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "Nhà tôi bốn người, tài chính khoảng 500 triệu, chủ yếu đi nội thành và thỉnh thoảng về quê; VF 5 có hợp không?",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "passenger_count": 4,
+            "budget_max_vnd": "500 triệu",
+            "purpose": "chủ yếu đi nội thành và thỉnh thoảng về quê",
+            "habit_need_tags": [
+              "đi nội thành",
+              "thỉnh thoảng về quê"
+            ],
+            "vehicle_name_mentions": [
+              "VF 5"
+            ],
+            "intents": [
+              "CATALOG_LOOKUP"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 4,
+            "budget_min_vnd": 400000000,
+            "budget_max_vnd": 500000000,
+            "purpose": "chủ yếu đi nội thành và thỉnh thoảng về quê",
+            "habit_need_tags": [
+              "đi nội thành",
+              "thỉnh thoảng về quê"
+            ],
+            "budget_stated_vnd": 500000000
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count",
+            "budget_max_vnd",
+            "budget_min_vnd",
+            "purpose",
+            "habit_need_tags"
+          ],
+          "expected_intents": [
+            "ADVISORY",
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "HYBRID",
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC042",
+      "description": "Khó sạc tại chung cư là ràng buộc tư vấn chứ không phải câu tra cứu đơn thuần",
+      "groups": [
+        "evidence_backed",
+        "intent_reconciliation",
+        "negation",
+        "real_customer_language"
+      ],
+      "evidence_ids": [
+        "E02"
+      ],
+      "turns": [
+        {
+          "user_message": "Tôi ở chung cư, ban quản lý không cho sạc dưới hầm; vậy tôi có nên mua ô tô điện không?",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "home_charging": false,
+            "intents": []
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "home_charging": false
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "home_charging"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "ASK",
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC043",
+      "description": "Khoản trả góp hằng tháng không được ghi nhầm thành tổng ngân sách mua xe",
+      "groups": [
+        "evidence_backed",
+        "no_false_fill",
+        "installment",
+        "real_customer_language"
+      ],
+      "evidence_ids": [
+        "E03"
+      ],
+      "turns": [
+        {
+          "user_message": "Tôi muốn mua ô tô, chỉ trả góp được khoảng 10 triệu mỗi tháng.",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "budget_max_vnd": "10 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "budget_stated_vnd": 10000000
+          },
+          "forbidden_slots": [
+            "budget_max_vnd"
+          ],
+          "provided_slots": [
+            "vehicle_type"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "ASK",
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC044",
+      "description": "Lo ngại trạm sạc và yêu cầu tư vấn phải được nhận là advisory",
+      "groups": [
+        "evidence_backed",
+        "intent_reconciliation",
+        "real_customer_language"
+      ],
+      "evidence_ids": [
+        "E04"
+      ],
+      "turns": [
+        {
+          "user_message": "Khu tôi trạm sạc thường phải xếp hàng và hay bị xe khác chiếm chỗ, tư vấn giúp mẫu ô tô phù hợp.",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "intents": []
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR"
+          },
+          "provided_slots": [
+            "vehicle_type"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "ASK",
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC045",
+      "description": "Số trong tên mẫu và phần trăm pin không được điền thành phiếu nhu cầu",
+      "groups": [
+        "evidence_backed",
+        "catalog_lookup",
+        "no_false_fill",
+        "post_purchase",
+        "real_customer_language"
+      ],
+      "evidence_ids": [
+        "E05"
+      ],
+      "turns": [
+        {
+          "user_message": "VF 5 của tôi pin tụt từ 42% xuống 33% sau khoảng 10 km, xe bị sao?",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "required_range_km": 10,
+            "vehicle_name_mentions": [
+              "VF 5"
+            ],
+            "intents": [
+              "CATALOG_LOOKUP"
+            ]
+          },
+          "expected_slots": {},
+          "forbidden_slots": [
+            "vehicle_type",
+            "passenger_count",
+            "budget_max_vnd",
+            "required_range_km"
+          ],
+          "expected_intents": [
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC046",
+      "description": "Không tự suy ra khách không có sạc tại nhà khi họ chỉ nói cần ô tô điện",
+      "groups": [
+        "intent_reconciliation",
+        "no_false_fill",
+        "first_turn"
+      ],
+      "turns": [
+        {
+          "user_message": "Tôi cần ô tô điện.",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "home_charging": false,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR"
+          },
+          "forbidden_slots": [
+            "home_charging"
+          ],
+          "provided_slots": [
+            "vehicle_type"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "ASK",
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC047",
+      "description": "Không đổi nhánh ô tô chỉ vì LLM đoán sai xe máy ở lượt sau",
+      "groups": [
+        "branch_isolation",
+        "no_false_fill",
+        "stateful"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR"
+      },
+      "turns": [
+        {
+          "user_message": "Em ưu tiên xe tiết kiệm, dễ đi trong phố.",
+          "llm_payload": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "habit_need_tags": [
+              "tiết kiệm",
+              "dễ đi trong phố"
+            ],
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "habit_need_tags": [
+              "tiết kiệm",
+              "dễ đi trong phố"
+            ],
+            "purpose": "dễ đi trong phố"
+          },
+          "provided_slots": [
+            "habit_need_tags"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "ASK",
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC048",
+      "description": "So sánh hai mẫu xe đi nhánh COMPARE_VEHICLES và không điền số chỗ từ tên xe",
+      "groups": [
+        "catalog_lookup",
+        "comparison",
+        "no_false_fill"
+      ],
+      "turns": [
+        {
+          "user_message": "VF 5 và VF 7 khác nhau như thế nào?",
+          "llm_payload": {
+            "passenger_count": 5,
+            "vehicle_name_mentions": [
+              "VF 5",
+              "VF 7"
+            ],
+            "intents": [
+              "CATALOG_LOOKUP"
+            ]
+          },
+          "expected_slots": {},
+          "forbidden_slots": [
+            "passenger_count",
+            "budget_max_vnd"
+          ],
+          "expected_intents": [
+            "COMPARE_VEHICLES"
+          ],
+          "expected_decision": "COMPARE",
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC049",
+      "description": "Intent rỗng không được che mất câu cung cấp nhu cầu rõ ràng",
+      "groups": [
+        "first_turn",
+        "intent_reconciliation",
+        "seat_phrasing"
+      ],
+      "turns": [
+        {
+          "user_message": "Tôi cần xe 5 chỗ.",
+          "llm_payload": {
+            "intents": []
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "ASK",
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC050",
+      "description": "Câu ngoài phạm vi không được mặc định biến thành advisory",
+      "groups": [
+        "empty_intent",
+        "no_false_fill",
+        "out_of_scope"
+      ],
+      "turns": [
+        {
+          "user_message": "Hôm nay thời tiết Hà Nội thế nào?",
+          "llm_payload": {
+            "intents": []
+          },
+          "expected_slots": {},
+          "forbidden_slots": [
+            "vehicle_type",
+            "passenger_count",
+            "budget_max_vnd",
+            "purpose"
+          ],
+          "expected_intents": [],
+          "expected_decision": "CLARIFY_INTENT",
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC051",
+      "description": "Nhan loai xe va KHOANG uoc luong tu cum \"khoang X\" (+/-100 trieu)",
+      "groups": [
+        "first_turn",
+        "budget",
+        "intent_reconciliation",
+        "price_first"
+      ],
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "ô tô khoảng 500 triệu",
+          "llm_payload": {
+            "intents": []
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "budget_min_vnd": 400000000,
+            "budget_max_vnd": 500000000,
+            "budget_stated_vnd": 500000000
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "budget_min_vnd",
+            "budget_max_vnd"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "RETRIEVE",
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC052",
+      "description": "Yêu cầu xem tất cả mẫu xe không bị memory tư vấn cũ lấn át",
+      "groups": [
+        "multi_turn",
+        "stateful",
+        "intent_reconciliation",
+        "price_first"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "budget_max_vnd": 500000000
+      },
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "tất cả các xe",
+          "llm_payload": {
+            "intents": []
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "budget_max_vnd": 500000000
+          },
+          "expected_intents": [
+            "CATALOG_BROWSE"
+          ],
+          "expected_decision": "BROWSE",
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC053",
+      "description": "So sánh mẫu xe loại bỏ nhãn advisory do LLM gán thừa",
+      "groups": [
+        "catalog_lookup",
+        "comparison",
+        "intent_reconciliation",
+        "no_false_fill"
+      ],
+      "turns": [
+        {
+          "user_message": "VF 5 và VF 7 khác nhau thế nào?",
+          "llm_payload": {
+            "vehicle_name_mentions": [
+              "VF 5",
+              "VF 7"
+            ],
+            "intents": [
+              "ADVISORY",
+              "CATALOG_LOOKUP"
+            ]
+          },
+          "expected_slots": {},
+          "forbidden_slots": [
+            "vehicle_type",
+            "passenger_count",
+            "budget_max_vnd",
+            "purpose"
+          ],
+          "expected_intents": [
+            "COMPARE_VEHICLES"
+          ],
+          "expected_decision": "COMPARE",
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC054",
+      "description": "Memory giải mẫu còn lại là VF 7 sau khi khách loại VF 5",
+      "groups": [
+        "memory",
+        "referent_resolution",
+        "catalog_lookup"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR"
+      },
+      "turns": [
+        {
+          "user_message": "Mẫu còn lại giá bao nhiêu?",
+          "memory_summary": "Khách cân nhắc VF 5 và VF 7; đã loại VF 5 vì chật; mẫu đang tiếp tục là VF 7.",
+          "llm_payload": {
+            "vehicle_name_mentions": [
+              "VF 7"
+            ],
+            "intents": [
+              "CATALOG_LOOKUP"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR"
+          },
+          "expected_vehicle_mentions": [
+            "VF 7"
+          ],
+          "expected_intents": [
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC055",
+      "description": "Memory giải mẫu thứ hai trong cặp VF 5 và VF 7",
+      "groups": [
+        "memory",
+        "referent_resolution",
+        "catalog_lookup"
+      ],
+      "turns": [
+        {
+          "user_message": "Mẫu thứ hai đi được bao xa?",
+          "recent_messages": [
+            {
+              "role": "USER",
+              "content": "So sánh VF 5 và VF 7 giúp tôi."
+            },
+            {
+              "role": "ASSISTANT",
+              "content": "Mình đang so sánh VF 5 trước và VF 7 sau."
+            }
+          ],
+          "llm_payload": {
+            "vehicle_name_mentions": [
+              "VF 7"
+            ],
+            "intents": [
+              "CATALOG_LOOKUP"
+            ]
+          },
+          "expected_slots": {},
+          "expected_vehicle_mentions": [
+            "VF 7"
+          ],
+          "expected_intents": [
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC056",
+      "description": "Khách đổi ý quay lại mẫu VF 5 vừa loại",
+      "groups": [
+        "memory",
+        "correction",
+        "referent_resolution"
+      ],
+      "turns": [
+        {
+          "user_message": "Không, tôi đổi ý, xem lại mẫu tôi vừa loại.",
+          "memory_summary": "Khách đã loại VF 5 vì chật và đang xem VF 7.",
+          "llm_payload": {
+            "vehicle_name_mentions": [
+              "VF 5"
+            ],
+            "intents": [
+              "CATALOG_LOOKUP"
+            ]
+          },
+          "expected_slots": {},
+          "expected_vehicle_mentions": [
+            "VF 5"
+          ],
+          "expected_intents": [
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC057",
+      "description": "Lookup chen ngang không làm mất yêu cầu ngân sách ban đầu",
+      "groups": [
+        "memory",
+        "lookup_interrupt",
+        "stateful"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "budget_max_vnd": 500000000
+      },
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "Quay lại yêu cầu 500 triệu ban đầu nhé.",
+          "memory_summary": "Khách cần ô tô ngân sách 500 triệu; vừa chen ngang hỏi giá VF 7.",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "budget_max_vnd": 500000000
+          },
+          "expected_vehicle_mentions": [],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "RETRIEVE",
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC058",
+      "description": "Đổi từ ô tô sang xe máy nhưng giữ ngân sách đã nói",
+      "groups": [
+        "memory",
+        "branch_switch",
+        "context_carry_over"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR",
+        "budget_max_vnd": 500000000
+      },
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "Giữ ngân sách 500 triệu lúc nãy nhưng chuyển sang xe máy điện.",
+          "memory_summary": "Khách đang tìm ô tô với ngân sách 500 triệu.",
+          "llm_payload": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "budget_max_vnd": "500 triệu",
+            "intents": []
+          },
+          "expected_slots": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "budget_max_vnd": 500000000
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "budget_max_vnd"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "RETRIEVE",
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC059",
+      "description": "Phiên không có memory không được thấy mẫu VF 7 của phiên khác",
+      "groups": [
+        "memory",
+        "session_isolation",
+        "no_false_fill"
+      ],
+      "turns": [
+        {
+          "user_message": "Mẫu còn lại giá bao nhiêu?",
+          "llm_payload": {
+            "intents": []
+          },
+          "expected_slots": {},
+          "expected_vehicle_mentions": [],
+          "expected_intents": [],
+          "expected_decision": "CLARIFY_INTENT",
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC060",
+      "description": "Raw intent rỗng nhưng memory giải được VF 7 và reconciliation giữ lookup",
+      "groups": [
+        "memory",
+        "intent_reconciliation",
+        "ab_reconciliation"
+      ],
+      "turns": [
+        {
+          "user_message": "Mẫu còn lại giá bao nhiêu?",
+          "memory_summary": "Đã loại VF 5; mẫu còn lại là VF 7.",
+          "llm_payload": {
+            "vehicle_name_mentions": [
+              "VF 7"
+            ],
+            "intents": []
+          },
+          "expected_slots": {},
+          "expected_vehicle_mentions": [
+            "VF 7"
+          ],
+          "expected_intents": [
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC061",
+      "description": "Raw gán thừa advisory cho lookup có memory và reconciliation loại bỏ",
+      "groups": [
+        "memory",
+        "intent_reconciliation",
+        "ab_reconciliation"
+      ],
+      "turns": [
+        {
+          "user_message": "Mẫu còn lại giá bao nhiêu?",
+          "memory_summary": "Đã loại VF 5; mẫu còn lại là VF 7.",
+          "llm_payload": {
+            "vehicle_name_mentions": [
+              "VF 7"
+            ],
+            "intents": [
+              "ADVISORY",
+              "CATALOG_LOOKUP"
+            ]
+          },
+          "expected_slots": {},
+          "expected_vehicle_mentions": [
+            "VF 7"
+          ],
+          "expected_intents": [
+            "CATALOG_LOOKUP"
+          ],
+          "expected_decision": "LOOKUP",
+          "expected_next_slot": "vehicle_type"
+        }
+      ]
+    },
+    {
+      "id": "SC062",
+      "description": "Cân nhắc hai mẫu rồi loại một mẫu không rơi về câu hỏi định tuyến",
+      "groups": [
+        "memory",
+        "natural_dialogue",
+        "intent_reconciliation",
+        "no_false_fill"
+      ],
+      "turns": [
+        {
+          "user_message": "Tôi đang cân nhắc VF 5 và VF 7, nhưng loại VF 5 vì hơi chật.",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5,
+            "vehicle_name_mentions": [
+              "VF 5",
+              "VF 7"
+            ],
+            "intents": []
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR"
+          },
+          "forbidden_slots": [
+            "passenger_count"
+          ],
+          "expected_vehicle_mentions": [
+            "VF 5",
+            "VF 7"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "ASK",
+          "expected_next_slot": "budget_max_vnd"
+        }
+      ]
+    },
+    {
+      "id": "SC063",
+      "description": "\"khoang X trieu\" mot so la KHOANG +/-100 trieu quanh X, khong phai tran",
+      "groups": [
+        "first_turn",
+        "budget",
+        "price_first"
+      ],
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "ô tô điện khoảng 900 triệu",
+          "llm_payload": {
+            "budget_max_vnd": "900 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "budget_min_vnd": 800000000,
+            "budget_max_vnd": 900000000,
+            "budget_stated_vnd": 900000000
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "budget_min_vnd",
+            "budget_max_vnd"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "RETRIEVE",
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC064",
+      "description": "\"tu X trieu\" la SAN khong tran, khac han \"khoang X trieu\"",
+      "groups": [
+        "first_turn",
+        "budget",
+        "price_first"
+      ],
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "ô tô điện từ 900 triệu",
+          "llm_payload": {
+            "budget_max_vnd": "900 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "budget_min_vnd": 900000000,
+            "budget_max_vnd": 10000000000
+          },
+          "provided_slots": [
+            "vehicle_type",
+            "budget_min_vnd",
+            "budget_max_vnd"
+          ],
+          "expected_intents": [
+            "ADVISORY"
+          ],
+          "expected_decision": "RETRIEVE",
+          "expected_next_slot": null
+        }
+      ]
+    },
+    {
+      "id": "SC065",
+      "description": "1200 km/thang -> 40 km/ngay (ceil 1200/30)",
+      "groups": [
+        "don-vi-quang-duong"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR"
+      },
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "moi thang toi di khoang 1200 km",
+          "llm_payload": {
+            "required_range_km": 1200,
+            "range_period": "month",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "required_range_km": 40
+          },
+          "provided_slots": [
+            "required_range_km"
+          ],
+          "expected_next_slot": "budget_max_vnd",
+          "expected_next_group": [
+            "budget_max_vnd",
+            "purpose"
+          ]
+        },
+        {
+          "user_message": "ngan sach khoang 60 trieu",
+          "llm_payload": {
+            "budget_max_vnd": "60 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "required_range_km": 40,
+            "budget_max_vnd": 60000000,
+            "budget_min_vnd": 48000000,
+            "budget_stated_vnd": 60000000
+          },
+          "provided_slots": [
+            "budget_max_vnd"
+          ],
+          "expected_next_slot": null,
+          "expected_next_group": [
+            "purpose"
+          ],
+          "expected_question": "Mời anh/chị vui lòng cung cấp thêm thông tin để em tư vấn đúng nhu cầu của mình hơn nhé:\n- Dạ xe này anh/chị dùng cho việc gì là chính ạ?"
+        }
+      ]
+    },
+    {
+      "id": "SC066",
+      "description": "300 km/tuan -> 43 km/ngay (ceil 300/7)",
+      "groups": [
+        "don-vi-quang-duong"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR"
+      },
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "moi tuan toi di khoang 300 km",
+          "llm_payload": {
+            "required_range_km": 300,
+            "range_period": "week",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "required_range_km": 43
+          },
+          "provided_slots": [
+            "required_range_km"
+          ],
+          "expected_next_slot": "budget_max_vnd",
+          "expected_next_group": [
+            "budget_max_vnd",
+            "purpose"
+          ]
+        },
+        {
+          "user_message": "khoang 500 trieu",
+          "llm_payload": {
+            "budget_max_vnd": "500 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "required_range_km": 43,
+            "budget_max_vnd": 500000000,
+            "budget_min_vnd": 400000000,
+            "budget_stated_vnd": 500000000
+          },
+          "provided_slots": [
+            "budget_max_vnd"
+          ],
+          "expected_next_slot": null,
+          "expected_next_group": [
+            "purpose"
+          ],
+          "expected_question": "Mời anh/chị vui lòng cung cấp thêm thông tin để em tư vấn đúng nhu cầu của mình hơn nhé:\n- Dạ xe này anh/chị dùng cho việc gì là chính ạ?"
+        }
+      ]
+    },
+    {
+      "id": "SC067",
+      "description": "500 km/ngay qua nguong 300 -> khong ghi, hoi lai",
+      "groups": [
+        "don-vi-quang-duong"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR"
+      },
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "moi ngay toi di khoang 500 km",
+          "llm_payload": {
+            "required_range_km": 500,
+            "range_period": "day",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR"
+          },
+          "provided_slots": [],
+          "expected_next_slot": "budget_max_vnd",
+          "expected_next_group": [
+            "budget_max_vnd",
+            "purpose"
+          ]
+        },
+        {
+          "user_message": "khoang 30 km thoi",
+          "llm_payload": {
+            "required_range_km": 30,
+            "range_period": "day",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "required_range_km": 30
+          },
+          "provided_slots": [
+            "required_range_km"
+          ],
+          "expected_next_slot": "budget_max_vnd",
+          "expected_next_group": [
+            "budget_max_vnd",
+            "purpose"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SC068",
+      "description": "80 km/chuyen (trip) khong quy doi -> khong ghi",
+      "groups": [
+        "don-vi-quang-duong"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR"
+      },
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "moi chuyen toi di khoang 80 km",
+          "llm_payload": {
+            "required_range_km": 80,
+            "range_period": "trip",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR"
+          },
+          "provided_slots": [],
+          "expected_next_slot": "budget_max_vnd",
+          "expected_next_group": [
+            "budget_max_vnd",
+            "purpose"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SC069",
+      "description": "30 km khong noi don vi -> giu nguyen 30",
+      "groups": [
+        "don-vi-quang-duong"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR"
+      },
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "toi di khoang 30 km",
+          "llm_payload": {
+            "required_range_km": 30,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "required_range_km": 30
+          },
+          "provided_slots": [
+            "required_range_km"
+          ],
+          "expected_next_slot": "budget_max_vnd",
+          "expected_next_group": [
+            "budget_max_vnd",
+            "purpose"
+          ]
+        },
+        {
+          "user_message": "ngan sach 200 trieu",
+          "llm_payload": {
+            "budget_max_vnd": "200 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "required_range_km": 30,
+            "budget_max_vnd": 200000000
+          },
+          "provided_slots": [
+            "budget_max_vnd"
+          ],
+          "expected_next_slot": null,
+          "expected_next_group": [
+            "purpose"
+          ],
+          "expected_question": "Mời anh/chị vui lòng cung cấp thêm thông tin để em tư vấn đúng nhu cầu của mình hơn nhé:\n- Dạ xe này anh/chị dùng cho việc gì là chính ạ?"
+        }
+      ]
+    },
+    {
+      "id": "SC070",
+      "description": "300 km/ngay dung bang nguong -> ghi 300 (bien >)",
+      "groups": [
+        "don-vi-quang-duong"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR"
+      },
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "moi ngay toi di dung 300 km",
+          "llm_payload": {
+            "required_range_km": 300,
+            "range_period": "day",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "required_range_km": 300
+          },
+          "provided_slots": [
+            "required_range_km"
+          ],
+          "expected_next_slot": "budget_max_vnd",
+          "expected_next_group": [
+            "budget_max_vnd",
+            "purpose"
+          ]
+        },
+        {
+          "user_message": "khoang 500 trieu",
+          "llm_payload": {
+            "budget_max_vnd": "500 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "required_range_km": 300,
+            "budget_max_vnd": 500000000,
+            "budget_min_vnd": 400000000,
+            "budget_stated_vnd": 500000000
+          },
+          "provided_slots": [
+            "budget_max_vnd"
+          ],
+          "expected_next_slot": null,
+          "expected_next_group": [
+            "purpose"
+          ],
+          "expected_question": "Mời anh/chị vui lòng cung cấp thêm thông tin để em tư vấn đúng nhu cầu của mình hơn nhé:\n- Dạ xe này anh/chị dùng cho việc gì là chính ạ?"
+        }
+      ]
+    },
+    {
+      "id": "SC071",
+      "description": "60 km/tuan -> 9 km/ngay (ceil 60/7)",
+      "groups": [
+        "don-vi-quang-duong"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR"
+      },
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "moi tuan toi di khoang 60 km",
+          "llm_payload": {
+            "required_range_km": 60,
+            "range_period": "week",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "required_range_km": 9
+          },
+          "provided_slots": [
+            "required_range_km"
+          ],
+          "expected_next_slot": "budget_max_vnd",
+          "expected_next_group": [
+            "budget_max_vnd",
+            "purpose"
+          ]
+        },
+        {
+          "user_message": "khoang 150 trieu",
+          "llm_payload": {
+            "budget_max_vnd": "150 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "required_range_km": 9,
+            "budget_max_vnd": 150000000,
+            "budget_min_vnd": 50000000,
+            "budget_stated_vnd": 150000000
+          },
+          "provided_slots": [
+            "budget_max_vnd"
+          ],
+          "expected_next_slot": null,
+          "expected_next_group": [
+            "purpose"
+          ],
+          "expected_question": "Mời anh/chị vui lòng cung cấp thêm thông tin để em tư vấn đúng nhu cầu của mình hơn nhé:\n- Dạ xe này anh/chị dùng cho việc gì là chính ạ?"
+        }
+      ]
+    },
+    {
+      "id": "SC072",
+      "description": "900 km/thang -> 30 km/ngay (ceil 900/30)",
+      "groups": [
+        "don-vi-quang-duong"
+      ],
+      "initial_slots": {
+        "vehicle_type": "CAR"
+      },
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "một tháng tôi đi khoảng 900 km",
+          "llm_payload": {
+            "required_range_km": 900,
+            "range_period": "month",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "required_range_km": 30
+          },
+          "provided_slots": [
+            "required_range_km"
+          ],
+          "expected_next_slot": "budget_max_vnd",
+          "expected_next_group": [
+            "budget_max_vnd",
+            "purpose"
+          ]
+        },
+        {
+          "user_message": "khoang 200 trieu",
+          "llm_payload": {
+            "budget_max_vnd": "200 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "required_range_km": 30,
+            "budget_max_vnd": 200000000,
+            "budget_min_vnd": 100000000,
+            "budget_stated_vnd": 200000000
+          },
+          "provided_slots": [
+            "budget_max_vnd"
+          ],
+          "expected_next_slot": null,
+          "expected_next_group": [
+            "purpose"
+          ],
+          "expected_question": "Mời anh/chị vui lòng cung cấp thêm thông tin để em tư vấn đúng nhu cầu của mình hơn nhé:\n- Dạ xe này anh/chị dùng cho việc gì là chính ạ?"
+        }
+      ]
+    },
+    {
+      "id": "SC073",
+      "description": "3 nguoi -> CAR",
+      "groups": [
+        "suy-loai-xe"
+      ],
+      "initial_slots": {},
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "can xe cho 3 nguoi",
+          "llm_payload": {
+            "passenger_count": 3,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 3
+          },
+          "expected_next_slot": "budget_max_vnd",
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SC074",
+      "description": "5 nguoi -> CAR",
+      "groups": [
+        "suy-loai-xe"
+      ],
+      "initial_slots": {},
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "gia dinh 5 nguoi can xe rong",
+          "llm_payload": {
+            "passenger_count": 5,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 5
+          },
+          "expected_next_slot": "budget_max_vnd",
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SC075",
+      "description": "7 cho -> CAR",
+      "groups": [
+        "suy-loai-xe"
+      ],
+      "initial_slots": {},
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "chuyen cho 7 nguoi",
+          "llm_payload": {
+            "passenger_count": 7,
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "passenger_count": 7
+          },
+          "expected_next_slot": "budget_max_vnd",
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SC076",
+      "description": "giao hang -> BIKE",
+      "groups": [
+        "suy-loai-xe"
+      ],
+      "initial_slots": {},
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "chay giao hang hang ngay",
+          "llm_payload": {
+            "purpose": "giao hàng",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "purpose": "giao hàng"
+          },
+          "expected_next_slot": "budget_max_vnd",
+          "provided_slots": [
+            "vehicle_type",
+            "purpose"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SC077",
+      "description": "ship hang -> BIKE",
+      "groups": [
+        "suy-loai-xe"
+      ],
+      "initial_slots": {},
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "em di ship hang",
+          "llm_payload": {
+            "purpose": "giao hang",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "purpose": "giao hang"
+          },
+          "expected_next_slot": "budget_max_vnd",
+          "provided_slots": [
+            "vehicle_type",
+            "purpose"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SC078",
+      "description": "2 nguoi 50tr -> BIKE",
+      "groups": [
+        "suy-loai-xe"
+      ],
+      "initial_slots": {},
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "chay 2 nguoi, ngan sach 50 trieu",
+          "llm_payload": {
+            "passenger_count": 2,
+            "budget_max_vnd": "50 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "passenger_count": 2,
+            "budget_max_vnd": 50000000
+          },
+          "expected_next_slot": null,
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count",
+            "budget_max_vnd"
+          ],
+          "expected_next_group": [
+            "purpose"
+          ],
+          "expected_question": "Để em lọc đúng xe, anh/chị cho em xin vài thông tin nhé:\n- Anh/chị mua xe để dùng vào mục đích gì ạ — đi làm, giao hàng hay đi cá nhân?"
+        }
+      ]
+    },
+    {
+      "id": "SC079",
+      "description": "1 nguoi 30tr -> BIKE",
+      "groups": [
+        "suy-loai-xe"
+      ],
+      "initial_slots": {},
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "toi mot nguoi di lam, khoang 30 trieu",
+          "llm_payload": {
+            "passenger_count": 1,
+            "budget_max_vnd": "30 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "budget_max_vnd": 30000000,
+            "budget_stated_vnd": 30000000,
+            "budget_min_vnd": 24000000,
+            "passenger_count": 1,
+            "vehicle_type": "ELECTRIC_MOTORBIKE"
+          },
+          "expected_next_slot": null,
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count",
+            "budget_max_vnd"
+          ],
+          "expected_next_group": [
+            "purpose"
+          ],
+          "expected_question": "Để em lọc đúng xe, anh/chị cho em xin vài thông tin nhé:\n- Anh/chị mua xe để dùng vào mục đích gì ạ — đi làm, giao hàng hay đi cá nhân?"
+        }
+      ]
+    },
+    {
+      "id": "SC080",
+      "description": "2 nguoi 90tr -> BIKE",
+      "groups": [
+        "suy-loai-xe"
+      ],
+      "initial_slots": {},
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "hai nguoi di lam, ngan sach 90 trieu",
+          "llm_payload": {
+            "passenger_count": 2,
+            "budget_max_vnd": "90 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "ELECTRIC_MOTORBIKE",
+            "passenger_count": 2,
+            "budget_max_vnd": 90000000
+          },
+          "expected_next_slot": null,
+          "provided_slots": [
+            "vehicle_type",
+            "passenger_count",
+            "budget_max_vnd"
+          ],
+          "expected_next_group": [
+            "purpose"
+          ],
+          "expected_question": "Để em lọc đúng xe, anh/chị cho em xin vài thông tin nhé:\n- Anh/chị mua xe để dùng vào mục đích gì ạ — đi làm, giao hàng hay đi cá nhân?"
+        }
+      ]
+    },
+    {
+      "id": "SC081",
+      "description": "200tr khong noi nguoi -> CAR",
+      "groups": [
+        "suy-loai-xe"
+      ],
+      "initial_slots": {},
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "ngan sach khoang 200 trieu",
+          "llm_payload": {
+            "budget_max_vnd": "200 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "budget_max_vnd": 200000000,
+            "budget_stated_vnd": 200000000,
+            "budget_min_vnd": 100000000,
+            "vehicle_type": "CAR"
+          },
+          "expected_next_slot": null,
+          "provided_slots": [
+            "vehicle_type",
+            "budget_max_vnd"
+          ],
+          "expected_next_group": [
+            "purpose"
+          ],
+          "expected_question": "Để em lọc đúng xe, anh/chị cho em xin vài thông tin nhé:\n- Anh/chị mua xe để dùng vào mục đích gì ạ — đi làm, giao hàng hay đi cá nhân?"
+        }
+      ]
+    },
+    {
+      "id": "SC082",
+      "description": "500tr khong noi nguoi -> CAR",
+      "groups": [
+        "suy-loai-xe"
+      ],
+      "initial_slots": {},
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "toi du dinh 500 trieu",
+          "llm_payload": {
+            "budget_max_vnd": "500 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "budget_max_vnd": 500000000
+          },
+          "expected_next_slot": null,
+          "provided_slots": [
+            "vehicle_type",
+            "budget_max_vnd"
+          ],
+          "expected_next_group": [
+            "purpose"
+          ],
+          "expected_question": "Để em lọc đúng xe, anh/chị cho em xin vài thông tin nhé:\n- Anh/chị mua xe để dùng vào mục đích gì ạ — đi làm, giao hàng hay đi cá nhân?"
+        }
+      ]
+    },
+    {
+      "id": "SC083",
+      "description": "3 nguoi nhung 50tr -> xung dot, hoi lai",
+      "groups": [
+        "suy-loai-xe"
+      ],
+      "initial_slots": {},
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "can 3 cho nhung chi co 50 trieu",
+          "llm_payload": {
+            "passenger_count": 3,
+            "budget_max_vnd": "50 triệu",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "passenger_count": 3,
+            "budget_max_vnd": 50000000
+          },
+          "expected_next_slot": "vehicle_type",
+          "provided_slots": [
+            "passenger_count",
+            "budget_max_vnd"
+          ],
+          "expected_next_group": [],
+          "expected_question": "Anh/chị đang tìm ô tô điện hay xe máy điện ạ?"
+        }
+      ]
+    },
+    {
+      "id": "SC084",
+      "description": "khong du tin hieu -> hoi loai xe",
+      "groups": [
+        "suy-loai-xe"
+      ],
+      "initial_slots": {},
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "em muon mua xe",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {},
+          "expected_next_slot": "vehicle_type",
+          "provided_slots": []
+        }
+      ]
+    },
+    {
+      "id": "SC085",
+      "description": "khong biet loai xe -> cau dong nhom mo dau",
+      "groups": [
+        "clarify-dong"
+      ],
+      "initial_slots": {},
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "em muon mua xe",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {},
+          "expected_next_slot": "vehicle_type",
+          "provided_slots": [],
+          "expected_next_group": [],
+          "expected_question": "Anh/chị đang tìm ô tô điện hay xe máy điện ạ?"
+        },
+        {
+          "user_message": "khong biet nua",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {},
+          "expected_next_slot": "vehicle_type",
+          "provided_slots": [],
+          "expected_next_group": [],
+          "expected_question": "Ô tô điện hay xe máy điện ạ?"
+        }
+      ]
+    },
+    {
+      "id": "SC086",
+      "description": "tuy em -> cau dong nhom mo dau",
+      "groups": [
+        "clarify-dong"
+      ],
+      "initial_slots": {},
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "em muon mua xe di lam",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {},
+          "expected_next_slot": "vehicle_type",
+          "provided_slots": [],
+          "expected_next_group": [],
+          "expected_question": "Anh/chị đang tìm ô tô điện hay xe máy điện ạ?"
+        },
+        {
+          "user_message": "tuy em quyet",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {},
+          "expected_next_slot": "vehicle_type",
+          "provided_slots": [],
+          "expected_next_group": [],
+          "expected_question": "Ô tô điện hay xe máy điện ạ?"
+        }
+      ]
+    },
+    {
+      "id": "SC087",
+      "description": "anh tu van -> cau dong nhom mo dau",
+      "groups": [
+        "clarify-dong"
+      ],
+      "initial_slots": {},
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "em can mua xe",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {},
+          "expected_next_slot": "vehicle_type",
+          "provided_slots": [],
+          "expected_next_group": [],
+          "expected_question": "Anh/chị đang tìm ô tô điện hay xe máy điện ạ?"
+        },
+        {
+          "user_message": "anh tu van giup em",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {},
+          "expected_next_slot": "vehicle_type",
+          "provided_slots": [],
+          "expected_next_group": [],
+          "expected_question": "Ô tô điện hay xe máy điện ạ?"
+        }
+      ]
+    },
+    {
+      "id": "SC088",
+      "description": "chua nghi ra -> cau dong nhom mo dau",
+      "groups": [
+        "clarify-dong"
+      ],
+      "initial_slots": {},
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "em muon mua xe di lam",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {},
+          "expected_next_slot": "vehicle_type",
+          "provided_slots": [],
+          "expected_next_group": [],
+          "expected_question": "Anh/chị đang tìm ô tô điện hay xe máy điện ạ?"
+        },
+        {
+          "user_message": "chua nghi ra",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {},
+          "expected_next_slot": "vehicle_type",
+          "provided_slots": [],
+          "expected_next_group": [],
+          "expected_question": "Ô tô điện hay xe máy điện ạ?"
+        }
+      ]
+    },
+    {
+      "id": "SC089",
+      "description": "khong ranh -> cau dong nhom mo dau",
+      "groups": [
+        "clarify-dong"
+      ],
+      "initial_slots": {},
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "em muon mua xe",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {},
+          "expected_next_slot": "vehicle_type",
+          "provided_slots": [],
+          "expected_next_group": [],
+          "expected_question": "Anh/chị đang tìm ô tô điện hay xe máy điện ạ?"
+        },
+        {
+          "user_message": "khong ranh xe",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {},
+          "expected_next_slot": "vehicle_type",
+          "provided_slots": [],
+          "expected_next_group": [],
+          "expected_question": "Ô tô điện hay xe máy điện ạ?"
+        }
+      ]
+    },
+    {
+      "id": "SC090",
+      "description": "thoi xe nao cung duoc -> cau dong nhom mo dau",
+      "groups": [
+        "clarify-dong"
+      ],
+      "initial_slots": {},
+      "expects_completion": false,
+      "turns": [
+        {
+          "user_message": "em muon mua xe",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {},
+          "expected_next_slot": "vehicle_type",
+          "provided_slots": [],
+          "expected_next_group": [],
+          "expected_question": "Anh/chị đang tìm ô tô điện hay xe máy điện ạ?"
+        },
+        {
+          "user_message": "thoi xe nao cung duoc",
+          "llm_payload": {
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {},
+          "expected_next_slot": "vehicle_type",
+          "provided_slots": [],
+          "expected_next_group": [],
+          "expected_question": "Ô tô điện hay xe máy điện ạ?"
+        }
+      ]
+    },
+    {
+      "id": "SC091",
+      "description": "LLM trả purpose_bucket đóng gói trực tiếp — không cần keyword match trên purpose tự do",
+      "groups": [
+        "purpose_bucket"
+      ],
+      "expects_completion": true,
+      "turns": [
+        {
+          "user_message": "tôi cần xe chở đi làm hàng ngày, tầm 600 triệu",
+          "llm_payload": {
+            "vehicle_type": "CAR",
+            "budget_max_vnd": "600 triệu",
+            "purpose": "đi làm hàng ngày",
+            "purpose_bucket": "work",
+            "intents": [
+              "ADVISORY"
+            ]
+          },
+          "expected_slots": {
+            "vehicle_type": "CAR",
+            "budget_max_vnd": 600000000,
+            "budget_min_vnd": 500000000,
+            "purpose": "đi làm hàng ngày",
+            "purpose_bucket": "work",
+            "budget_stated_vnd": 600000000
+          },
+          "expected_next_slot": null,
+          "provided_slots": [
+            "vehicle_type",
+            "budget_max_vnd",
+            "purpose",
+            "purpose_bucket"
+          ],
+          "expected_decision": "RETRIEVE"
+        }
+      ]
+    }
+  ]
+}
