@@ -6,6 +6,7 @@ from dataclasses import dataclass, replace
 
 import pytest
 
+from src.agents.core.actions import ASPECT_PRICE
 from src.agents.core.state import (
     UNCLEAR_UNDERSTANDING,
     CoreState,
@@ -1323,3 +1324,75 @@ def test_prompt_v2_mang_vi_du_tu_luot_loi_that() -> None:
     assert "VÍ DỤ — rút từ LƯỢT LỖI THẬT" in SYSTEM_PROMPT
     for phrase in ("vf3 lan banh bn", "chốt mẫu đầu tiên đi", "5 củ", "chưa yên tâm"):
         assert phrase in SYSTEM_PROMPT, phrase
+
+
+# ---------- [agent-migration] Bước 1: 11 cửa tất định đọc được chữ KHÔNG DẤU ----------
+
+_KHONG_DAU_STATE = CoreState(
+    session_id="s", stage=Stage.RECOMMENDED, intent=Intent.ADVISORY, recommended_ids=("c1", "c3"), slots={}
+)
+
+
+def _u_khong_dau(message: str, *, act: str = "REQUEST", intent: str = "NONE", state: CoreState | None = None):
+    raw = RawUnderstanding(dialogue_act=act, intent=intent, confidence=0.9)
+    return to_understanding(raw, state=state or _KHONG_DAU_STATE, vehicles=LP35, user_message=message)
+
+
+def test_khong_dau_van_nhan_dung_intent() -> None:
+    """Bảng ≥11 câu không dấu (plan §5.1 #3/#7/#8 + blind run 2026-08-31): mỗi
+    cửa tất định phải cho cùng kết quả như bản có dấu của nó."""
+
+    assert _u_khong_dau("dat lich lai thu vf5", intent="CATALOG_LOOKUP").intent is Intent.TEST_DRIVE
+    assert _u_khong_dau("cho anh dang ky lai thu").intent is Intent.TEST_DRIVE
+    chon = _u_khong_dau("ok chot vf3", intent="ADVISORY")
+    assert chon.dialogue_act is DialogueAct.CHOICE and chon.vehicle_ids == ("c3",)
+    nhu_cau = _u_khong_dau("anh chi can 1 chiec nho gon thoi tai di trong noi thanh", intent="ADVISORY")
+    assert nhu_cau.intent is Intent.ADVISORY and nhu_cau.question
+    assert _u_khong_dau("cho toi gap tu van vien").intent is Intent.HANDOFF
+    assert _u_khong_dau("em muon noi chuyen voi nhan vien").intent is Intent.HANDOFF
+    assert _u_khong_dau("co hop voi nhu cau cua toi khong").fit_asked is True
+    assert _u_khong_dau("lam sao de toi chot vf3").next_steps_asked is True
+    assert _u_khong_dau("thu tuc mua xe the nao").next_steps_asked is True
+    assert _u_khong_dau("pin chai ban ai mua").concern_topic == "battery"
+    assert _u_khong_dau("ham chung cu chua co tru sac thi sao").concern_topic == "charging"
+    assert _u_khong_dau("vf3 thi nen di du lich o dau").off_topic_asked is True
+    so_sanh = _u_khong_dau("VinFast VF 3 voi VinFast VF 5 All New thi cai nao hop hon", intent="ADVISORY")
+    assert so_sanh.intent is Intent.COMPARE
+    gia = _u_khong_dau("gia con VinFast VF 3 bao nhieu", intent="CATALOG_LOOKUP")
+    assert gia.aspect == ASPECT_PRICE
+
+
+def test_khong_dau_van_bo_qua_cau_phu_dinh_va_cau_hoi() -> None:
+    """Cửa bỏ dấu KHÔNG được rộng hơn cửa có dấu: phủ định trước động từ chọn,
+    câu hỏi về lái thử, nhắc tư vấn viên mà không xin gặp — vẫn không khớp."""
+
+    assert _u_khong_dau("thoi anh khong mua VinFast VF 3 nua", intent="ADVISORY").dialogue_act is not DialogueAct.CHOICE
+    assert _u_khong_dau("lai thu co ton phi khong", intent="VEHICLE_QA").intent is not Intent.TEST_DRIVE
+    assert _u_khong_dau("tu van vien noi xe nay tot", intent="VEHICLE_QA").intent is not Intent.HANDOFF
+    assert _u_khong_dau("chon VinFast VF 3", intent="ADVISORY").fit_asked is False
+
+
+@pytest.mark.parametrize(
+    ("co_dau", "khong_dau"),
+    [
+        ("đặt lịch lái thử VinFast VF 3", "dat lich lai thu VinFast VF 3"),
+        ("ok chốt VinFast VF 3", "ok chot VinFast VF 3"),
+        ("cho tôi gặp tư vấn viên", "cho toi gap tu van vien"),
+        ("có hợp với nhu cầu của tôi không", "co hop voi nhu cau cua toi khong"),
+        ("làm sao để tôi chốt VinFast VF 3", "lam sao de toi chot VinFast VF 3"),
+        ("pin dùng vài năm là chai, bán lại có ai mua không", "pin dung vai nam la chai, ban lai co ai mua khong"),
+        ("VinFast VF 3 thì nên đi du lịch ở đâu", "VinFast VF 3 thi nen di du lich o dau"),
+        ("VinFast VF 3 với VinFast VF 5 All New thì cái nào hợp hơn", "VinFast VF 3 voi VinFast VF 5 All New thi cai nao hop hon"),
+        ("giá con VinFast VF 3 bao nhiêu", "gia con VinFast VF 3 bao nhieu"),
+        ("tư vấn viên nói xe này tốt", "tu van vien noi xe nay tot"),
+        ("rẻ hơn được không", "re hon duoc khong"),
+    ],
+)
+def test_co_dau_van_giu_nguyen_hanh_vi(co_dau: str, khong_dau: str) -> None:
+    """Regression: câu CÓ DẤU cho đúng kết quả cũ, và bản không dấu của nó cho
+    cùng một `Understanding` (trừ `question`, vốn chép nguyên văn câu khách)."""
+
+    a = _u_khong_dau(co_dau, intent="ADVISORY")
+    b = _u_khong_dau(khong_dau, intent="ADVISORY")
+    for field_name in ("dialogue_act", "intent", "vehicle_ids", "fit_asked", "next_steps_asked", "off_topic_asked", "concern_topic", "aspect"):
+        assert getattr(a, field_name) == getattr(b, field_name), field_name

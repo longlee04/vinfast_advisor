@@ -13,6 +13,7 @@ from __future__ import annotations
 import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from functools import lru_cache
 from math import isfinite
 from typing import Final, Protocol
 
@@ -36,7 +37,7 @@ from src.agents.core.validate import (
 from src.agents.domain.canonical_text import build_canonical_text
 from src.agents.domain.conversation_memory import redact_sensitive
 from src.agents.domain.pricing_intent import PROVINCES, detect_province, mentions_on_road_price
-from src.agents.domain.text_normalization import normalize
+from src.agents.domain.text_normalization import has_diacritics, normalize, strip_diacritics
 from src.agents.domain.values import SlotName, SlotValue
 
 UNDERSTAND_PROMPT_VERSION: Final = "understand-v2"
@@ -335,6 +336,35 @@ def build_user_prompt(
 INTENT_CONFIDENCE: Final = 0.6
 
 
+@lru_cache(maxsize=64)
+def _folded_pattern(pattern: re.Pattern[str]) -> re.Pattern[str]:
+    """Bản KHÔNG DẤU của một regex có dấu, bọc ranh giới từ.
+
+    Ranh giới là bắt buộc (cùng lý do `text_normalization.contains_keyword`):
+    bỏ dấu làm không gian từ hẹp lại, "gan" nằm trong "ngan sach", "tram" nằm
+    trong "ba tram trieu" — không có `\b` thì cửa địa điểm bắt nhầm câu ngân sách.
+    """
+
+    return re.compile(rf"\b(?:{strip_diacritics(pattern.pattern)})\b", pattern.flags)
+
+
+def _search(pattern: re.Pattern[str], text: str) -> re.Match[str] | None:
+    """Khớp một cửa tất định trên câu khách — CHỈ bỏ dấu khi câu không có dấu.
+
+    Cùng quy tắc với `text_normalization.contains_keyword`: khách gõ có dấu thì
+    tin dấu họ gõ (hành vi cũ giữ nguyên từng lượt); câu không dấu ("dat lich
+    lai thu", "ok chot vf3") mới khớp thêm trên `canonical.folded`. Blind run
+    2026-08-31 + plan §5.1 (#3, #7, #8): các cửa này từng câm hoàn toàn trước
+    câu không dấu, và LLM thì không đủ tin để gánh thay.
+    """
+
+    text = text or ""
+    found = pattern.search(text)
+    if found is not None or has_diacritics(text):
+        return found
+    return _folded_pattern(pattern).search(build_canonical_text(text).folded)
+
+
 #: Chặng đã có một bản đề xuất trên màn hình để mà CHỈNH. Ngoài hai chặng này,
 #: "rẻ hơn" không có gì để so — điền `question` ở đó là biến một lượt khai nhu
 #: cầu thành một lượt xin đổi kết quả.
@@ -426,7 +456,7 @@ def _province_slot(
     # khách nhắc một tỉnh — "ở tỉnh hà tĩnh cơ" sau khi vừa nhận giá Hà Nội là
     # lời ĐÍNH CHÍNH tỉnh, không phải đi tìm showroom (prod 2026-08-31: lượt đó
     # bị LLM gán NEARBY và khách nhận danh sách showroom thay vì giá mới).
-    following = state.intent in _PROVINCE_INTENTS and not _LOCATION_WORDS.search(user_message.casefold())
+    following = state.intent in _PROVINCE_INTENTS and not _search(_LOCATION_WORDS, user_message.casefold())
     if not asked and intent not in _PROVINCE_INTENTS and not following:
         return None
     return province_code(user_message)
@@ -568,9 +598,9 @@ def _fit_question(user_message: str) -> bool:
     """
 
     text = user_message or ""
-    if _FIT_QUESTION.search(text):
+    if _search(_FIT_QUESTION, text):
         return True
-    return "?" in text and bool(_NEED_WORD.search(text))
+    return "?" in text and bool(_search(_NEED_WORD, text))
 
 
 def _choice_act(
@@ -593,7 +623,7 @@ def _choice_act(
     if act not in _COERCIBLE_TO_CHOICE or intent not in _CHOICE_INTENTS:
         return act
     text = user_message or ""
-    if _CHOICE_NEGATED.search(text) or not _CHOICE_VERB.search(text):
+    if _search(_CHOICE_NEGATED, text) or not _search(_CHOICE_VERB, text):
         return act
     if not _verb_before_vehicle(vehicles, text, vehicle_ids):
         return act
@@ -628,7 +658,7 @@ def _human_requested(user_message: str) -> bool:
     viên nói gì" hay "nhân viên showroom mở cửa mấy giờ" không phải lời xin chuyển.
     """
 
-    return bool(_HUMAN_REQUEST.search((user_message or "").casefold()))
+    return bool(_search(_HUMAN_REQUEST, (user_message or "").casefold()))
 
 
 #: Chủ đề lo ngại → mẫu chữ nhận diện. THỨ TỰ có nghĩa: mẫu đứng trước thắng
@@ -682,7 +712,7 @@ def _test_drive_request(user_message: str) -> bool:
     """Câu XIN đặt lịch lái thử — đọc tất định (prod 2026-08-31: "cho anh đặt
     lịch lái thử" bị LLM gán intent khác và rơi vào câu của luồng thông số)."""
 
-    return bool(_TEST_DRIVE_REQUEST.search(user_message.casefold()))
+    return bool(_search(_TEST_DRIVE_REQUEST, (user_message or "").casefold()))
 
 
 def _concern_topic(user_message: str) -> str:
@@ -694,9 +724,9 @@ def _concern_topic(user_message: str) -> str:
     câu bán hàng là khách rời cuộc.
     """
 
-    lowered = user_message.casefold()
+    lowered = (user_message or "").casefold()
     for topic, pattern in _CONCERN_PATTERNS:
-        if pattern.search(lowered):
+        if _search(pattern, lowered):
             return topic
     return ""
 
@@ -721,9 +751,9 @@ def _off_topic_question(user_message: str) -> bool:
     """
 
     text = user_message or ""
-    if _OFF_TOPIC_WORDS.search(text) or _GO_WHERE.search(text):
+    if _search(_OFF_TOPIC_WORDS, text) or _search(_GO_WHERE, text):
         return True
-    return bool(_LEISURE_WORDS.search(text)) and bool(_PLACE_QUESTION.search(text))
+    return bool(_search(_LEISURE_WORDS, text)) and bool(_search(_PLACE_QUESTION, text))
 
 
 #: Việc "đi tới cùng": chốt xe, đặt cọc, làm thủ tục.
@@ -753,9 +783,9 @@ def _next_steps_question(user_message: str) -> bool:
     """
 
     text = user_message or ""
-    if _PROCEDURE_WORDS.search(text):
+    if _search(_PROCEDURE_WORDS, text):
         return True
-    return bool(_HOW_WORDS.search(text)) and bool(_COMMIT_WORDS.search(text))
+    return bool(_search(_HOW_WORDS, text)) and bool(_search(_COMMIT_WORDS, text))
 
 
 #: Lối hỏi SO SÁNH. Chỉ xét khi câu đã có ĐỦ HAI mẫu xe đọc ra được — một mình
@@ -788,7 +818,7 @@ def _compare_turn(
 
     if len(vehicle_ids) < 2 or intent in _COMPARE_KEEP_INTENTS or act in _COMPARE_KEEP_ACTS:
         return act, intent
-    if not _COMPARATIVE.search(user_message or ""):
+    if not _search(_COMPARATIVE, user_message or ""):
         return act, intent
     settled = DialogueAct.REQUEST if act in {DialogueAct.UNCLEAR, DialogueAct.CHOICE} else act
     return settled, Intent.COMPARE
@@ -817,7 +847,7 @@ def _lookup_aspect(user_message: str, *, intent: Intent, vehicle_ids: Sequence[s
     if intent not in {Intent.CATALOG_LOOKUP, Intent.VEHICLE_QA} or not vehicle_ids:
         return ""
     text = user_message or ""
-    if _NOT_LIST_PRICE.search(text) or not _PRICE_WORDS.search(text):
+    if _search(_NOT_LIST_PRICE, text) or not _search(_PRICE_WORDS, text):
         return ""
     return ASPECT_PRICE
 
@@ -934,7 +964,7 @@ def to_understanding(
         province is not None
         and state.intent in _PROVINCE_INTENTS
         and intent in {Intent.NEARBY, Intent.NONE}
-        and not _LOCATION_WORDS.search(user_message.casefold())
+        and not _search(_LOCATION_WORDS, user_message.casefold())
     ):
         # Khách đính chính tỉnh giữa việc lăn bánh/lái thử: chạy lại đúng việc đó
         # với tỉnh mới, đừng đem họ đi tìm showroom.
