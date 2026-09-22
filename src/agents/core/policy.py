@@ -503,6 +503,14 @@ def decide(state: CoreState, u: Understanding) -> Decision:
         and u.intent is Intent.NONE
         and u.dialogue_act in {DialogueAct.SLOT_ANSWER, DialogueAct.REQUEST}
         and intent not in _VEHICLE_INTENTS
+        # Lời xin CHỈNH/ĐỔI xe ("xe khác đi") là một REQUEST được
+        # `understand._refine_question` cứu vào `question` — không phải "câu trả
+        # lời rời"; để nó đi tiếp xuống `_advise(refine=…)` như ở RECOMMENDED.
+        # Nuốt nó ở đây là đọc lại tóm tắt chiếc khách vừa nói là KHÔNG muốn.
+        # [LỆCH PLAN] Chỉ chừa REQUEST, KHÔNG chừa SLOT_ANSWER: "ngày anh đi
+        # 30km" mà LLM quên rút slot cũng mang `question` (prod 61c9dbbd) — đẩy
+        # lượt đó về đề xuất lại là đúng lỗi luật này sinh ra để chữa.
+        and not (u.dialogue_act is DialogueAct.REQUEST and u.question.strip())
     ):
         # `state.intent` là một việc cam kết (COST/ON_ROAD_PRICE/TEST_DRIVE/
         # OFFER) thì rơi xuống nhánh dưới và chạy việc đó với slot vừa gộp.

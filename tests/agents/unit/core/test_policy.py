@@ -10,6 +10,8 @@ from typing import Any
 import pytest
 
 from src.agents.core.actions import (
+    REASON_REVISED,
+    TEMPLATE_CHOSEN_SUMMARY,
     Ask,
     Book,
     EnqueueHitl,
@@ -1618,3 +1620,29 @@ def test_ke_nhu_cau_khi_dang_treo_chon_mau_lai_thu_thi_vao_luong_tu_van() -> Non
     )
     assert isinstance(d.action, Recommend)
     assert d.state_after.slots.get(N.BUDGET_MAX_VND) == 700_000_000
+
+
+# ---------- [agent-migration] Bước 1: luật 6a không nuốt lời xin đổi xe ----------
+
+
+def test_luat_6a_khong_nuot_cau_xin_doi_xe() -> None:
+    """"xe khác đi" ở CHOSEN: `understand._refine_question` đã cứu câu vào
+    `question`; luật 6a không được đọc lại tóm tắt chiếc khách vừa gạt đi mà
+    phải đi `_advise(refine=…)` → `Recommend(REASON_REVISED)` loại bộ xe cũ."""
+
+    state = S(stage=Stage.CHOSEN, intent=I.ADVISORY, chosen_vehicle_id="v1", recommended_ids=("v1", "v2"), slots=CAR_FULL)
+    d = decide(state, U(A.REQUEST, intent=I.NONE, question="xe khác đi"))
+    assert isinstance(d.action, Recommend), d.action
+    assert d.action.reason == REASON_REVISED
+    assert d.action.refine == "xe khác đi"
+    assert set(d.action.exclude_ids) == {"v1", "v2"}
+    assert not (isinstance(d.action, Reply) and d.action.template == TEMPLATE_CHOSEN_SUMMARY)
+
+
+def test_luat_6a_van_tom_tat_khi_cau_tra_loi_roi_khong_co_question() -> None:
+    """Hành vi cũ giữ nguyên: câu trả lời rời KHÔNG mang `question` (LLM không
+    chép, `_refine_question` không cứu vì có slot đổi) → vẫn `CHOSEN_SUMMARY`."""
+
+    state = S(stage=Stage.CHOSEN, intent=I.ADVISORY, chosen_vehicle_id="v1", recommended_ids=("v1", "v2"), slots=CAR_FULL)
+    d = decide(state, U(A.SLOT_ANSWER, intent=I.NONE, slots={N.REGISTRATION_PROVINCE: "HN"}))
+    assert isinstance(d.action, Reply) and d.action.template == TEMPLATE_CHOSEN_SUMMARY
