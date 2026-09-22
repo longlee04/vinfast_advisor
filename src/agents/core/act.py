@@ -82,6 +82,7 @@ from src.agents.domain.pricing_intent import (
     province_options,
     region_for_province_code,
 )
+from src.agents.domain.quote_risk import DeliveryAction, classify_draft_delivery
 from src.agents.domain.spec_tool import SPEC_TOOL_NAME
 from src.agents.domain.tco_tool import TCO_TOOL_NAME, TcoToolArgs
 from src.agents.domain.test_drive import now_in_vietnam
@@ -1513,6 +1514,40 @@ async def _recommend(
     return ActResult(text=text, cards={"recommendations": views}, state_patch=patch)
 
 
+#: Hai kết quả cổng thương mại cho phép chữ đi tới khách (`domain/quote_risk`).
+_DELIVERABLE: Final[frozenset[DeliveryAction]] = frozenset(
+    {DeliveryAction.AUTO_DELIVER, DeliveryAction.DELIVER_WITH_AUDIT}
+)
+
+
+async def _commercial_guard(text: str, state: CoreState, services: AgentServices) -> bool:
+    """Cửa CAM KẾT THƯƠNG MẠI cho chữ bot sắp gửi. `True` = đi thẳng.
+
+    `services.quote_gate is None` → `True`: đường hôm nay y nguyên, và đó cũng
+    là nút lùi khi cổng chặn nhầm trên prod (đặt `quote_gate=None` ở
+    `composition.py`, không cần revert code). Có cổng thì đọc bảng khuyến mãi
+    chuẩn từ chính cấu hình của nó, rồi giao cho luật thuần
+    `quote_risk.classify_draft_delivery` — KHÔNG gọi `quote_gate.evaluate`:
+    hàm đó cần `canonical`/`session_id` của lượt, ép HITL theo ý định khách
+    (TCO, xin gặp người) và ghi audit — cả ba đều không phải việc của `act`.
+    """
+
+    gate = services.quote_gate
+    if gate is None:
+        return True
+    config = getattr(gate, "config", None)
+    promotions = getattr(config, "standard_promotions", None)
+    decision = classify_draft_delivery(
+        text,
+        facts_verified=True,
+        **({"standard_promotions": frozenset(promotions)} if promotions is not None else {}),
+    )
+    if decision.action in _DELIVERABLE:
+        return True
+    logger.info("core.act: quote_gate chan chu bot stage=%s reasons=%s", state.stage.value, ",".join(decision.reasons))
+    return False
+
+
 async def _pitch_text(
     services: AgentServices,
     *,
@@ -1553,6 +1588,10 @@ async def _pitch_text(
         except Exception:
             logger.warning("core.act: verify hong, dung duong du phong", exc_info=True)
             verified = False
+    if verified and not await _commercial_guard(draft, state, services):
+        # Số đúng nhưng chữ hứa một cam kết thương mại (giảm giá, ưu đãi ngoài
+        # bảng, trả góp…): đi đường dự phòng tất định như khi `verify` trượt.
+        verified = False
     if verified:
         reasons = {str(item.vehicle_id): (item.reasons[0] if item.reasons else "") for item in recommendations}
         bodies = [
