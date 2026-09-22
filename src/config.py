@@ -44,6 +44,12 @@ class Settings(BaseSettings):
     #: sẽ nổ `SettingsError` ngay lúc khởi động thay vì tách theo dấu phẩy.
     #: `core.flag.customer_allowlist` là chỗ DUY NHẤT tách chuỗi này.
 
+    # Đường agent (plan agent-migration Bước 3)
+    #: Kill-switch TẮT TUYỆT ĐỐI hai móc agent, bỏ qua cờ DB `agent_feature_flags`.
+    #: `True` cần restart (`get_settings` là `lru_cache`) — dành cho sự cố; bật/tắt
+    #: thường ngày dùng `UPDATE agent_feature_flags` (hiệu lực ≤60s).
+    agent_fallback_kill_switch: bool = False
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -23,6 +23,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from src.agents.adapters.agent_flag_repository import SqlAlchemyAgentFlagAdapter
 from src.agents.adapters.bottleneck_detector import OpenAIBottleneckDetector
 from src.agents.adapters.bottleneck_signal_repository import (
     SqlAlchemyBottleneckSignalRepository,
@@ -602,6 +603,8 @@ class AgentComposition:
             location_arg_resolver=OpenAILocationArgResolver(model_name="gpt-4o"),
             spec_arg_resolver=OpenAISpecArgResolver(model_name="gpt-4o"),
             understanding=OpenAIUnderstander(),
+            # Cờ động đường agent — chỉ ĐỌC bảng `agent_feature_flags`, TTL 60s.
+            agent_flag=SqlAlchemyAgentFlagAdapter(session_factory),
         )
         self._graph = None  # lõi v1 (LangGraph) đã xoá — xem chain.py
 
