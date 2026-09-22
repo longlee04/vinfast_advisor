@@ -29,6 +29,7 @@ from src.agents.contracts import (
     VehicleMatch,
 )
 from src.agents.core.understand import UnderstandOutcome
+from src.agents.domain.agent_flag import AgentFlagState
 from src.agents.domain.bottleneck_signal import (
     BottleneckSignal,
     ConfirmedBottleneckEvidence,
@@ -603,3 +604,14 @@ class UnderstandingPort(Protocol):
     """
 
     async def understand(self, *, system_prompt: str, user_prompt: str) -> UnderstandOutcome: ...
+
+
+class AgentFlagPort(Protocol):
+    """Đọc một cờ động của đường agent (plan agent-migration Bước 3).
+
+    KHÔNG raise: DB hỏng, hàng chưa có → `None`, và `None` nghĩa là TẮT
+    (`domain/agent_flag.is_enabled_for`). Adapter tự cache TTL — nơi gọi cứ
+    hỏi mỗi lượt.
+    """
+
+    async def load(self, name: str) -> AgentFlagState | None: ...
