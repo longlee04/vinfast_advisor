@@ -2107,7 +2107,11 @@ async def _on_road_price(
         known_distance=daily is not None,
         province=code,
     )
-    closing = await _closing(services, state, vehicle_name=name, after_on_road=True)
+    # Thẻ vừa trả ĐÃ có chi phí 5 năm (lăn bánh và TCO là MỘT thẻ), nên câu kết
+    # không được mời khách "xem chi phí 5 năm" — thứ đang hiện ngay trên màn
+    # hình. `_closing` suy `has_tco` từ chặng, mà `_run_vehicle_intent` giữ
+    # `stage=CHOSEN` khi khách chưa chốt trước đó, nên phải nói rõ ở đây.
+    closing = await _closing(services, state, vehicle_name=name, has_tco=True, after_on_road=True)
     return ActResult(text=render.on_road_card_lead(vehicle_name=name, closing=closing), cards={"tco_card": card})
 
 
