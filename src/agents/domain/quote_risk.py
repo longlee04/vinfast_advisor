@@ -35,6 +35,7 @@ from pydantic import BaseModel, ConfigDict, ValidationError
 from src.agents.domain.canonical_text import (
     CanonicalText,
     MatchTier,
+    build_canonical_text,
     compile_keyword_variants,
     match_tier,
 )
@@ -577,6 +578,47 @@ def detect_risk_flags(
     return flags
 
 
+def classify_draft_delivery(
+    draft: str,
+    *,
+    output_kind: OutputKind = OutputKind.RECOMMENDATION,
+    facts_verified: bool | None,
+    standard_promotions: frozenset[str] = STANDARD_PROMOTIONS,
+) -> DeliveryDecision:
+    """Cổng CAM KẾT THƯƠNG MẠI cho một bản nháp do BOT soạn (lõi v2, `core/act`).
+
+    Khác `evaluate_generated_quote` ở chỗ đầu vào là chữ bot sắp gửi, KHÔNG phải
+    lời khách: bốn cờ rủi ro đọc trên chính bản nháp — bot hứa giảm giá, nhắc
+    ưu đãi ngoài bảng chuẩn, nói trả góp/đặt cọc, hay báo giá riêng — rồi giao
+    cho `classify_delivery` như mọi đầu ra khác.
+
+    Cụm so sánh "rẻ hơn"/"giá thấp" bị GỠ trước khi dò: trong lời khách nó là
+    một lời trả giá, còn trong bài đề xuất "VF 3 rẻ hơn VF 5" là một so sánh
+    số thật đã qua `verify` — chặn nó là đổi một lượt đang đúng (plan
+    agent-migration §R12). Bản nháp không có gì để "xin mẫu khác", nên không
+    dùng được nhánh `_asks_for_a_cheaper_model` của `detect_risk_flags`.
+    """
+
+    trimmed = _CHEAPER_COMPARATIVE.sub(" ", draft or "")
+    flags = detect_risk_flags(
+        user_message=trimmed, canonical=build_canonical_text(trimmed), standard_promotions=standard_promotions
+    )
+    sources = (
+        frozenset({OutputSource.SNAPSHOT, OutputSource.CONSTRAINED_LLM})
+        if output_kind in {OutputKind.RECOMMENDATION, OutputKind.COMPARISON}
+        else frozenset({OutputSource.CONSTRAINED_LLM})
+    )
+    return classify_delivery(
+        OutputRiskContext(
+            output_kind=output_kind,
+            source_kinds=sources,
+            facts_verified=facts_verified,
+            unresolved_entity_count=0,
+            **flags,
+        )
+    )
+
+
 def is_quote_turn(*, priced_fact_count: int, risk_flags: Mapping[str, bool]) -> bool:
     """Lượt này có phải một BÁO GIÁ không.
 
@@ -740,6 +782,7 @@ __all__ = [
     "RiskFlagFallbackReason",
     "RiskFlagPrediction",
     "classify_delivery",
+    "classify_draft_delivery",
     "classify_tier",
     "detect_risk_flags",
     "escalation_note",
