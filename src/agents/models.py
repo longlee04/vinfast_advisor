@@ -745,3 +745,26 @@ class ConversationCoreStateRow(AgentBase):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
     )
+
+
+class AgentFeatureFlagRow(AgentBase):
+    """Cờ động cho đường agent (agent_0036, plan agent-migration Bước 3).
+
+    Đọc qua `adapters/agent_flag_repository.SqlAlchemyAgentFlagAdapter` với TTL
+    cache 60s; bật/tắt bằng `UPDATE` thẳng, không cần restart. Không FK tới
+    bảng nào — đây là cấu hình vận hành, không phải dữ liệu phiên.
+    """
+
+    __tablename__ = "agent_feature_flags"
+    __table_args__ = (
+        CheckConstraint("rollout_percent BETWEEN 0 AND 100", name="ck_agent_feature_flags_rollout_percent"),
+    )
+
+    name: Mapped[str] = mapped_column(String(64), primary_key=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
+    rollout_percent: Mapped[int] = mapped_column(SmallInteger, nullable=False, server_default=text("0"))
+    #: `customer_id` ngăn bằng dấu phẩy — `domain/agent_flag.parse_allowlist` là chỗ DUY NHẤT tách.
+    customer_allowlist: Mapped[str] = mapped_column(Text, nullable=False, server_default=text("''"))
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
+    )

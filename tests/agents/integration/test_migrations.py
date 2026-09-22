@@ -38,6 +38,7 @@ EXPECTED_AGENT_TABLES = {
     # Wave 2 (T4) — bảng ưu đãi đã duyệt theo phiên.
     "session_offers",
     # Wave 3 (T7a) — bộ đếm chống spam `/agent/turn`, riêng của module agents.
+    "agent_feature_flags",
     "agent_rate_limit_counters",
     "pending_feature_mentions",
     "customer_profiles",
