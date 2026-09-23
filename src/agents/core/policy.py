@@ -534,6 +534,34 @@ def decide(state: CoreState, u: Understanding) -> Decision:
         # xoá công cả cuộc trò chuyện (prod, phiên 61c9dbbd).
         return Decision(Reply(template=TEMPLATE_CHOSEN_SUMMARY, args={"vehicle_id": state.chosen_vehicle_id}), state)
 
+    # 6c. Khách GỌI TÊN XE đích danh mà lõi chưa có gì để lọc: nói về CHÍNH
+    # những mẫu đó, đừng hỏi hồ sơ.
+    #
+    # Đo trên máy 2026-09-23: "không ý tôi là xe vf 2 và vf 3 ý" rồi "tư vấn lại
+    # cho tôi xe vf2 và vf 3" — cả hai lượt đều đọc ra ĐÚNG hai xe, nhưng lõi
+    # không có slot nào nên rơi xuống `_advise` → hỏi câu hồ sơ → chạm
+    # `MAX_ASKS` → chuyển tư vấn viên. Khách nói rõ tên xe mà bị hỏi ngân sách
+    # rồi bị đẩy sang người là lượt hỏng nặng nhất trong phiên đó.
+    #
+    # Điều kiện là lượt KHÔNG mang tiêu chí mới (`not u.slots`): "1 tỷ, chở 5
+    # người, thích VF 8" vẫn phải chạy bộ lọc theo nhu cầu. Chỉ khi lượt CHỈ có
+    # tên xe thì tên xe mới là toàn bộ ý khách.
+    # Chỉ chen vào đường TƯ VẤN: `TEST_DRIVE`, `COST`, `COMPARE`, `CATALOG_LOOKUP`…
+    # đều có nhánh riêng bên dưới và chúng biết dùng `vehicle_ids` đúng cách hơn.
+    if u.vehicle_ids and not u.slots and intent in {Intent.ADVISORY, Intent.NONE}:
+        if len(u.vehicle_ids) >= 2:
+            # Hai mẫu trở lên → so sánh, và chúng thành bộ ứng viên của phiên
+            # (cùng cách `_lookup_decision` xử lý một lượt COMPARE).
+            picked = tuple(u.vehicle_ids[:3])
+            return Decision(
+                Compare(vehicle_ids=picked),
+                state.with_(recommended_ids=picked, chosen_vehicle_id=None, pending=None),
+            )
+        return Decision(
+            Lookup(mode=LOOKUP_LOOKUP, vehicle_ids=u.vehicle_ids, aspect=u.aspect),
+            _remember_vehicle(state, u).with_(pending=None),
+        )
+
     # 6b. Lời xin CHỈNH bản đề xuất thắng việc đang theo.
     #
     # `understand` điền `question` tất định cho lượt REQUEST/SLOT_ANSWER không
@@ -549,33 +577,6 @@ def decide(state: CoreState, u: Understanding) -> Decision:
         and u.question.strip()
     ):
         return _advise(state.with_(intent=Intent.ADVISORY), slots_before, refine=u.question.strip())
-
-    # 6c. Khách GỌI TÊN XE đích danh mà lõi chưa có gì để lọc: nói về CHÍNH
-    # những mẫu đó, đừng hỏi hồ sơ.
-    #
-    # Đo trên máy 2026-09-23: "không ý tôi là xe vf 2 và vf 3 ý" rồi "tư vấn lại
-    # cho tôi xe vf2 và vf 3" — cả hai lượt đều đọc ra ĐÚNG hai xe, nhưng lõi
-    # không có slot nào nên rơi xuống `_advise` → hỏi câu hồ sơ → chạm
-    # `MAX_ASKS` → chuyển tư vấn viên. Khách nói rõ tên xe mà bị hỏi ngân sách
-    # rồi bị đẩy sang người là lượt hỏng nặng nhất trong phiên đó.
-    #
-    # Chỉ chen khi KHÔNG có slot tư vấn: có slot thì `_advise` lọc được và bản
-    # đề xuất theo nhu cầu vẫn là câu trả lời đúng hơn.
-    # Chỉ chen vào đường TƯ VẤN: `TEST_DRIVE`, `COST`, `COMPARE`, `CATALOG_LOOKUP`…
-    # đều có nhánh riêng bên dưới và chúng biết dùng `vehicle_ids` đúng cách hơn.
-    if u.vehicle_ids and intent in {Intent.ADVISORY, Intent.NONE} and not _has_advisory_slot(state):
-        if len(u.vehicle_ids) >= 2:
-            # Hai mẫu trở lên → so sánh, và chúng thành bộ ứng viên của phiên
-            # (cùng cách `_lookup_decision` xử lý một lượt COMPARE).
-            picked = tuple(u.vehicle_ids[:3])
-            return Decision(
-                Compare(vehicle_ids=picked),
-                state.with_(recommended_ids=picked, chosen_vehicle_id=None, pending=None),
-            )
-        return Decision(
-            Lookup(mode=LOOKUP_LOOKUP, vehicle_ids=u.vehicle_ids, aspect=u.aspect),
-            _remember_vehicle(state, u).with_(pending=None),
-        )
 
     if intent is Intent.ADVISORY:
         # Đã có bản đề xuất mà khách còn nói thêm một yêu cầu ("rẻ hơn", "cốp

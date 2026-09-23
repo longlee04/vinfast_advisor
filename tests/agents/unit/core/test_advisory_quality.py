@@ -455,14 +455,36 @@ def test_goi_ten_mot_xe_thi_tra_cuu_xe_do() -> None:
     assert d.action.mode == LOOKUP_LOOKUP and d.action.vehicle_ids == (V1,)
 
 
-def test_co_slot_tu_van_thi_van_uu_tien_ban_de_xuat_theo_nhu_cau() -> None:
-    """Có slot thì `_advise` lọc được — bản đề xuất theo nhu cầu vẫn đúng hơn."""
+def test_luot_mang_tieu_chi_moi_thi_van_chay_bo_loc() -> None:
+    """"1 tỷ, chở 5 người, thích VF 8" vẫn phải lọc theo nhu cầu, không nhảy sang so sánh."""
 
     from src.agents.core.actions import Recommend as RecommendAction
 
-    state = CoreState(
-        session_id="s1", stage=Stage.COLLECTING,
-        slots={N.VEHICLE_TYPE: "CAR", N.BUDGET_MAX_VND: 400_000_000, N.PURPOSE: "đi làm"},
+    state = CoreState(session_id="s1", stage=Stage.COLLECTING, slots={N.VEHICLE_TYPE: "CAR"})
+    d = decide(
+        state,
+        _u(
+            DialogueAct.SLOT_ANSWER,
+            intent=Intent.ADVISORY,
+            vehicle_ids=(V1, V2),
+            slots={N.BUDGET_MAX_VND: 1_000_000_000, N.PASSENGER_COUNT: 5},
+        ),
     )
-    d = decide(state, _u(DialogueAct.REQUEST, intent=Intent.ADVISORY, vehicle_ids=(V1, V2)))
     assert isinstance(d.action, RecommendAction)
+
+
+def test_goi_ten_xe_giua_phien_da_co_slot_van_noi_ve_xe_do() -> None:
+    """Đo trên máy 2026-09-23: "tư vấn lại cho tôi xe vf2 và vf 3" giữa phiên đã
+    có ngân sách bị luật xin-chỉnh nuốt và trả "chưa có mẫu nào khác hợp hơn"."""
+
+    from src.agents.core.actions import Compare
+
+    state = CoreState(
+        session_id="s1", stage=Stage.RECOMMENDED, intent=Intent.ADVISORY, recommended_ids=(V1, V2),
+        slots={N.VEHICLE_TYPE: "CAR", N.BUDGET_MAX_VND: 400_000_000},
+    )
+    d = decide(
+        state,
+        _u(DialogueAct.REQUEST, intent=Intent.ADVISORY, vehicle_ids=(V1, V2), question="tư vấn lại cho tôi xe vf2 và vf 3"),
+    )
+    assert isinstance(d.action, Compare)
