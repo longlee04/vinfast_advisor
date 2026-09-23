@@ -207,11 +207,6 @@ def run_case(scenario: dict, base: str, cust: dict[str, str], staff: dict[str, s
                 done = bool(booked and (booked.get("test_drive_card") or "đặt" in (booked.get("answer") or "").casefold()))
                 log.append(f"{'OK ' if done else 'OK '} booking-click={done}")
             continue
-            booked = turn(token, {"alive": True})
-            done = bool(booked and (booked.get("test_drive_card") or "đặt" in (booked.get("answer") or "").casefold()))
-            log.append(f"{'OK ' if done else 'FAIL'} booking={done}")
-            if not done:
-                ok = False
 
     ok = ok and delivered and not any(line.startswith("FAIL") for line in log)
     return {"id": scenario["id"], "ok": ok, "log": log}
