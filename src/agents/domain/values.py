@@ -80,13 +80,6 @@ class IntentType(StrEnum):
     OTHER = "OTHER"
 
 
-class PolicySubtype(StrEnum):
-    """Whether a policy question is general information or personal application."""
-
-    INFORMATION = "INFORMATION"
-    APPLICATION = "APPLICATION"
-
-
 class EmotionLevel(StrEnum):
     """Customer emotion classification used for response tone and escalation."""
 
@@ -147,23 +140,6 @@ class HitlReason(StrEnum):
     ABUSIVE_LANGUAGE = "ABUSIVE_LANGUAGE"
     THREAT = "THREAT"
     LOW_CONFIDENCE = "LOW_CONFIDENCE"
-
-
-class RouteTarget(StrEnum):
-    """High-level execution target selected by the intent router."""
-
-    AGENTIC_RAG = "AGENTIC_RAG"
-    HITL_DIRECT = "HITL_DIRECT"
-    BOTH_THEN_HITL = "BOTH_THEN_HITL"
-
-
-class PriorityLevel(StrEnum):
-    """HITL queue priority ordered from routine to urgent."""
-
-    LOW = "LOW"
-    MEDIUM = "MEDIUM"
-    HIGH = "HIGH"
-    URGENT = "URGENT"
 
 
 class PurposeBucket(StrEnum):
@@ -318,11 +294,6 @@ DECLINED_SLOT_VALUE: Final[str] = "__declined__"
 NEARBY_LOCATION_INTENTS: Final[frozenset[str]] = frozenset(
     {Intent.FIND_NEARBY_LOCATION.value, Intent.FIND_CHARGING_STATION.value}
 )
-
-
-def is_nearby_location_intent(value: object) -> bool:
-    """Chuỗi intent này có thuộc nhánh tìm địa điểm không, kể cả nhãn cũ."""
-    return isinstance(value, str) and value in NEARBY_LOCATION_INTENTS
 
 
 def is_declined(value: SlotValue) -> bool:

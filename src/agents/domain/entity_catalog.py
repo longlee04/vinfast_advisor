@@ -251,15 +251,6 @@ class EntityCatalog:
 
     aliases: tuple[EntityAlias, ...] = ()
 
-    def for_category(self, category: EntityCategory) -> tuple[EntityAlias, ...]:
-        return tuple(item for item in self.aliases if item.category is category)
-
-    @property
-    def max_token_count(self) -> int:
-        """Cửa sổ token dài nhất mà Lớp 2 cần cắt. Danh mục rỗng → 1."""
-
-        return max((item.token_count for item in self.aliases), default=1)
-
     def canonical_names(self, category: EntityCategory) -> tuple[str, ...]:
         """Giá trị chuẩn đã khử trùng, giữ thứ tự — dùng để gợi ý cho khách."""
 

@@ -69,11 +69,6 @@ class PendingSlotRequest:
 
         return replace(self, turn_count=self.turn_count + 1)
 
-    def filled_with(self, value: object) -> dict[str, Any]:
-        """Form sau khi điền giá trị khách vừa cung cấp."""
-
-        return {**dict(self.partial_form), self.missing_slot: value}
-
     def to_payload(self) -> dict[str, Any]:
         """Dạng JSON để lưu vào cột `conversation_sessions.pending_slot_request`."""
 

@@ -23,7 +23,7 @@ THUẦN Python (mục 6.5b): không SQLAlchemy/FastAPI/LangGraph/LLM SDK.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from typing import Any, Final
@@ -152,9 +152,6 @@ class PendingIntentConfirmation:
 
     def exhausted(self, limit: int = MAX_CONFIRMATION_TURNS) -> bool:
         return self.turn_count >= limit
-
-    def asked_again(self) -> PendingIntentConfirmation:
-        return replace(self, turn_count=self.turn_count + 1)
 
     def to_payload(self) -> dict[str, Any]:
         """Dạng JSON cho cột `conversation_sessions.pending_intent_confirmation`."""

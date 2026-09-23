@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
-from datetime import datetime, timedelta
+from datetime import timedelta
 from uuid import UUID, uuid4
 
 from sqlalchemy import delete, func, or_, select
@@ -40,7 +40,7 @@ from src.agents.models import (
     ConversationSummaryRow,
     ConversationTurnOutcomeRow,
 )
-from src.agents.ports import ClockPort, SessionSummary
+from src.agents.ports import ClockPort
 from src.agents.services.conversation_memory import _turn_result as _normalized_turn_result
 
 
@@ -722,31 +722,6 @@ class SqlAlchemyConversationMemoryRepository:
                 where=(statement.excluded.summarized_through_turn >= ConversationSummaryRow.summarized_through_turn),
             )
         )
-
-    async def list_active_sessions(self, since: datetime) -> list[SessionSummary]:
-        """Các phiên ACTIVE có hoạt động gần đây (C7) — dùng index `(status, last_activity_at)`."""
-
-        statement = (
-            select(
-                ConversationSessionRow.session_id,
-                ConversationSessionRow.customer_id,
-                ConversationSessionRow.last_activity_at,
-            )
-            .where(
-                ConversationSessionRow.status == ConversationState.ACTIVE.value,
-                ConversationSessionRow.last_activity_at >= since,
-            )
-            .order_by(ConversationSessionRow.last_activity_at.desc())
-        )
-        rows = (await self.session.execute(statement)).all()
-        return [
-            SessionSummary(
-                session_id=row.session_id,
-                customer_id=row.customer_id,
-                last_activity_at=row.last_activity_at,
-            )
-            for row in rows
-        ]
 
     async def _assert_owner(self, session_id: str, customer_id: str, *, lock: bool) -> None:
         statement = select(ConversationSessionRow.customer_id).where(

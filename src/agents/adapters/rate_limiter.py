@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Final
 
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from src.agents.adapters.unit_of_work import SqlAlchemyRateLimitUnitOfWork
 from src.agents.logging import get_agent_logger
@@ -83,10 +83,6 @@ class PostgresTurnRateLimiter:
         policy: TurnRateLimitPolicy | None = None,
     ) -> PostgresTurnRateLimiter:
         return cls(SqlAlchemyRateLimitUnitOfWork(session_factory=session_factory), policy)
-
-    @classmethod
-    def from_engine(cls, engine: AsyncEngine, policy: TurnRateLimitPolicy | None = None) -> PostgresTurnRateLimiter:
-        return cls.from_session_factory(async_sessionmaker(engine, expire_on_commit=False), policy)
 
     async def allow(self, key: str, *, now: datetime | None = None) -> bool:
         """Đếm một lượt và cho biết nó còn nằm trong hạn mức hay không.

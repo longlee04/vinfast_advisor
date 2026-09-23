@@ -109,18 +109,6 @@ def stage_of(form: Mapping[str, Any] | None) -> PostPitchStage | None:
 _PRICE_KEY: Final[str] = "vehicle_price_vnd"
 
 
-def remember_vehicle_price(price_vnd: str) -> dict[str, Any]:
-    """Nhớ GIÁ NIÊM YẾT của mẫu đang bàn, để lúc cấp ưu đãi nói được "còn bao nhiêu".
-
-    Ghi ở đây vì `chain._cost_summary` là chỗ duy nhất vừa biết mẫu xe vừa vừa
-    đọc xong giá từ snapshot. Tầng duyệt của tư vấn viên không có cổng catalog
-    nào, nên không có dòng này thì thông báo ưu đãi chỉ nói được mức giảm — và
-    bắt khách tự trừ ra con số họ sẽ đem đi so với đại lý.
-    """
-
-    return {_PRICE_KEY: price_vnd}
-
-
 def vehicle_price(form: Mapping[str, Any] | None) -> str | None:
     """Giá niêm yết đã nhớ của mẫu đang bàn, nếu có."""
 
@@ -128,22 +116,6 @@ def vehicle_price(form: Mapping[str, Any] | None) -> str | None:
         return None
     value = form.get(_PRICE_KEY)
     return value.strip() if isinstance(value, str) and value.strip() else None
-
-
-def remember_chosen_vehicle(vehicle_name: str) -> dict[str, Any]:
-    """Ghi tên mẫu đang bàn vào form mà KHÔNG đụng tới chặng.
-
-    Nút khung giờ sinh từ công cụ tìm showroom (khách trả lời câu hỏi vị trí)
-    không đi qua `after_choice`, nên lượt sau bấm nút thì không ai biết đang đặt
-    lịch cho xe nào — và thiếu tên xe thì không tra được `vehicle_id`, lịch
-    không ghi được. Bug thật trên prod 2026-08-27: nút hiện đủ, bấm vào lại nhận
-    một thẻ xe.
-
-    Khác `after_choice` ở chỗ nó KHÔNG chuyển chặng: khách mới trả lời câu hỏi
-    vị trí, chưa quyết định gì thêm.
-    """
-
-    return {_VEHICLE_KEY: vehicle_name}
 
 
 def chosen_vehicle(form: Mapping[str, Any] | None) -> str | None:
@@ -250,18 +222,6 @@ def hitl_wait_expired(form: Mapping[str, Any] | None, *, now: datetime) -> bool:
     if since.tzinfo is None:
         since = since.replace(tzinfo=moment.tzinfo)
     return moment - since > HITL_WAIT_LIMIT
-
-
-def after_test_drive_accepted(form: Mapping[str, Any] | None) -> dict[str, Any]:
-    """Khách nhận lời lái thử ⇒ chờ họ chọn showroom + khung giờ.
-
-    Không đặt lịch ngay: hệ chưa biết khách rảnh lúc nào, mà đoán giờ ở bước này
-    là hẹn khách tới lúc không ai đợi.
-    """
-
-    updated = dict(form or {})
-    updated[_STAGE_KEY] = PostPitchStage.AWAITING_SLOT.value
-    return updated
 
 
 def close(form: Mapping[str, Any] | None) -> dict[str, Any]:

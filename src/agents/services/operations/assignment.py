@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from uuid import UUID
 
 from src.agents.adapters.assignment_repository import (
@@ -10,16 +9,6 @@ from src.agents.adapters.assignment_repository import (
     CustomerAssignmentDto,
 )
 from src.agents.ports import UnitOfWorkPort
-
-
-@dataclass(frozen=True, slots=True)
-class AssignmentOperationResult:
-    """Result of an assignment or reassignment action."""
-
-    success: bool
-    assignment_id: UUID | None = None
-    previous_advisor_id: str | None = None
-    new_advisor_id: str | None = None
 
 
 class AssignmentOperations:

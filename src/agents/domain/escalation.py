@@ -151,17 +151,6 @@ _TIER_RANK: Final[dict[MatchTier, int]] = {
 }
 
 
-def _contains_phrase(haystack: str, needle: str) -> bool:
-    """Wrapper ngược-tương thích: khớp `needle` trên chuỗi đã chuẩn hoá.
-
-    Giữ chữ ký cũ (haystack là chuỗi folded, needle là keyword folded) nhưng
-    triển khai qua `match_tier` — mọi so khớp keyword đi đúng một bộ duy nhất.
-    """
-
-    canonical = CanonicalText(original=haystack, folded=haystack, leet_decoded=haystack)
-    return match_tier(canonical, needle) is not MatchTier.NONE
-
-
 def _any_needle_matches(canonical: CanonicalText, needles: tuple[str, ...]) -> bool:
     return any(match_tier(canonical, needle) is not MatchTier.NONE for needle in needles)
 
@@ -175,24 +164,6 @@ def _best_hazard_tier(canonical: CanonicalText, hazard: str) -> MatchTier:
         if _TIER_RANK[tier] > _TIER_RANK[best]:
             best = tier
     return best
-
-
-def _hazard_confirmed(canonical: CanonicalText, hazard: str) -> bool:
-    """Hazard có được xác nhận trên canonical không, xét độ mơ hồ.
-
-    Hazard không mơ hồ: khớp ở BẤT KỲ dạng nào (kể cả folded/leet) cũng tin.
-    Hazard mơ hồ: chỉ tin khi khớp ORIGINAL. "Chỉ khớp folded" xảy ra đúng khi
-    original CÓ DẤU mà từ thật khác hazard ("xe của tôi đang chạy" — dấu phân
-    biệt nghĩa); còn original KHÔNG dấu thì needle folded khớp thẳng original
-    (ORIGINAL) — không dấu là chế độ gõ phổ biến, không được tắt handoff.
-    """
-
-    tier = _best_hazard_tier(canonical, hazard)
-    if tier is MatchTier.NONE:
-        return False
-    if hazard in _AMBIGUOUS_HAZARDS:
-        return tier is MatchTier.ORIGINAL
-    return True
 
 
 def _critical_safety(canonical: CanonicalText, *, corroboration: bool) -> bool:

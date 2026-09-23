@@ -473,35 +473,6 @@ class SqlAlchemyMessageRepository:
     session: AsyncSession
     clock: ClockPort
 
-    async def find_user_by_client_turn(self, session_id: UUID, client_turn_id: str) -> tuple[UUID, datetime] | None:
-        row = (
-            await self.session.execute(
-                select(ConversationMessageRow.message_id, ConversationMessageRow.created_at)
-                .where(
-                    ConversationMessageRow.session_id == session_id,
-                    ConversationMessageRow.role == "USER",
-                    ConversationMessageRow.client_turn_id == client_turn_id,
-                )
-                .limit(1)
-            )
-        ).first()
-        return (row.message_id, row.created_at) if row is not None else None
-
-    async def find_assistant_after(self, session_id: UUID, created_after: datetime) -> tuple[UUID, str] | None:
-        row = (
-            await self.session.execute(
-                select(ConversationMessageRow.message_id, ConversationMessageRow.content)
-                .where(
-                    ConversationMessageRow.session_id == session_id,
-                    ConversationMessageRow.role == "ASSISTANT",
-                    ConversationMessageRow.created_at >= created_after,
-                )
-                .order_by(ConversationMessageRow.created_at, ConversationMessageRow.message_id)
-                .limit(1)
-            )
-        ).first()
-        return (row.message_id, row.content) if row is not None else None
-
     async def add(
         self,
         *,

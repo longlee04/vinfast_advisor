@@ -786,18 +786,6 @@ def need_lead(
     return assert_clean(tidy_number(f"Với nhu cầu {need}, {vehicle_name}{tail}."))
 
 
-def ask_province_for_price() -> str:
-    """Câu hỏi tỉnh của lượt GIÁ LĂN BÁNH — không phải câu của lượt lái thử.
-
-    `SLOT_QUESTIONS["registration_province"]` nói "để em tìm showroom gần nhất":
-    đúng cho lượt đặt lịch, nhưng khách vừa hỏi TIỀN. Phí trước bạ và biển số
-    khác nhau theo tỉnh nên đây mới là lý do thật của câu hỏi, và nói đúng lý do
-    là cách duy nhất để khách chịu trả lời thêm một câu.
-    """
-
-    return assert_clean("Anh/chị đăng ký xe ở tỉnh/thành nào để em tính đúng phí lăn bánh ạ?")
-
-
 def vnd_full(value: object) -> str:
     """Số tiền đủ chữ số kiểu niêm yết: 899000000 → "899.000.000đ".
 
@@ -1013,20 +1001,6 @@ def policy_review_draft(*, user_message: str) -> str:
     )
 
 
-def policy_no_source() -> str:
-    """Hỏi chính sách mà không có tài liệu nào để dựa vào — nói thật, mời TVV.
-
-    Câu chính sách là câu SAI ĐẮT nhất (bảo hành mấy năm, trả góp bao nhiêu phần
-    trăm): trả lời bằng trí nhớ mô hình là hứa thay công ty. Không nguồn thì
-    không câu trả lời, đúng cách `no_fact` xử câu hỏi về xe.
-    """
-
-    return assert_clean(
-        "Chính sách này em chưa có tài liệu chính thức để trả lời chính xác ạ. "
-        "Em nhờ tư vấn viên xác nhận lại cho anh/chị nhé?"
-    )
-
-
 def test_drive_needs_location() -> str:
     """Chữ đi kèm thẻ lái thử `needs_location=True` — mời chọn vị trí TRÊN THẺ.
 
@@ -1188,37 +1162,6 @@ def confirm_offer_label(vehicle_name: str) -> str:
     """
 
     return assert_clean(f"xin ưu đãi cho {vehicle_name or 'mẫu xe anh/chị chọn'}")
-
-
-def offer_review_summary(snapshot: object) -> str:
-    """Dòng tổng hợp cho TVV đọc ngay trong `content` của mục duyệt."""
-
-    needs = list(getattr(snapshot, "needs", ()) or ())
-    considered = list(getattr(snapshot, "considered_vehicles", ()) or ())
-    bottlenecks = list(getattr(snapshot, "bottlenecks", ()) or ())
-    parts = []
-    if considered:
-        parts.append("Quan tâm: " + ", ".join(considered[:3]))
-    if needs:
-        parts.append("Nhu cầu: " + "; ".join(needs[:5]))
-    if bottlenecks:
-        labels = {"PRICE": "giá", "CHARGING": "sạc", "BATTERY": "pin", "RANGE": "tầm chạy"}
-        parts.append(
-            "Lăn tăn: "
-            + "; ".join(
-                f'{labels.get(str(getattr(item, "bottleneck", "")).split(".")[-1], "khác")} ("{getattr(item, "verbatim_quote", "")[:60]}")'
-                for item in bottlenecks[:3]
-            )
-        )
-    if not parts:
-        parts.append("Chưa ghi nhận nhu cầu hay điểm lăn tăn cụ thể.")
-    return "Tổng hợp khách — " + " | ".join(parts)
-
-
-def offer_review_content(*, vehicle_name: str, user_message: str) -> str:
-    """(Cũ) mô tả nội bộ — GIỮ cho tương thích test cũ, không còn gửi đi đâu."""
-
-    return f"Khách hỏi ưu đãi cho {vehicle_name or 'xe chưa xác định'}. Nguyên văn: {user_message.strip()[:400]}"
 
 
 def offer_review_draft(*, vehicle_name: str, promo_count: int) -> str:

@@ -434,12 +434,6 @@ def is_vehicle_overview_request(message: str) -> bool:
     return classify_query_attribute(message) is VehicleAttribute.OVERVIEW
 
 
-def _copy_index(vehicle_name: str) -> int:
-    """Choose repeat-resistant copy deterministically from the vehicle name."""
-
-    return sum((index + 1) * ord(character) for index, character in enumerate(vehicle_name)) % len(_OPENING_TEMPLATES)
-
-
 def _select_colors(catalog_colors: ColorInfo | None, rag_colors: list[EvidenceItem]) -> ColorInfo | None:
     """Prefer non-empty catalog colours, then non-empty RAG colour evidence."""
 

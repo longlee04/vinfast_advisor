@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal
-from enum import StrEnum
 
 from pydantic import BaseModel
 
@@ -23,16 +22,6 @@ class AdjustmentOutOfBoundsError(ProductDomainError):
 
 class PromotionExpiredError(ProductDomainError):
     """Raised when a promotion is not ACTIVE or is past its validity window."""
-
-
-class AdjustmentBoundary(StrEnum):
-    """Which boundary dimension applies to an adjustment attempt."""
-
-    VND = "VND"
-    PERCENT = "PERCENT"
-    MONTHS = "MONTHS"
-    GIFT_VALUE = "GIFT_VALUE"
-    GIFT_CODE = "GIFT_CODE"
 
 
 class AdjustmentValue(BaseModel):

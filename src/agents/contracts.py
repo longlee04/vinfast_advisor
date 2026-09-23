@@ -134,26 +134,6 @@ class LLMExtractionPayload(BaseModel):
     human_requested: bool = False
 
 
-class ClaimCheck(BaseModel):
-    """One guardrail claim check result."""
-
-    model_config = ConfigDict(frozen=True)
-
-    category: str
-    passed: bool
-    detail: str | None = None
-
-
-class GuardrailResult(BaseModel):
-    """Structured guardrail outcome for diagnostics and retries."""
-
-    model_config = ConfigDict(frozen=True)
-
-    passed: bool
-    checks: list[ClaimCheck] = Field(default_factory=list)
-    failure_reason: str | None = None
-
-
 @dataclass(frozen=True, slots=True)
 class FeatureAssertion:
     """Đầu ra thống nhất của Lớp 2, mọi nhánh 2a-2e (mục 7.2 schema, A1-3)."""

@@ -268,10 +268,6 @@ class PendingFeatureMentionPort(Protocol):
 class MessageRepository(Protocol):
     """Durable conversation messages and client-turn idempotency lookup."""
 
-    async def find_user_by_client_turn(self, session_id: UUID, client_turn_id: str) -> tuple[UUID, datetime] | None: ...
-
-    async def find_assistant_after(self, session_id: UUID, created_after: datetime) -> tuple[UUID, str] | None: ...
-
     async def add(
         self,
         *,
@@ -289,15 +285,6 @@ class MessageRepository(Protocol):
     async def latest_content(self, session_id: UUID) -> str | None:
         """Nội dung tin nhắn CUỐI của phiên (khách/bot/TVV), hoặc `None` khi chưa có tin."""
         ...
-
-
-@dataclass(frozen=True, slots=True)
-class SessionSummary:
-    """Một phiên ACTIVE hoạt động gần đây — đầu vào màn Cơ hội bán hàng."""
-
-    session_id: UUID
-    customer_id: str
-    last_activity_at: datetime
 
 
 class ConversationMemoryRepository(Protocol):
@@ -323,9 +310,6 @@ class ConversationMemoryRepository(Protocol):
     ) -> tuple[ConversationSummary | None, tuple[ConversationMessage, ...]]: ...
 
     async def save_summary(self, session_id: str, customer_id: str, summary: ConversationSummary) -> None: ...
-
-    # T10 (C7): các phiên ACTIVE hoạt động gần đây — nguồn cho màn Cơ hội bán hàng.
-    async def list_active_sessions(self, since: datetime) -> list[SessionSummary]: ...
 
 
 class ConversationRepository(Protocol):

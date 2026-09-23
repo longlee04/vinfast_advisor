@@ -207,12 +207,6 @@ class FormState(BaseModel):
             }
         )
 
-    @property
-    def has_quote_memory(self) -> bool:
-        """Phiên này đã từng gửi đi một báo giá được đánh giá hay chưa."""
-
-        return self.last_quote_evaluation is not None
-
 
 def _coerce_vehicle_type(value: SlotValue) -> VehicleType | None:
     if isinstance(value, VehicleType):

@@ -326,11 +326,6 @@ class TestDriveServiceImpl:
             issued_at=issued_at,
         )
 
-    def showroom_address(self, showroom: str) -> str | None:
-        """Địa chỉ từ danh sách slot gần nhất đã gửi khách."""
-
-        return self._showroom_addresses.get(showroom)
-
     async def book(self, *, customer_id: str, vehicle_id: UUID, showroom: str, scheduled_at: datetime) -> UUID | None:
         """Chốt một khung giờ khách vừa chọn. `None` khi khung vừa đầy."""
 

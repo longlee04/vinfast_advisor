@@ -239,57 +239,6 @@ class ConversationServiceImpl:
                 await transaction.sessions.upsert_slot(session_id, slot_name, value)
             return await transaction.runs.create_run(session_id)
 
-    async def begin_idempotent_turn(
-        self,
-        session_id: str,
-        customer_id: str,
-        client_turn_id: str,
-        user_message: str,
-    ) -> str | None:
-        """Reserve a client turn and return an existing answer on replay.
-
-        The user message is inserted in its own short transaction before the
-        graph runs. A unique `(conversation_id, client_turn_id)` index makes
-        the reservation durable and prevents duplicate user messages.
-        """
-
-        if not client_turn_id.strip():
-            raise ValueError("client_turn_id must not be empty")
-        if not user_message.strip():
-            raise ValueError("user_message must not be empty")
-        async with self._unit_of_work.transaction() as transaction:
-            await transaction.sessions.ensure_session(session_id, customer_id, None)
-            existing = await transaction.messages.find_user_by_client_turn(UUID(session_id), client_turn_id)
-            if existing is not None:
-                answer = await transaction.messages.find_assistant_after(UUID(session_id), existing[1])
-                return answer[1] if answer is not None else None
-            await transaction.messages.add(
-                session_id=UUID(session_id),
-                role="USER",
-                content=user_message,
-                client_turn_id=client_turn_id,
-            )
-        return None
-
-    async def append_message(
-        self,
-        session_id: str,
-        customer_id: str,
-        role: str,
-        content: str,
-        durable_for_review_id: UUID | None = None,
-    ) -> UUID:
-        """Append one authenticated durable message to an owned session."""
-
-        async with self._unit_of_work.transaction() as transaction:
-            await transaction.sessions.ensure_session(session_id, customer_id, None)
-            return await transaction.messages.add(
-                session_id=UUID(session_id),
-                role=role,
-                content=content,
-                durable_for_review_id=durable_for_review_id,
-            )
-
     async def list_messages(self, session_id: str, customer_id: str, limit: int = 100) -> list[ConversationMessage]:
         """Return durable messages after enforcing session ownership."""
 
@@ -400,16 +349,6 @@ class ConversationServiceImpl:
 
         async with self._unit_of_work.transaction() as transaction:
             return await transaction.sessions.delete_session(UUID(session_id), None)
-
-    async def is_advisor_active(self, session_id: str) -> bool:
-        """Kiểm tra xem phiên có tư vấn viên đang phụ trách trực tiếp không."""
-
-        try:
-            async with self._unit_of_work.transaction() as transaction:
-                row = await transaction.sessions.get_session(UUID(session_id))
-                return row is not None and row.assigned_advisor_id is not None and row.status == "ACTIVE"
-        except Exception:
-            return False
 
     async def release_to_agent(self, session_id: str) -> bool:
         """Chuyển phiên tư vấn từ Advisor lại cho AI Agent."""

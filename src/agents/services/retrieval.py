@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from src.agents.adapters.catalog_reader import CatalogReadAdapter
 from src.agents.adapters.feature_retriever import FeatureRetrievalAdapter
-from src.agents.contracts import FeatureAssertion, FilterCriteria, VehicleFacts
+from src.agents.contracts import FeatureAssertion, FilterCriteria
 from src.agents.domain.values import VehicleType
 from src.agents.logging import get_agent_logger, log_file_execution
 from src.agents.ports import CatalogReadPort, EmbeddingPort, FeatureRetrievalPort
@@ -83,9 +83,3 @@ class RetrievalServiceImpl:
                 vehicle_type=resolved,
                 candidate_ids=list(candidate_ids),
             )
-
-    async def candidate_facts(self, candidate_ids: Sequence[UUID]) -> list[VehicleFacts]:
-        """Read catalog facts for a list of candidate IDs (used by preview)."""
-
-        logger.info("RetrievalServiceImpl loading facts for %d candidates", len(candidate_ids))
-        return await self._catalog_reader.vehicle_facts(list(candidate_ids))

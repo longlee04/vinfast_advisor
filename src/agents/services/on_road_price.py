@@ -58,11 +58,6 @@ class OnRoadPriceServiceImpl:
         )
         return text
 
-    async def compute_for(self, *, vehicle_id: UUID, province: str, vehicle_name: str) -> str | None:
-        """Tính thẳng khi tỉnh đã có sẵn (lượt nối tiếp câu hỏi slot)."""
-
-        return await self._compute(vehicle_id, province, vehicle_name)
-
     async def answer_with_pending(
         self, *, user_message: str, canonical: CanonicalText, vehicle_id: UUID | None, vehicle_name: str
     ) -> tuple[str | None, PendingSlotRequest | None]:

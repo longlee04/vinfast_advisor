@@ -10,10 +10,9 @@ from typing import Final
 from src.agents.contracts import FilterCriteria
 from src.agents.domain.slot_mapping import to_filter_criteria
 from src.agents.domain.slot_policy import missing_required, next_slot
-from src.agents.domain.slot_salvage import is_non_answer, is_vague_answer
 from src.agents.domain.slot_tree import opening_group_for
 from src.agents.domain.values import DECLINED_SLOT_VALUE, SlotName, SlotValue, VehicleType
-from src.agents.domain.vehicle_type_inference import CAR_MIN_PRICE_VND, infer_vehicle_type
+from src.agents.domain.vehicle_type_inference import infer_vehicle_type
 from src.agents.prompts.closed_clarify import closed_clarify_question
 from src.agents.prompts.combined_intake import (
     INTAKE_TOPICS,
@@ -202,10 +201,6 @@ class SlotPlanningServiceImpl:
         """
         return get_question_variant(slot, retry_count, seed)
 
-    def should_close_group_retry(self, user_message: str) -> bool:
-        """Decide whether vague group answer needs closed clarification."""
-        return is_non_answer(user_message) or is_vague_answer(user_message)
-
     def exhausted_notice(self, *, ask_counts: Mapping[str, int] | None = None) -> str | None:
         """Câu báo khi có slot bị bỏ vì hỏi quá quota — thay cho im lặng (B mục 3).
 
@@ -223,15 +218,6 @@ class SlotPlanningServiceImpl:
         if not exhausted:
             return None
         return f"Dạ em sẽ tư vấn với những thông tin {CUSTOMER_ADDRESS} đã cung cấp ạ."
-
-    def vehicle_type_signals_conflict(self, *, passenger_count: object, budget_max_vnd: object) -> bool:
-        """Detect passenger and budget signals that cannot support inferred car type."""
-        return (
-            isinstance(passenger_count, int)
-            and passenger_count >= 3
-            and isinstance(budget_max_vnd, (int, float))
-            and budget_max_vnd < CAR_MIN_PRICE_VND
-        )
 
     def next_group(
         self,

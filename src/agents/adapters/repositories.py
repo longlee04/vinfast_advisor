@@ -495,22 +495,6 @@ class SqlAlchemyReviewQueueRepository:
         }
 
 
-class _PendingRepository:
-    """Chỗ giữ chỗ cho repository chưa tới lượt trong lịch Khối 4.
-
-    `AgentTransaction` bó đủ 4 repository (`ports.py` đã đóng băng), nhưng mỗi
-    task chỉ thay một phần: gọi nhầm nhánh chưa làm phải nổ ngay chứ không trả
-    dữ liệu rỗng im lặng.
-    """
-
-    def __init__(self, name: str, owner: str) -> None:
-        self._name = name
-        self._owner = owner
-
-    def __getattr__(self, attribute: str) -> object:
-        raise NotImplementedError(f"{self._name}.{attribute} chưa có — {self._owner} sẽ điền")
-
-
 class SqlAlchemyNoticeRepository:
     """Implement `NoticeRepository` (A8-4).
 

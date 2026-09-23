@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import random
 import re
 import unicodedata
 from dataclasses import dataclass
@@ -162,7 +161,6 @@ def is_vague_answer(user_message: str) -> bool:
 # SHADOW mặc định: chỉ đo, không đổi kết quả. Judge lỗi → không thêm gì.
 VAGUE_LLM_SHADOW_MODE: Final[bool] = True
 VAGUE_CONFIDENCE_THRESHOLD: Final[float] = 0.90
-VAGUE_SAMPLE_RATE: Final[float] = 0.20
 
 
 class VagueFallbackReason(StrEnum):
@@ -200,12 +198,6 @@ def merge_vague_verdict(
     if shadow_mode or prediction is None:
         return False
     return prediction.is_vague and prediction.confidence >= threshold
-
-
-def should_sample_vague() -> bool:
-    """Lấy mẫu judge vague — không có turn counter rẻ tại điểm gọi."""
-
-    return random.random() < VAGUE_SAMPLE_RATE
 
 
 def salvage_slot(slot: SlotName, user_message: str, vehicle_type: VehicleType | None = None) -> SlotValue | None:

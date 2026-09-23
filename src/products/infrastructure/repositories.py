@@ -309,33 +309,6 @@ def _build_detail(row: VehicleRow) -> VehicleDetail:
     )
 
 
-def _build_snapshot(row: VehicleRow, definitions: list[FeatureDefinition]) -> CatalogSnapshot:
-    detail = _build_detail(row)
-
-    # Resolve promotions via promotion_vehicles
-    promotions: list[Promotion] = []
-
-    return CatalogSnapshot(
-        vehicle=detail.vehicle,
-        specs=detail.specs,
-        prices=detail.prices,
-        promotions=promotions,
-        battery_policies=detail.battery_policies,
-        feature_flags=detail.feature_flags,
-        feature_definitions=definitions,
-    )
-
-    return CatalogSnapshot(
-        vehicle=detail.vehicle,
-        specs=detail.specs,
-        prices=detail.prices,
-        promotions=promotions,
-        battery_policies=detail.battery_policies,
-        feature_flags=detail.feature_flags,
-        feature_definitions=definitions,
-    )
-
-
 class SqlAlchemyVehicleRepository(VehicleRepository):
     """Refactored Repository querying unified Vehicle Registry and child tables."""
 

@@ -118,18 +118,6 @@ class SqlAlchemyCustomerAssignmentRepository:
         await self._session.flush()
         return (res.rowcount or 0) > 0
 
-    async def get_active_assignment(self, customer_id: str) -> CustomerAdvisorAssignmentRow | None:
-        """Return the current active assignment for a customer, if any."""
-        stmt = (
-            select(CustomerAdvisorAssignmentRow)
-            .where(
-                CustomerAdvisorAssignmentRow.customer_id == customer_id,
-                CustomerAdvisorAssignmentRow.status == "ACTIVE",
-            )
-            .limit(1)
-        )
-        return (await self._session.execute(stmt)).scalar_one_or_none()
-
     async def get_customer_history(self, customer_id: str) -> list[CustomerAdvisorAssignmentRow]:
         """Return all assignment records for a customer in reverse chronological order."""
         stmt = (
@@ -261,12 +249,3 @@ class SqlAlchemyCustomerAssignmentRepository:
         session_row.updated_at = now
         await self._session.flush()
         return previous_advisor_id, new_advisor_id
-
-    async def get_conversation_reassignments(self, session_id: UUID) -> list[ConversationReassignmentRow]:
-        """Return all reassignment history records for a conversation session."""
-        stmt = (
-            select(ConversationReassignmentRow)
-            .where(ConversationReassignmentRow.session_id == session_id)
-            .order_by(desc(ConversationReassignmentRow.created_at))
-        )
-        return list((await self._session.execute(stmt)).scalars().all())

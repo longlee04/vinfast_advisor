@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Final
@@ -65,20 +65,6 @@ class CanonicalText:
     original: str
     folded: str
     leet_decoded: str
-
-    @classmethod
-    def from_state(cls, state: Mapping[str, object]) -> CanonicalText:
-        """Dựng từ ba field `canonical_*` trong AgentState — node không tự sinh.
-
-        State thiếu field (test double, graph cũ) → canonical rỗng, gate chấm
-        không khớp gì — fail-closed, không tự normalize bù.
-        """
-
-        return cls(
-            original=str(state.get("canonical_original") or ""),
-            folded=str(state.get("canonical_folded") or ""),
-            leet_decoded=str(state.get("canonical_leet_decoded") or ""),
-        )
 
 
 def _original_form(text: str) -> str:

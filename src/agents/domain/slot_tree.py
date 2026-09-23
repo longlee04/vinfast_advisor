@@ -25,33 +25,6 @@ from src.agents.domain.values import SlotName, VehicleType
 
 FIRST_SLOT: SlotName = SlotName.VEHICLE_TYPE
 
-# Nhóm A — HARD_FILTER_SLOTS: SQL Layer 1 lọc trực tiếp được, đủ để cho khách "xem hàng".
-# Nhóm B — REFINEMENT_SLOTS: cần cho scoring/TCO/lý do tư vấn cá nhân hoá, KHÔNG chặn preview.
-HARD_FILTER_SLOTS: dict[VehicleType, tuple[SlotName, ...]] = {
-    VehicleType.CAR: (
-        SlotName.VEHICLE_TYPE,
-        SlotName.BUDGET_MAX_VND,
-        SlotName.PASSENGER_COUNT,
-    ),
-    VehicleType.ELECTRIC_MOTORBIKE: (
-        SlotName.VEHICLE_TYPE,
-        SlotName.BUDGET_MAX_VND,
-    ),
-}
-REFINEMENT_SLOTS: dict[VehicleType, tuple[SlotName, ...]] = {
-    VehicleType.CAR: (
-        SlotName.REQUIRED_RANGE_KM,
-        SlotName.HOME_CHARGING,
-        SlotName.PURPOSE,
-        SlotName.HABIT_NEED_TAGS,
-    ),
-    VehicleType.ELECTRIC_MOTORBIKE: (
-        SlotName.PURPOSE,
-        SlotName.REQUIRED_RANGE_KM,
-        SlotName.HOME_CHARGING,
-        SlotName.HABIT_NEED_TAGS,
-    ),
-}
 #: Nhóm slot hỏi GỘP trong lượt 1 (T5, thu hẹp 2026-08-21 rồi 2026-08-26).
 #:
 #: **PASSENGER_COUNT đã bỏ khỏi nhóm hỏi** (Sếp 2026-08-26): nó chỉ CỘNG ĐIỂM

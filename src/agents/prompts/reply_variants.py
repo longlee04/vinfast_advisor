@@ -268,63 +268,11 @@ def more_matches_note(count: int) -> str:
     return _MORE_MATCHES_TEMPLATE.format(count=count)
 
 
-def post_pitch_question(seed: str = "") -> str:
-    """Câu mời khách chọn một mẫu sau khi đã đề xuất.
-
-    Không còn biến thể "xin quãng đường" (Sếp 2026-08-26): bảng chi phí giờ chạy
-    được với mốc mặc định 30 km/ngày và tự nói ra mốc đó, nên không lượt nào phải
-    dừng lại để xin một con số chiếm chưa tới 9% tổng tiền.
-    """
-
-    return pick_variant(POST_PITCH_VARIANTS, seed)
-
-
 # ── Chặng SAU khi khách đã chốt một mẫu ──────────────────────────────────────
 #
 # Sếp 2026-08-26. Mỗi chặng một bộ câu riêng vì chúng chờ những câu trả lời KHÁC
 # hẳn nhau — xem `domain/post_pitch`. Dùng chung một bộ thì lượt sau không biết
 # khách đang đáp câu nào.
-
-#: Hỏi khách còn băn khoăn gì về mẫu đã chọn.
-#:
-#: Mỗi biến thể phải nêu RÕ HAI LỐI ("còn thắc mắc" / "đã ổn"), vì
-#: `domain/concern_reply` đọc câu đáp theo đúng hai lối đó. Câu hỏi mở trống
-#: không thì khách đáp kiểu gì cũng được, và bộ đọc trả `UNCLEAR` — rồi agent
-#: hỏi lại, thành vòng.
-CONCERN_QUESTION_BODIES: Final[tuple[str, ...]] = (
-    "Anh/chị còn băn khoăn gì về mẫu này không ạ? Còn điều gì chưa rõ thì anh/chị cứ nói, "
-    "còn nếu đã ưng rồi thì em hướng dẫn bước tiếp theo ạ.",
-    "Với mẫu này anh/chị thấy đã ổn chưa ạ? Có chỗ nào anh/chị muốn hỏi thêm thì em giải đáp, "
-    "không thì mình đi tiếp bước sau nhé ạ.",
-    "Anh/chị có điều gì còn lăn tăn về mẫu này không ạ? Anh/chị cứ nêu ra để em làm rõ, "
-    "hoặc bảo em một tiếng là đã ổn thì em sang bước tiếp ạ.",
-    "Mẫu này có chỗ nào anh/chị chưa hài lòng không ạ? Còn vướng gì thì anh/chị nói em nghe, "
-    "còn nếu ổn rồi thì em mời anh/chị bước tiếp theo ạ.",
-    "Anh/chị xem còn thắc mắc gì về xe này nữa không ạ? Có thì em giải đáp ngay, chưa có thì mình đi tiếp cũng được ạ.",
-    "Về mẫu này anh/chị đã nắm đủ thông tin chưa ạ? Còn thiếu gì anh/chị cứ hỏi em, "
-    "đủ rồi thì em hướng dẫn bước tiếp theo nhé.",
-    "Anh/chị còn điều gì cần em làm rõ về mẫu này không ạ? Nói em nghe cũng được, "
-    "mà thấy ổn rồi thì mình sang bước sau ạ.",
-    "Anh/chị thấy mẫu này thế nào ạ? Còn chỗ nào chưa yên tâm thì em giải thích thêm, "
-    "còn nếu đã ưng thì em mời anh/chị bước tiếp ạ.",
-)
-
-#: Mời đăng ký lái thử. Sếp: "hỏi ít thông tin khách ở đây thôi".
-#:
-#: Nên mỗi biến thể chỉ xin ĐÚNG một thứ — thời gian thuận tiện. Tên mẫu đã biết
-#: (khách vừa chốt), showroom hệ tự đề nghị theo vị trí. Xin thêm là làm dài đúng
-#: cái bước lẽ ra phải nhẹ nhất.
-TEST_DRIVE_INVITE_BODIES: Final[tuple[str, ...]] = (
-    "Anh/chị có muốn đăng ký lái thử mẫu này không ạ? Em chỉ cần biết anh/chị rảnh khoảng "
-    "thời gian nào là sắp lịch được ngay.",
-    "Em mời anh/chị trải nghiệm thực tế mẫu này nhé? Anh/chị cho em biết buổi nào thuận tiện, em lo phần còn lại ạ.",
-    "Anh/chị muốn lái thử xe trước khi quyết định không ạ? Chỉ cần anh/chị nói giúp em khung thời gian rảnh là xong ạ.",
-    "Ngồi thử xe một vòng rồi quyết cho chắc anh/chị nhé? Anh/chị rảnh hôm nào thì báo em, em giữ chỗ giúp ạ.",
-    "Anh/chị có muốn em xếp một buổi lái thử không ạ? Em chỉ xin anh/chị thời gian thuận tiện thôi ạ.",
-    "Em đặt lịch lái thử cho anh/chị nhé? Anh/chị cho em biết ngày giờ tiện nhất là được ạ.",
-    "Anh/chị muốn cầm lái thử mẫu này chứ ạ? Nói em nghe anh/chị rảnh lúc nào, em sắp xếp ngay.",
-    "Trước khi chốt, anh/chị lái thử một vòng cho chắc nhé? Anh/chị chỉ cần cho em khung giờ rảnh ạ.",
-)
 
 #: Câu hỏi HAI LỐI sau khi đã gửi thông tin xe và chi phí (Sếp 2026-08-26).
 #:
@@ -338,50 +286,6 @@ TEST_DRIVE_INVITE_BODIES: Final[tuple[str, ...]] = (
 #:
 #: Lối lái thử đứng TRƯỚC: nó là bước tiến, và đặt nó sau một lời mời nêu vấn đề
 #: là gợi ý cho khách rằng đáng ra họ nên còn vướng điều gì đó.
-#: Câu hỏi ngay sau khi khách CHỌN một mẫu.
-#:
-#: Sếp 2026-08-27 dựng lại thứ tự: xem xe → hỏi han về xe → khi nào khách muốn
-#: thì mới tính tiền → rồi mới mời lái thử. Nên câu này KHÔNG mời lái thử và
-#: KHÔNG kèm bảng chi phí; nó chỉ mở đúng hai lối mà khách đang cần ở đó: nói ra
-#: điều còn cân nhắc, hoặc hỏi thêm về chính chiếc xe vừa xem.
-#:
-#: Mở bằng một câu chúc mong sản phẩm hợp ý — Sếp đọc mẫu "viết 1 câu hy vọng
-#: sản phẩm này đáp ứng được nhu cầu của Quý khách".
-#:
-#: NÊU ĐÍCH DANH cả hai lối, kể cả lối tính chi phí (Sếp làm rõ 2026-08-27). Câu
-#: mở trống ("còn cân nhắc gì không") bắt khách tự nghĩ ra rằng họ được xin bảng
-#: chi phí — mà bảng đó là thứ giúp họ quyết. Nói ra tên nó thì khách chỉ cần
-#: gật, và `offer_reply.asks_for_cost_estimate` bắt được ngay.
-POST_PITCH_AFTER_CHOICE_BODIES: Final[tuple[str, ...]] = (
-    "Hy vọng mẫu này đáp ứng được nhu cầu của Quý khách ạ. "
-    "Anh/chị còn thắc mắc gì về mẫu này không, hay để em tính chi phí lăn bánh "
-    "cho anh/chị tiện ước chừng ạ?",
-    "Em hy vọng chiếc này hợp với nhu cầu của anh/chị ạ. "
-    "Anh/chị có gì muốn hỏi thêm về xe không, hay em tính luôn chi phí lăn bánh ạ?",
-    "Mong là mẫu này đúng thứ anh/chị đang tìm ạ. "
-    "Anh/chị còn điều gì cần em làm rõ về xe không, hay mình xem qua chi phí lăn bánh luôn ạ?",
-    "Hy vọng chiếc xe này phục vụ tốt nhu cầu của anh/chị ạ. "
-    "Anh/chị còn băn khoăn gì về mẫu này không, hay để em ước tính chi phí lăn bánh giúp anh/chị ạ?",
-    "Em mong mẫu này hợp ý anh/chị ạ. "
-    "Anh/chị cứ hỏi thêm nếu còn gì chưa rõ về xe, hoặc em tính chi phí lăn bánh cho anh/chị xem nhé?",
-    "Hy vọng đây là mẫu anh/chị ưng ạ. "
-    "Anh/chị muốn hỏi thêm gì về xe, hay em tính chi phí lăn bánh để anh/chị dễ hình dung ạ?",
-)
-
-#: Mời LÁI THỬ, đặt ngay dưới bảng chi phí (Sếp 2026-08-27).
-#:
-#: Bảng số vừa đưa ra là lúc khách đã xem xe, đã hỏi xong, đã biết tốn bao
-#: nhiêu — chỗ tự nhiên nhất để mời cầm lái. Trước đây lời mời này đứng ngay sau
-#: khi chọn xe, tức mời trải nghiệm khi khách còn chưa kịp hỏi gì.
-POST_PITCH_AFTER_COST_BODIES: Final[tuple[str, ...]] = (
-    "Anh/chị có muốn em đặt lịch lái thử mẫu này không ạ?",
-    "Em xếp cho anh/chị một buổi lái thử nhé?",
-    "Anh/chị muốn cầm lái thử một vòng chứ ạ?",
-    "Em mời anh/chị trải nghiệm thực tế mẫu này nhé?",
-    "Anh/chị có muốn đặt lịch lái thử không ạ?",
-    "Em giữ cho anh/chị một buổi lái thử nhé?",
-)
-
 POST_PITCH_DECISION_BODIES: Final[tuple[str, ...]] = (
     "Anh/chị muốn em đặt lịch lái thử mẫu này, hay còn điều gì cần em làm rõ thêm ạ?",
     "Em xếp cho anh/chị một buổi lái thử nhé, hay anh/chị còn thắc mắc gì về xe muốn hỏi thêm ạ?",
@@ -409,92 +313,7 @@ POST_PITCH_CONFIRM_TEST_DRIVE_BODIES: Final[tuple[str, ...]] = (
 )
 
 
-#: Báo đã chuyển tư vấn viên khi khách còn băn khoăn.
-#:
-#: Mỗi biến thể phải nói RÕ chuyện gì đang xảy ra và khách cần làm gì (không cần
-#: làm gì). "Đã chuyển" mà không nói tiếp thì khách ngồi nhìn màn hình im.
-HITL_HANDOVER_BODIES: Final[tuple[str, ...]] = (
-    "Dạ em ghi nhận băn khoăn của anh/chị và đã chuyển sang tư vấn viên để được hỗ trợ kỹ hơn. "
-    "Anh/chị chờ em chút nhé, có ưu đãi phù hợp em báo lại ngay ạ.",
-    "Phần này em xin phép nhờ tư vấn viên hỗ trợ anh/chị cho chắc ạ. Anh/chị đợi em một lát, "
-    "có thông tin em quay lại ngay.",
-    "Em đã chuyển thắc mắc của anh/chị tới tư vấn viên rồi ạ. Anh/chị nghỉ tay chút, "
-    "bên em xem có chính sách nào phù hợp rồi báo lại nhé.",
-    "Dạ để tư vấn viên trao đổi trực tiếp với anh/chị cho rõ ạ. Em đã gửi thông tin sang, "
-    "anh/chị chờ em một chút thôi.",
-    "Em nhờ tư vấn viên xem giúp trường hợp của anh/chị ạ. Có phương án em báo lại anh/chị ngay.",
-    "Dạ em chuyển anh/chị sang tư vấn viên để được giải đáp cặn kẽ hơn. Anh/chị đợi em chút xíu nhé.",
-    "Em đã báo tư vấn viên về băn khoăn của anh/chị rồi ạ. Anh/chị chờ em một lát, có gì em nhắn lại ngay.",
-    "Chỗ này để tư vấn viên hỗ trợ anh/chị sẽ nhanh hơn ạ. Em đã chuyển thông tin, anh/chị chờ em chút nhé.",
-)
-
-#: Hỏi lại khi câu trả lời cho câu hỏi HAI LỐI không đọc được.
-#:
-#: Bốn kết quả chứ không phải hai (`domain/concern_reply.PostPitchDecision`):
-#: "cũng được" không nói lên khách muốn lái thử hay đang ngần ngại. Đoán hộ là
-#: đẩy họ đi sai nhánh.
-#:
-#: Câu hỏi lại phải NÊU LẠI CẢ HAI LỐI, y như câu gốc. Bản trước chỉ hỏi "còn chỗ
-#: nào chưa yên tâm, hay mình sang bước sau ạ?" — vế thứ hai không có tên, nên
-#: khách vẫn không biết "bước sau" là gì và lại đáp một câu không đọc được.
-CONCERN_CLARIFY_BODIES: Final[tuple[str, ...]] = (
-    "Dạ em chưa rõ ý anh/chị. Anh/chị muốn em đặt lịch lái thử, hay còn điều gì cần em làm rõ ạ?",
-    "Em xin phép hỏi lại cho rõ ạ: mình đặt lịch lái thử nhé, hay anh/chị còn thắc mắc gì ạ?",
-    "Dạ anh/chị nói rõ giúp em chút ạ — anh/chị muốn lái thử xe, hay còn chỗ nào chưa yên tâm ạ?",
-    "Em chưa nắm được ý anh/chị ạ. Anh/chị cho em xếp buổi lái thử nhé, hay còn gì vướng em gỡ giúp ạ?",
-    "Dạ cho em hỏi lại ạ: em đặt lịch lái thử cho anh/chị, hay anh/chị cần em làm rõ thêm điều gì ạ?",
-    "Em muốn chắc ý anh/chị ạ — mình lái thử một vòng nhé, hay còn băn khoăn gì anh/chị nói em nghe ạ?",
-    "Dạ em hỏi lại cho chắc: anh/chị muốn trải nghiệm thử xe, hay còn câu hỏi nào về mẫu này ạ?",
-    "Anh/chị cho em biết rõ hơn nhé — mình đặt lịch lái thử, hay còn điều gì anh/chị chưa ưng ạ?",
-)
-
-
-def concern_question(seed: str = "") -> str:
-    """Hỏi khách còn băn khoăn gì về mẫu đã chốt.
-
-    Giữ lại cho các đường gọi cũ; luồng chính dùng `post_pitch_decision_question`.
-    """
-
-    return pick_variant(CONCERN_QUESTION_BODIES, seed)
-
-
 def post_pitch_decision_question(seed: str = "") -> str:
     """Câu hỏi hai lối: đặt lịch lái thử, hay còn điều gì cần làm rõ."""
 
     return pick_variant(POST_PITCH_DECISION_BODIES, seed)
-
-
-def post_pitch_after_choice(seed: str = "") -> str:
-    """Câu ngay sau khi khách chọn mẫu — chúc hợp ý, rồi mở hai lối hỏi/cân nhắc."""
-
-    return pick_variant(POST_PITCH_AFTER_CHOICE_BODIES, seed)
-
-
-def post_pitch_after_cost(seed: str = "") -> str:
-    """Mời lái thử, đặt ngay dưới bảng chi phí."""
-
-    return pick_variant(POST_PITCH_AFTER_COST_BODIES, seed)
-
-
-def confirm_test_drive(seed: str = "") -> str:
-    """Khách đã hết vướng nhưng chưa nhận lời lái thử → mời nốt nửa còn lại."""
-
-    return pick_variant(POST_PITCH_CONFIRM_TEST_DRIVE_BODIES, seed)
-
-
-def test_drive_invite(seed: str = "") -> str:
-    """Mời đăng ký lái thử."""
-
-    return pick_variant(TEST_DRIVE_INVITE_BODIES, seed)
-
-
-def hitl_handover_notice(seed: str = "") -> str:
-    """Báo đã chuyển tư vấn viên."""
-
-    return pick_variant(HITL_HANDOVER_BODIES, seed)
-
-
-def concern_clarify(seed: str = "") -> str:
-    """Hỏi lại khi câu trả lời về băn khoăn không rõ."""
-
-    return pick_variant(CONCERN_CLARIFY_BODIES, seed)

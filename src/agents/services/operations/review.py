@@ -861,18 +861,6 @@ class ReviewOperations:
             logger.warning("khong dung duoc anh so sanh cho muc duyet %s", review_id, exc_info=True)
             return None
 
-    async def content_for_customer(self, review_id: UUID) -> str:
-        """[A7-3] Nội dung được phép gửi khách — chặn cứng theo trạng thái duyệt.
-
-        Đọc từ bản ghi đã duyệt, không dựng lại từ dữ liệu nguồn: catalog đổi sau
-        khi duyệt cũng không làm đổi thứ khách nhận.
-        """
-        async with self._unit_of_work.transaction() as transaction:
-            item = await self._require(transaction, review_id)
-            if item.status not in DELIVERABLE_STATUSES:
-                raise ReviewNotApprovedError(str(review_id))
-            return item.deliverable_content
-
     async def customer_deliverables(self, session_id: UUID, customer_id: str) -> list[ReviewItem]:
         """List customer items through the single deliverable status gate.
 
