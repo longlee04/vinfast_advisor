@@ -550,10 +550,14 @@ def decide(state: CoreState, u: Understanding) -> Decision:
     # đều có nhánh riêng bên dưới và chúng biết dùng `vehicle_ids` đúng cách hơn.
     if (
         u.vehicle_ids
-        # Chỉ xét slot TƯ VẤN (bỏ `vehicle_type`): LLM gắn kèm `vehicle_type=CAR`
-        # cho gần như mọi lượt nhắc tên ô tô, nên `not u.slots` thẳng là điều kiện
-        # không bao giờ đúng — đo trên máy 2026-09-23, luật này câm hoàn toàn.
-        and not any(slot in _ANSWER_ADVISORY_SLOTS for slot in u.slots)
+        # Slot phải ĐỔI GIÁ TRỊ mới tính là tiêu chí mới — cùng cái bẫy
+        # `_refine_question` đã ghi: LLM chép lại nguyên bộ slot cũ từ transcript
+        # ở gần như mọi lượt. Xét "có mặt" thay vì "đổi" làm luật này câm hoàn
+        # toàn (đo trên máy 2026-09-23: lượt nào cũng kèm budget/passenger cũ).
+        # `vehicle_type` đứng ngoài `_ANSWER_ADVISORY_SLOTS` sẵn.
+        and not any(
+            slot in _ANSWER_ADVISORY_SLOTS and slots_before.get(slot) != value for slot, value in u.slots.items()
+        )
         and intent in {Intent.ADVISORY, Intent.NONE}
     ):
         if len(u.vehicle_ids) >= 2:

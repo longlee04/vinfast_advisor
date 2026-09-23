@@ -490,11 +490,12 @@ def test_goi_ten_xe_giua_phien_da_co_slot_van_noi_ve_xe_do() -> None:
     assert isinstance(d.action, Compare)
 
 
-def test_vehicle_type_llm_gan_kem_khong_lam_cam_luat() -> None:
-    """LLM gắn `vehicle_type=CAR` cho gần như mọi lượt nhắc tên ô tô.
+def test_slot_llm_chep_lai_tu_transcript_khong_lam_cam_luat() -> None:
+    """LLM chép lại NGUYÊN bộ slot cũ ở gần như mọi lượt (cùng bẫy `_refine_question`).
 
-    Xét cả slot đó là điều kiện không bao giờ đúng — luật câm hoàn toàn (đo trên
-    máy 2026-09-23).
+    Xét "slot có mặt" thay vì "slot ĐỔI GIÁ TRỊ" làm luật này câm hoàn toàn —
+    đo trên máy 2026-09-23: lượt nào cũng kèm `budget_max_vnd`/`passenger_count`
+    y hệt lượt trước.
     """
 
     from src.agents.core.actions import Compare
@@ -509,7 +510,8 @@ def test_vehicle_type_llm_gan_kem_khong_lam_cam_luat() -> None:
             DialogueAct.REQUEST,
             intent=Intent.ADVISORY,
             vehicle_ids=(V1, V2),
-            slots={N.VEHICLE_TYPE: "CAR"},
+            # Y HỆT slot đang có trong state — không phải tiêu chí mới.
+            slots={N.VEHICLE_TYPE: "CAR", N.BUDGET_MAX_VND: 400_000_000},
             question="tư vấn lại cho tôi xe vf2 và vf 3",
         ),
     )
