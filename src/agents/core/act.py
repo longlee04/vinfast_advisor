@@ -1608,6 +1608,22 @@ async def _recommend(
     candidates = await services.retrieval.layer1(criteria)
     excluded = {str(value) for value in action.exclude_ids}
     candidates = [value for value in candidates if str(value) not in excluded]
+    if revision is not None and revision.pricier and criteria.budget_min_vnd is not None:
+        # `catalog_reader.hard_filter` CHỈ đọc `budget_max_vnd` — sàn trong
+        # `FilterCriteria` không có ai thi hành. Không chặn ở đây thì lượt "đắt
+        # hơn" lần hai trả về đúng mấy mẫu RẺ mà khách vừa bỏ qua ở lượt trước
+        # (đo trên máy 2026-09-23: VF 9/VF 8 xong lại rơi về VF 3/VF 2).
+        #
+        # Chặn tại đây chứ không sửa `hard_filter`: sàn ở tầng SQL sẽ đổi luôn
+        # hành vi của lượt khách nêu KHOẢNG ("từ 400 đến 600 triệu"), mà khoảng
+        # đó đang cố ý được xử lý mềm ở `scoring._prefer_budget_band` (hết mẫu
+        # trong biên thì trả lại thứ có, không trả rỗng).
+        floor_prices = await catalog_prices(services, vehicle_type=str(criteria.vehicle_type))
+        candidates = [
+            value
+            for value in candidates
+            if (price := floor_prices.get(str(value))) is not None and price >= criteria.budget_min_vnd
+        ]
     relaxed: tuple[str, ...] = ()
     if not candidates and not action.refine and not retrying:
         # Bộ lọc chặt ra rỗng: TỰ nới rồi nói ra, không đẩy việc nới sang khách

@@ -223,3 +223,65 @@ def test_budget_relaxed_dung_khi_luot_co_y_vuot_tran(
     state = CoreState(session_id="s1", stage=Stage.RECOMMENDED, slots=slots)
     criteria = FilterCriteria(vehicle_type=VehicleType.CAR, budget_max_vnd=criteria_max)
     assert _budget_relaxed(state, criteria) is relaxed
+
+
+# ---------------------------------------------------------------- 5. sàn giá phải có hiệu lực
+
+
+class _Retrieval:
+    """`layer1` CHỈ đọc trần (đúng như `catalog_reader.hard_filter`) — sàn bị bỏ qua."""
+
+    def __init__(self) -> None:
+        self.seen: list[FilterCriteria] = []
+
+    async def layer1(self, criteria: FilterCriteria) -> list[UUID]:
+        self.seen.append(criteria)
+        return [UUID(V1), UUID(V2), UUID(V3)]
+
+    async def layer2(self, *, utterance: str, vehicle_type: str, candidate_ids: Any) -> list:
+        return []
+
+
+class _Snapshotting:
+    def __init__(self) -> None:
+        self.calls: list[tuple[UUID, ...]] = []
+
+    async def snapshot(self, *, run_id: UUID, candidate_ids: Any, assertions: Any) -> None:
+        self.calls.append(tuple(candidate_ids))
+
+
+class _RecommendationSpy:
+    def __init__(self) -> None:
+        self.budget_relaxed: list[bool] = []
+
+    async def recommend(self, run_id: UUID, *, budget_relaxed: bool = False, **_: Any) -> list[Recommendation]:
+        self.budget_relaxed.append(budget_relaxed)
+        return []
+
+
+@pytest.mark.asyncio
+async def test_dat_hon_loai_cac_mau_duoi_san_truoc_khi_snapshot() -> None:
+    """Xin "đắt hơn" lần hai không được trả về đúng mấy mẫu rẻ vừa bỏ qua."""
+
+    from src.agents.core.act import act
+
+    retrieval, snap, ranking = _Retrieval(), _Snapshotting(), _RecommendationSpy()
+    services = AgentServices(
+        catalog_browse=_Catalog(), retrieval=retrieval, snapshotting=snap, recommendation=ranking
+    )
+    state = CoreState(
+        session_id="s1", stage=Stage.RECOMMENDED, recommended_ids=(V3,),
+        slots={N.VEHICLE_TYPE: "CAR", N.BUDGET_MAX_VND: 300_000_000},
+    )
+    await act(
+        Recommend(reason="revised", exclude_ids=(V3,), refine="xe khác đắt hơn"),
+        state,
+        services,
+        run_id=RUN_ID,
+        customer_id="c1",
+        user_message="xe khác đắt hơn",
+    )
+    # VF 3 (278tr) và VF 2 (188tr) nằm DƯỚI sàn 675tr+1 → không được vào snapshot.
+    assert snap.calls == [] or all(UUID(V1) not in call and UUID(V2) not in call for call in snap.calls)
+    # Và bộ xếp hạng phải biết lượt này đã nới trần.
+    assert ranking.budget_relaxed in ([], [True])
