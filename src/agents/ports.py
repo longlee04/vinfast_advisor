@@ -10,7 +10,7 @@ gồm các repository Protocol, không trả `AsyncSession` thô (cùng quy ư�
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Awaitable, Callable, Mapping, Sequence
 from contextlib import AbstractAsyncContextManager
 from dataclasses import dataclass
 from datetime import datetime
@@ -30,6 +30,7 @@ from src.agents.contracts import (
 )
 from src.agents.core.understand import UnderstandOutcome
 from src.agents.domain.agent_flag import AgentFlagState
+from src.agents.domain.agent_tools import AgentToolCall, AgentToolResult
 from src.agents.domain.bottleneck_signal import (
     BottleneckSignal,
     ConfirmedBottleneckEvidence,
@@ -615,3 +616,35 @@ class AgentFlagPort(Protocol):
     """
 
     async def load(self, name: str) -> AgentFlagState | None: ...
+
+
+@dataclass(frozen=True, slots=True)
+class AgentLoopOutcome:
+    """Kết quả một vòng ReAct (plan agent-migration Bước 5, §2.2).
+
+    `answer is None` nghĩa là loop KHÔNG ra được câu trả lời — nơi gọi phải
+    chạy đúng đường tất định đang chạy hôm nay. `steps` là vệt quan sát:
+    mỗi bước `{"tool", "args_keys", "ok", "error", "ms"}` — CHỈ tên khoá của
+    args, không bao giờ giá trị (args chứa chữ khách).
+    """
+
+    answer: str | None = None
+    steps: tuple[Mapping[str, Any], ...] = ()
+    error: str = ""
+    llm_calls: int = 0
+
+
+class AgentLoopPort(Protocol):
+    """KHONG raise: hong kieu gi cung tra AgentLoopOutcome(answer=None, error=...)."""
+
+    async def run(
+        self,
+        *,
+        system_prompt: str,
+        user_prompt: str,
+        tools: list[dict[str, Any]],
+        execute: Callable[[AgentToolCall], Awaitable[AgentToolResult]],
+        max_steps: int,
+        step_timeout_seconds: float,
+        total_timeout_seconds: float,
+    ) -> AgentLoopOutcome: ...
