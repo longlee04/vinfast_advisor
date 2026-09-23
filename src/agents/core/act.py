@@ -153,6 +153,17 @@ def needs_run(action: object) -> bool:
     return isinstance(action, NEEDS_RUN) or (isinstance(action, Lookup) and action.mode == LOOKUP_POLICY)
 
 
+def is_profile_reask(action: object, state: CoreState) -> bool:
+    """Lượt hỏi LẠI câu hồ sơ — nhánh duy nhất của `Ask` có thể gọi agent (móc 3).
+
+    Cần `state` nên không gộp vào `needs_run`: lần hỏi ĐẦU không bao giờ gọi
+    agent, và tạo một hàng `agent_runs` cho nó là rác đúng như `needs_run` đã
+    cảnh báo. Lần hỏi lại thì cần run để agent snapshot evidence trước `verify`.
+    """
+
+    return isinstance(action, Ask) and action.key == PENDING_PROFILE and state.ask_counts.get(action.key, 0) > 1
+
+
 #: Chữ của `Handoff` — lượt lõi v2 bỏ cuộc và chuyển sang người.
 #:
 #: KHÔNG dùng `_CLARIFY["OFFER_REVIEW"]` như bản đầu: câu đó nói "tư vấn viên
@@ -227,7 +238,7 @@ async def act(
         text = HANDOFF_REQUESTED_TEXT if action.reason == "requested" else HANDOFF_TEXT
         return ActResult(text=text, state_patch={"stage": Stage.HANDED_OFF, "pending": None})
     if isinstance(action, Ask):
-        result = await _ask(action, state, services, user_message=user_message)
+        result = await _ask(action, state, services, user_message=user_message, run_id=run_id, customer_id=customer_id)
     elif isinstance(action, Reply):
         result = await _reply(action, state, services)
     elif isinstance(action, Lookup):
@@ -372,7 +383,15 @@ async def _profile_catalog(services: AgentServices, *, vehicle_type: str, user_m
     return result if result is not None and result.answer.strip() else None
 
 
-async def _ask(action: Ask, state: CoreState, services: AgentServices, *, user_message: str = "") -> ActResult:
+async def _ask(
+    action: Ask,
+    state: CoreState,
+    services: AgentServices,
+    *,
+    user_message: str = "",
+    run_id: UUID | None = None,
+    customer_id: str = "",
+) -> ActResult:
     """Điền nhãn khách đọc được rồi mới sinh chữ.
 
     Policy không biết catalog nên `Ask(kind=CHOICE)` từ policy mang id thô ở
@@ -403,6 +422,39 @@ async def _ask(action: Ask, state: CoreState, services: AgentServices, *, user_m
     )
     text = render.render_ask(enriched)
     asked_before = max(0, state.ask_counts.get(action.key, 0) - 1)
+    if action.key == PENDING_PROFILE and asked_before > 0:
+        # MÓC 3 (mở rộng plan agent-migration §1.3): khách đã nghe câu hồ sơ một
+        # lần và vẫn nói một thứ lõi không dùng được — đó là ngõ cụt thật, đúng
+        # loại lượt hai móc kia sinh ra để cứu, chỉ khác là nó xảy ra ở chặng
+        # COLLECTING/GREETING mà plan cố ý chừa ra (GĐ-9). Đo trên máy thật
+        # 2026-09-23: ba lượt liên tiếp rơi vào đây, và lượt thứ tư sẽ bị đẩy
+        # sang tư vấn viên vì chạm `MAX_ASKS`.
+        #
+        # Agent TRẢ LỜI câu khách vừa hỏi, rồi câu hồ sơ vẫn được nối vào cuối —
+        # `pending` không đổi nên lượt sau khách đáp vẫn là SLOT_ANSWER. Cờ TẮT
+        # hoặc agent hỏng → `answered is None` → đúng chữ tất định bên dưới.
+        answered = await _open_question_or_none(
+            OpenQuestion(
+                question=user_message,
+                reason=OPEN_REASON_DEAD_END,
+                vehicle_ids=await _agent_catalog_ids(services, state),
+            ),
+            state,
+            services,
+            run_id=run_id,
+            customer_id=customer_id,
+            user_message=user_message,
+        )
+        if answered is not None:
+            # Bỏ câu kết của agent (`_closing` mời xem chi phí/lái thử): lượt này
+            # còn một câu hỏi đang treo, hai lời mời chồng nhau là hai việc.
+            body = answered.text.split("\n\n")[0].strip()
+            return ActResult(
+                text=f"{body}\n\n{text}",
+                cards=dict(answered.cards),
+                state_patch={"pending": pending},
+                tool_calls=answered.tool_calls,
+            )
     if action.key == PENDING_PROFILE:
         # Câu hồ sơ là MỘT chuỗi cố định, nên hỏi lại là lặp y nguyên từng chữ —
         # đo trên máy thật 2026-09-23: ba lượt liên tiếp nhận đúng một câu, khách
@@ -2931,6 +2983,19 @@ async def _run_agent_tool(
         return AgentToolResult(name=name, ok=True, payload={"locations": answer[:MAX_TOOL_TEXT_CHARS]})
 
     return AgentToolResult(name=name, ok=False, error=ERROR_UNKNOWN_TOOL)
+
+
+async def _agent_catalog_ids(services: AgentServices, state: CoreState, *, limit: int = 6) -> tuple[str, ...]:
+    """Vài mẫu xe của đúng loại đang xét — làm EVIDENCE cho lượt chưa đề xuất gì.
+
+    Móc 1 và móc 2 luôn có `recommended_ids` để snapshot; móc 3 chạy ở chặng thu
+    thập, nơi chưa có mẫu nào. Không có evidence thì `verify` từ chối mọi con số,
+    nên lấy thẳng từ cửa catalog TẤT ĐỊNH (`catalog_names`), cắt `limit` mẫu để
+    snapshot không phình.
+    """
+
+    names = await catalog_names(services, vehicle_type=_vehicle_type(state))
+    return tuple(list(names)[:limit])
 
 
 async def _open_question(

@@ -23,7 +23,7 @@ from uuid import UUID, uuid4
 
 from src.agents.contracts import PENDING_HANDOFF_REASON, QuickReplyView, TurnResult
 from src.agents.core import render
-from src.agents.core.act import ActResult, act, catalog_names, needs_run
+from src.agents.core.act import ActResult, act, catalog_names, is_profile_reask, needs_run
 from src.agents.core.actions import TEMPLATE_CLARIFY, Action, Ask, EnqueueHitl, Handoff, Reply, Silent
 from src.agents.core.policy import decide
 from src.agents.core.render import short_vehicle_name
@@ -537,7 +537,7 @@ async def _run_id_for(services: AgentServices, action: Action, *, session_id: st
     nào ạ" — rác cho bảng và một lần ghi DB thừa trên đường trả lời.
     """
 
-    if not needs_run(action):
+    if not needs_run(action) and not is_profile_reask(action, state):
         return None
     creator = getattr(services.conversation, "create_run", None)
     if creator is None:
