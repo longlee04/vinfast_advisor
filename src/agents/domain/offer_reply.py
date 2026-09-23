@@ -30,6 +30,7 @@ from enum import StrEnum
 from typing import Final
 
 from src.agents.domain.canonical_text import CanonicalText
+from src.agents.domain.catalog_reply import format_vnd
 from src.agents.domain.reply_format import bold
 
 #: Câu MỞ, dùng khi khách đang vướng và ta vừa xin được ưu đãi cho họ.
@@ -95,13 +96,6 @@ def _as_decimal(value: object) -> Decimal | None:
     except (InvalidOperation, ValueError):
         return None
     return parsed if parsed > 0 else None
-
-
-def _format_vnd(amount: Decimal) -> str:
-    """`Decimal` → "899.000.000 đồng". Cắt phần thập phân toàn số không."""
-
-    whole = int(amount)
-    return f"{whole:,}".replace(",", ".") + " đồng"
 
 
 def discount_amount(offer: Mapping[str, object], *, base_price_vnd: Decimal | None) -> Decimal | None:
@@ -194,12 +188,12 @@ def _offer_detail(
     if amount is not None:
         # HIỆN CẢ HAI con số: giảm bao nhiêu, và còn bao nhiêu. Chỉ nói mức giảm
         # là bắt khách tự trừ, mà kết quả họ tự trừ ra là con số họ đem đi so giá.
-        head = f"{bold('Ưu đãi')}: giảm {_format_vnd(amount)}"
+        head = f"{bold('Ưu đãi')}: giảm {format_vnd(amount)}"
         if base_price_vnd is not None and base_price_vnd > 0:
             remaining = base_price_vnd - amount
             floor = remaining if remaining > 0 else Decimal("0")
             subject = vehicle_name or "xe"
-            head += f" — giá {subject} còn {_format_vnd(floor)}"
+            head += f" — giá {subject} còn {format_vnd(floor)}"
         return [head + (f" ({name})" if name else "") + "."]
 
     if gift:
