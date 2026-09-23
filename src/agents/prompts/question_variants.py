@@ -161,3 +161,56 @@ def get_question_variant(slot: SlotName, retry_count: int, seed: str = "") -> st
 
     variants: Sequence[str] = QUESTION_VARIANTS[slot]
     return variants[_index_for(len(variants), retry_count, seed)]
+
+
+# ── Lõi v2: MỘT câu hồ sơ duy nhất cho cả luồng tư vấn ────────────────────────
+# Lõi v2 không hỏi từng slot (Sếp chốt 2026-08-29: hỏi bốn lượt thì khách rời
+# đi trước lượt thứ ba) — nó hỏi ĐÚNG MỘT câu gộp, `render.SLOT_QUESTIONS`
+# ["profile"]. Câu đó là chuỗi cố định, nên hỏi lại lần hai là lặp y nguyên từng
+# chữ: đúng nhóm lỗi mà module này sinh ra để dẹp, chỉ là ở lõi mới.
+#
+# Phần tử [0] GIỮ NGUYÊN VĂN câu đang chạy — lượt hỏi đầu không được đổi một chữ
+# (test regression của lõi v2 soi đúng câu này).
+
+PROFILE_VARIANTS: Final[tuple[str, ...]] = (
+    "Để em gợi ý mẫu phù hợp nhất với anh/chị: mình dự tính khoảng bao nhiêu, "
+    "mua xe để dùng vào việc gì, và thường đi lại/chở người ra sao ạ?",
+    f"Dạ để em lọc đúng xe cho {CUSTOMER_ADDRESS}: mình định chi khoảng bao nhiêu, "
+    "xe dùng vào việc gì, và hay chở mấy người ạ?",
+    f"{_ADDRESS} cho em xin ba thứ thôi ạ: tầm tiền, mục đích dùng xe, và quãng đường đi hằng ngày ạ?",
+    f"Dạ mình bắt đầu từ nhu cầu nhé — {CUSTOMER_ADDRESS} cần xe cho việc gì, "
+    "ngân sách khoảng bao nhiêu, và thường đi một mình hay chở người ạ?",
+    f"Em hỏi nhanh để gợi ý cho sát ạ: {CUSTOMER_ADDRESS} dự trù tầm bao nhiêu, "
+    "và mua xe chủ yếu để đi làm, chở gia đình hay chạy dịch vụ ạ?",
+    f"Dạ {CUSTOMER_ADDRESS} kể em nghe một chút về nhu cầu nhé: tầm giá, việc hay dùng xe, "
+    "và mỗi ngày đi khoảng bao xa ạ?",
+    f"Để em không gợi ý lan man, {CUSTOMER_ADDRESS} cho em biết ngân sách và mục đích dùng xe ạ?",
+    f"Dạ {CUSTOMER_ADDRESS} đang cân nhắc tầm tiền nào, và xe này phục vụ việc gì là chính ạ?",
+)
+
+#: Câu GHI NHẬN đứng trước khi hỏi LẠI. Không có nó, khách vừa nói một câu mà
+#: nhận đúng câu hỏi cũ sẽ tưởng bot không nghe thấy gì — đo trên máy thật
+#: 2026-09-23: ba lượt liên tiếp nhận y nguyên một câu hồ sơ.
+#:
+#: Ràng buộc: KHÔNG hứa hẹn, KHÔNG chữ số, KHÔNG khẳng định đã hiểu ý khách
+#: (chưa hiểu mới phải hỏi lại) — chỉ thừa nhận thật và mời nói tiếp.
+REASK_LEADS: Final[tuple[str, ...]] = (
+    "Dạ em chưa nắm được ý anh/chị.",
+    "Dạ em xin lỗi, chỗ này em chưa rõ ạ.",
+    "Dạ em nghe chưa rõ ý anh/chị ạ.",
+    "Dạ em chưa theo kịp ý anh/chị ạ.",
+    "Dạ cái này em chưa hiểu đúng ý anh/chị ạ.",
+    "Dạ em đọc chưa ra ý anh/chị ạ.",
+)
+
+
+def get_profile_variant(retry_count: int, seed: str = "") -> str:
+    """Câu hỏi hồ sơ của lõi v2, đổi cách nói theo phiên và theo số lần đã hỏi."""
+
+    return PROFILE_VARIANTS[_index_for(len(PROFILE_VARIANTS), retry_count, seed)]
+
+
+def get_reask_lead(retry_count: int, seed: str = "") -> str:
+    """Câu ghi nhận đứng trước một câu hỏi LẶP LẠI."""
+
+    return REASK_LEADS[_index_for(len(REASK_LEADS), retry_count, seed)]

@@ -113,6 +113,7 @@ from src.agents.domain.tco_tool import TCO_TOOL_NAME, TcoToolArgs
 from src.agents.domain.test_drive import now_in_vietnam
 from src.agents.domain.values import SlotName, VehicleType
 from src.agents.logging import get_agent_logger
+from src.agents.prompts.question_variants import get_profile_variant, get_reask_lead
 from src.agents.services.conversation_memory import AdvisorReviewRequest
 from src.agents.services.call_budget import CallKind, current_call_budget
 from src.agents.services.registry import AgentServices
@@ -401,6 +402,18 @@ async def _ask(action: Ask, state: CoreState, services: AgentServices, *, user_m
         job=action.job,
     )
     text = render.render_ask(enriched)
+    asked_before = max(0, state.ask_counts.get(action.key, 0) - 1)
+    if action.key == PENDING_PROFILE:
+        # Câu hồ sơ là MỘT chuỗi cố định, nên hỏi lại là lặp y nguyên từng chữ —
+        # đo trên máy thật 2026-09-23: ba lượt liên tiếp nhận đúng một câu, khách
+        # tưởng bot hỏng. Biến thể tất định theo phiên + số lần đã hỏi
+        # (`prompts/question_variants`, cùng cơ chế lõi v1 đã dùng), lần hỏi ĐẦU
+        # giữ nguyên văn câu đang chạy.
+        text = render.assert_clean(get_profile_variant(asked_before, state.session_id))
+    if asked_before > 0:
+        # Hỏi LẠI mà không thừa nhận gì thì khách nghe như bot không nghe thấy
+        # câu vừa rồi. Câu ghi nhận không hứa hẹn, không khẳng định đã hiểu.
+        text = f"{render.assert_clean(get_reask_lead(asked_before, state.session_id))} {text}"
     cards: dict[str, Any] = {}
     vehicle_type = _vehicle_type(state)
     if action.key == PENDING_PROFILE and vehicle_type:

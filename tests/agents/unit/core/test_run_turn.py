@@ -47,6 +47,7 @@ from src.agents.core.state import (
 from src.agents.core.understand import RawSlots, RawUnderstanding, UnderstandOutcome
 from src.agents.domain.conversation_memory import CoreTurnLease
 from src.agents.domain.values import SlotName as N
+from src.agents.prompts.question_variants import PROFILE_VARIANTS
 from src.agents.services.conversation_memory import StartedMemoryTurn
 from src.agents.services.registry import AgentServices
 from tests.agents.unit.core.memory_fakes import HonestMemory
@@ -195,7 +196,9 @@ async def _turn(
 async def test_luot_dau_hoi_mot_cau_ho_so_va_ghi_state() -> None:
     result, memory, _ = await _turn(_outcome())
     # 2026-08-29: MỘT câu hỏi mở cho cả luồng tư vấn, không hỏi từng slot.
-    assert result.answer and "dùng vào việc gì" in result.answer
+    # 2026-09-23: câu đó nay có biến thể theo phiên (`prompts/question_variants`),
+    # nên khẳng định nó THUỘC bảng biến thể thay vì khoá cứng một chuỗi.
+    assert result.answer and result.answer in PROFILE_VARIANTS
     assert result.pending_question == result.answer
     committed = memory.committed[0]
     assert committed["core_state"].pending is not None
@@ -603,7 +606,7 @@ async def test_chen_ngang_van_giu_pending_question() -> None:
         user_message="mà có những xe nào",
     )
     assert result.pending_question is not None
-    assert "dùng vào việc gì" in result.pending_question
+    assert result.pending_question in PROFILE_VARIANTS
     assert result.pending_question in (result.answer or "")
 
 
@@ -712,7 +715,7 @@ async def test_tu_van_o_to_thi_bay_danh_sach_va_hoi_trong_cung_mot_luot() -> Non
         user_message="tư vấn ô tô",
     )
     assert result.answer and "Dải xe hiện có: VF 5." in result.answer
-    assert "dùng vào việc gì" in result.answer
+    assert any(variant in result.answer for variant in PROFILE_VARIANTS)
     assert result.pending_question == result.answer
     assert memory.committed[0]["core_state"].pending.key == "profile"
     labels = [reply.label for reply in result.quick_replies or []]
