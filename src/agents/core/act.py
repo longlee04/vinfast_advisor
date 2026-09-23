@@ -1347,10 +1347,13 @@ async def _refined(
         # bảo đảm không còn mẫu nào lọt, tức lượt nào cũng ra "chưa có mẫu nào
         # khác hợp hơn" kèm y nguyên hai thẻ cũ (đo trên máy 2026-09-23).
         return replace(criteria, budget_min_vnd=max(seen) + 1, budget_max_vnd=None), revision
-    ceiling = min(seen) - 1
-    if criteria.budget_max_vnd is not None and criteria.budget_max_vnd <= ceiling:
-        return criteria, revision
-    return replace(criteria, budget_max_vnd=ceiling), revision
+    # Trần mới = dưới mẫu RẺ NHẤT vừa xem, KHÔNG kẹp lại theo trần trong slot.
+    #
+    # Kẹp theo slot là bước xuống hai nấc một lúc: khách 400 triệu đã xin lên
+    # tầm VF 8 hai lượt, gõ "rẻ hơn" và bị ném thẳng về VF 3/VF 2 thay vì lùi
+    # một bậc sang VF 6/VF 5 (đo trên máy 2026-09-23). Khách vẫn còn trần của
+    # họ ở `slots`; lượt này là bước tương đối so với thứ đang xem.
+    return replace(criteria, budget_max_vnd=min(seen) - 1, budget_min_vnd=None), revision
 
 
 async def catalog_cards(

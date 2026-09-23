@@ -86,6 +86,26 @@ async def test_dat_hon_thi_nang_san_va_bo_tran_ngan_sach() -> None:
 
 
 @pytest.mark.asyncio
+async def test_re_hon_lui_mot_nac_so_voi_thu_dang_xem() -> None:
+    """Khách đã bước LÊN trên trần của mình thì "rẻ hơn" lùi MỘT nấc, không rơi thẳng về đáy.
+
+    Đo trên máy 2026-09-23: khách 400 triệu xin đắt hơn hai lượt tới VF 8, gõ
+    "rẻ hơn" và bị ném về VF 3/VF 2 thay vì lùi sang VF 6/VF 5.
+    """
+
+    services = AgentServices(catalog_browse=_Catalog())
+    state = CoreState(session_id="s1", stage=Stage.RECOMMENDED, slots={N.VEHICLE_TYPE: "CAR"})
+    criteria, _ = await _refined(
+        services,
+        state,
+        criteria=FilterCriteria(vehicle_type=VehicleType.CAR, budget_max_vnd=Decimal("300000000")),
+        refine="rẻ hơn đi",
+        seen_ids=(V3,),  # đang xem mẫu 675 triệu, trên hẳn trần 300 triệu trong slot
+    )
+    assert criteria.budget_max_vnd == Decimal("674999999")
+
+
+@pytest.mark.asyncio
 async def test_re_hon_van_siet_tran_nhu_cu() -> None:
     services = AgentServices(catalog_browse=_Catalog())
     state = CoreState(session_id="s1", stage=Stage.RECOMMENDED, slots={N.VEHICLE_TYPE: "CAR"})
