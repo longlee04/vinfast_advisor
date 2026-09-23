@@ -36,6 +36,7 @@ from src.agents.contracts import (
 from src.agents.core import fit, render
 from src.agents.core.actions import (
     ASPECT_PRICE,
+    OPEN_REASON_DEAD_END,
     CONFIRM_OFFER,
     FIT_YES,
     LOOKUP_POLICY,
@@ -245,7 +246,9 @@ async def act(
     elif isinstance(action, ScopeNote):
         result = await _scope_note(action, state, services)
     elif isinstance(action, Recommend):
-        result = await _recommend(action, state, services, run_id=run_id, user_message=user_message)
+        result = await _recommend(
+            action, state, services, run_id=run_id, user_message=user_message, customer_id=customer_id
+        )
     elif isinstance(action, Tco):
         result = await _tco(action, state, services, user_message=user_message, run_id=run_id)
     elif isinstance(action, OnRoadPrice):
@@ -1438,8 +1441,60 @@ async def _nearest_by_price(services: AgentServices, state: CoreState, criteria:
     return ActResult(text=text, cards={"recommendations": views}, state_patch={"recommended_ids": ids})
 
 
+async def _dead_end(
+    state: CoreState,
+    services: AgentServices,
+    *,
+    criteria: FilterCriteria,
+    retrying: bool,
+    refine: str,
+    ids: tuple[str, ...] | None = None,
+    run_id: UUID | None,
+    customer_id: str,
+    user_message: str,
+) -> ActResult:
+    """MÓC 2 (plan agent-migration §1.3): ba ngõ cụt của `_recommend`.
+
+    Thử agent trước; `None` thì gọi ĐÚNG nhánh cũ (`_no_better` / `_same_pick` /
+    `_nearest_by_price`) với đúng tham số cũ — nên cờ OFF cho ra từng ký tự y
+    như hôm nay.
+
+    Điểm gọi đầu tiên (`candidates` rỗng) xảy ra TRƯỚC `snapshotting.snapshot`
+    của `_recommend`, nên `_open_question` tự snapshot lấy — nếu không thì
+    `verify` từ chối mọi con số (§0.2 của plan).
+    """
+
+    agent = await _open_question_or_none(
+        OpenQuestion(
+            question=refine or user_message,
+            reason=OPEN_REASON_DEAD_END,
+            vehicle_ids=tuple(ids or state.recommended_ids),
+        ),
+        state,
+        services,
+        run_id=run_id,
+        customer_id=customer_id,
+        user_message=user_message,
+    )
+    if agent is not None:
+        return agent
+    if ids is not None:
+        return await _same_pick(state, services, ids=ids)
+    if refine:
+        return await _no_better(state, services)
+    if retrying:
+        return await _same_pick(state, services)
+    return await _nearest_by_price(services, state, criteria)
+
+
 async def _recommend(
-    action: Recommend, state: CoreState, services: AgentServices, *, run_id: UUID | None, user_message: str
+    action: Recommend,
+    state: CoreState,
+    services: AgentServices,
+    *,
+    run_id: UUID | None,
+    user_message: str,
+    customer_id: str = "",
 ) -> ActResult:
     """`retrieval → snapshotting → recommendation → synthesis → verification`.
 
@@ -1481,12 +1536,19 @@ async def _recommend(
         # Câu chuyển loại đứng TRƯỚC mọi câu dẫn khác: đó là việc khách vừa xin.
         lead = "\n".join(part for part in (render.type_switch_lead(action.switched_type), lead) if part)
     if not candidates:
-        if action.refine:
-            # Đã siết đúng hướng khách xin mà không còn mẫu nào: câu "chưa tìm
-            # được mẫu nào khớp tiêu chí" nghe như lỗi hệ thống, trong khi sự
-            # thật là "không có mẫu nào rẻ hơn/rộng hơn nữa".
-            return await _no_better(state, services)
-        return await _same_pick(state, services) if retrying else await _nearest_by_price(services, state, criteria)
+        # Đã siết đúng hướng khách xin mà không còn mẫu nào: câu "chưa tìm được
+        # mẫu nào khớp tiêu chí" nghe như lỗi hệ thống, trong khi sự thật là
+        # "không có mẫu nào rẻ hơn/rộng hơn nữa".
+        return await _dead_end(
+            state,
+            services,
+            criteria=criteria,
+            retrying=retrying,
+            refine=action.refine,
+            run_id=run_id,
+            customer_id=customer_id,
+            user_message=user_message,
+        )
     assertions = await services.retrieval.layer2(
         utterance=user_message, vehicle_type=str(criteria.vehicle_type), candidate_ids=candidates
     )
@@ -1524,14 +1586,31 @@ async def _recommend(
     # đọc rộng hơn snapshot của chính run này.
     recommendations = [item for item in recommendations if str(item.vehicle_id) not in excluded]
     if not recommendations:
-        if action.refine:
-            return await _no_better(state, services)
-        return await _same_pick(state, services) if retrying else await _nearest_by_price(services, state, criteria)
+        return await _dead_end(
+            state,
+            services,
+            criteria=criteria,
+            retrying=retrying,
+            refine=action.refine,
+            run_id=run_id,
+            customer_id=customer_id,
+            user_message=user_message,
+        )
     ids = tuple(str(item.vehicle_id) for item in recommendations)
     if state.recommended_ids and ids == state.recommended_ids:
         # Cùng bộ xe → cùng bài chữ. Đọc lại nguyên văn bài khách vừa đọc là
         # đúng chỉ số "lặp bài" (spec mục 8) — nói ngắn và mở đường đi tiếp.
-        return await _same_pick(state, services, ids=ids)
+        return await _dead_end(
+            state,
+            services,
+            criteria=criteria,
+            retrying=retrying,
+            refine=action.refine,
+            ids=ids,
+            run_id=run_id,
+            customer_id=customer_id,
+            user_message=user_message,
+        )
 
     text, views = await _pitch_text(
         services,
