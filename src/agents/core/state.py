@@ -171,6 +171,11 @@ class Understanding:
     #: mình: đo trên máy 2026-09-23, LLM gắn REJECT cho cả "rẻ hơn đi" — một
     #: lời XIN CHỈNH — và lượt đó bị đọc thành khách bỏ cuộc.
     stop_asked: bool = False
+    #: Trang bị khách hỏi CÓ/KHÔNG ("có trợ lý ảo không"), hoặc rỗng. Đọc TẤT
+    #: ĐỊNH ở `understand` (`domain/feature_question`). Đo trên máy 2026-09-23:
+    #: câu này khi CHƯA nêu xe nào bị đẩy sang hỏi ngân sách — khách hỏi một
+    #: trang bị mà bot hỏi tiền là trả lời sai ý định.
+    feature_asked: str = ""
     #: Chủ đề LO NGẠI của lượt ("pin chai bán ai mua", "hầm chung cư chưa có trụ
     #: sạc") — đọc TẤT ĐỊNH ở `understand`. Rỗng = không phải câu lo ngại. Log
     #: prod 2026-08-31: các câu này bị LLM gắn act lửng lơ và rơi vào câu mặc

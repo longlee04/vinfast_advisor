@@ -313,6 +313,13 @@ def decide(state: CoreState, u: Understanding) -> Decision:
                     state, pending.key, PendingKind.CHOICE, options=pending.options, labels=pending.labels
                 )
         if pending.kind is PendingKind.SLOT:
+            if pending.key == PENDING_PROFILE and (u.vehicle_ids or u.feature_asked) and not u.slots:
+                # Khách gõ THẲNG tên xe ("xe vf9") hoặc hỏi một trang bị giữa lúc
+                # câu hồ sơ đang treo: đó KHÔNG phải câu trả lời hỏng, đó là họ
+                # nói rõ mình muốn gì. Đo trên máy 2026-09-23: "xe vf9" bị coi là
+                # đáp hồ sơ không rút ra slot → hỏi lại → lượt sau chạm trần và
+                # bị đẩy sang tư vấn viên.
+                return _vehicle_focus(state.with_(pending=None), u)
             if pending.key == PENDING_PROFILE and u.dialogue_act is DialogueAct.SLOT_ANSWER and not u.slots:
                 # Khách có đáp, nhưng bộ hiểu ý không rút ra được slot nào: đó là
                 # KHÔNG HIỂU, không phải "đã thu thập xong". Đi đúng đường UNCLEAR
@@ -500,6 +507,10 @@ def decide(state: CoreState, u: Understanding) -> Decision:
 
     # 6. Theo intent.
     intent = u.intent if u.intent is not Intent.NONE else state.intent
+    if u.dialogue_act is DialogueAct.UNCLEAR and (u.vehicle_ids or u.feature_asked):
+        # "Không hiểu" mà khách đã gọi tên xe hoặc hỏi rõ một trang bị thì lõi
+        # KHÔNG mù: nói về chiếc đó, hoặc hỏi đúng một câu "mẫu nào".
+        return _vehicle_focus(state, u)
     if u.dialogue_act is DialogueAct.UNCLEAR:
         if u.intent in _VEHICLE_INTENTS:
             # Bộ hiểu ý gọi được đúng tên việc (COST/TEST_DRIVE/…) nhưng không
@@ -987,6 +998,34 @@ def _choose_with_slots(state: CoreState, vehicle_id: str, u: Understanding) -> D
         # nhận về một cái menu.
         return Decision(FitCheck(vehicle_id=vehicle_id, alternative_ids=after.recommended_ids, just_chosen=True), after)
     return Decision(Reply(template=TEMPLATE_CHOSEN_SUMMARY, args={"vehicle_id": vehicle_id}), after)
+
+
+def _vehicle_focus(state: CoreState, u: Understanding) -> Decision:
+    """Lượt nói về MỘT chiếc xe: tra thông số / trả lời trang bị, hoặc hỏi mẫu nào.
+
+    Gom đúng một ý: khách đã trỏ ra xe (gõ tên, hoặc lõi đang theo một chiếc)
+    thì trả lời về chiếc đó; chưa trỏ ra được thì hỏi ĐÚNG một câu "mẫu nào",
+    KHÔNG hỏi ngân sách — họ đang hỏi về xe, không xin tư vấn chọn xe.
+    """
+
+    if len(u.vehicle_ids) >= 2:
+        picked = tuple(u.vehicle_ids[:3])
+        return Decision(
+            Compare(vehicle_ids=picked),
+            state.with_(recommended_ids=picked, chosen_vehicle_id=None, pending=None),
+        )
+    target = u.vehicle_ids[0] if u.vehicle_ids else _target_vehicle(state, u)
+    if target is None:
+        return _ask_vehicle(state, u)
+    if u.feature_asked:
+        return Decision(
+            VehicleQa(vehicle_id=target, question=u.question or u.feature_asked),
+            _remember_vehicle(state, u).with_(pending=None),
+        )
+    return Decision(
+        Lookup(mode=LOOKUP_LOOKUP, vehicle_ids=(target,), aspect=u.aspect),
+        _remember_vehicle(state, u).with_(pending=None),
+    )
 
 
 def _lookup_decision(state: CoreState, u: Understanding, *, resume: bool) -> Decision | None:

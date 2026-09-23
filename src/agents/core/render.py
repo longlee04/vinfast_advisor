@@ -29,6 +29,7 @@ from src.agents.core.actions import (
 )
 from src.agents.core.state import CoreState, Pending, PendingKind
 from src.agents.domain.claim_policy import feature_claim_label, plan_claims
+from src.agents.domain.feature_question import asked_feature as asked_feature  # noqa: PLC0414
 from src.agents.domain.need_tags import need_tag_display
 
 
@@ -1451,33 +1452,6 @@ def _spec_verdict(code: str, value: object) -> str:
     if code == "max_load_kg":
         return "tải trọng đáp ứng tốt việc chở hàng hằng ngày" if number >= 140 else "tải trọng hợp chở người và đồ nhẹ"
     return ""
-
-
-#: Câu hỏi CÓ/KHÔNG về một trang bị: "VF 9 có trợ lý ảo không", "xe này có
-#: cửa sổ trời không". Bắt phần giữa "có" và "không" — đó chính là thứ khách hỏi.
-_YES_NO_FEATURE: re.Pattern[str] = re.compile(
-    r"\bcó\s+(?P<thing>[^?]{2,40}?)\s+(?:hay\s+)?(?:không|ko|hông|chưa)\b",
-    re.IGNORECASE,
-)
-#: Từ nối/động từ lọt vào giữa làm bản trích hết nghĩa ("có được trang bị X không").
-_FEATURE_NOISE: tuple[str, ...] = ("được", "trang bị", "tích hợp", "kèm", "sẵn", "cái", "loại", "thêm")
-
-
-def asked_feature(question: str) -> str:
-    """Trang bị khách hỏi CÓ/KHÔNG, hoặc rỗng. Thuần, không đọc catalog.
-
-    Khách hỏi một câu có/không mà nhận cả bảng thông số (Sếp 2026-09-23: "xe vf9
-    có trợ lý ảo không" → nguyên bản mô tả VF 9) là trả lời sai ý định: họ hỏi
-    MỘT điều, bot đáp bằng MỌI điều và điều họ hỏi thì không có trong đó.
-    """
-
-    found = _YES_NO_FEATURE.search(question or "")
-    if found is None:
-        return ""
-    thing = " ".join(found.group("thing").split())
-    for noise in _FEATURE_NOISE:
-        thing = re.sub(rf"^{re.escape(noise)}\s+", "", thing, flags=re.IGNORECASE).strip()
-    return thing if len(thing) >= 2 else ""
 
 
 def feature_yes_no(*, vehicle_name: str, feature: str, found: bool, closing: str | None = None) -> str:

@@ -153,3 +153,81 @@ async def test_cau_hoi_thong_so_thuong_van_ra_bang_tong_quan() -> None:
 
     result = await _ask("cho tôi xem thông tin xe")
     assert "mẫu xe thuần điện" in result.text
+
+
+# ---------------------------------------------------------------- định tuyến lượt
+
+
+def _u(**kw: Any):
+    from src.agents.core.state import DialogueAct, Intent, Understanding
+
+    kw.setdefault("dialogue_act", DialogueAct.UNCLEAR)
+    kw.setdefault("intent", Intent.NONE)
+    return Understanding(**kw)
+
+
+def test_go_thang_ten_xe_thi_tra_cuu_xe_do() -> None:
+    """Sếp 2026-09-23: "nhiều lúc không cần tư vấn, người dùng gõ vf9 luôn"."""
+
+    from src.agents.core.actions import LOOKUP_LOOKUP, Lookup
+    from src.agents.core.policy import decide
+
+    state = CoreState(session_id="s1", stage=Stage.COLLECTING)
+    d = decide(state, _u(vehicle_ids=(V9,)))
+    assert isinstance(d.action, Lookup)
+    assert d.action.mode == LOOKUP_LOOKUP and d.action.vehicle_ids == (V9,)
+
+
+def test_go_ten_xe_giua_luc_dang_treo_cau_ho_so() -> None:
+    """Đo trên máy: "xe vf9" bị coi là đáp hồ sơ hỏng → hỏi lại → chạm trần → TVV."""
+
+    from src.agents.core.actions import Lookup
+    from src.agents.core.policy import decide
+    from src.agents.core.state import DialogueAct, Pending, PendingKind
+
+    pending = Pending(kind=PendingKind.SLOT, key="profile", asked_at_turn=1)
+    state = CoreState(session_id="s1", stage=Stage.COLLECTING, pending=pending, ask_counts={"profile": 2})
+    d = decide(state, _u(dialogue_act=DialogueAct.SLOT_ANSWER, vehicle_ids=(V9,)))
+    assert isinstance(d.action, Lookup)
+    assert d.state_after.pending is None
+
+
+def test_hoi_trang_bi_ma_chua_neu_xe_thi_hoi_mau_nao_khong_hoi_tien() -> None:
+    """"xe có trợ lý ảo không" → hỏi MẪU NÀO, không hỏi ngân sách."""
+
+    from src.agents.core.actions import Ask
+    from src.agents.core.policy import decide
+
+    state = CoreState(session_id="s1", stage=Stage.COLLECTING)
+    d = decide(state, _u(feature_asked="trợ lý ảo"))
+    assert isinstance(d.action, Ask)
+    assert d.action.key != "profile"
+
+
+def test_hoi_trang_bi_khi_da_co_xe_dang_theo_thi_tra_loi_luon() -> None:
+    from src.agents.core.actions import VehicleQa
+    from src.agents.core.policy import decide
+
+    state = CoreState(session_id="s1", stage=Stage.CHOSEN, chosen_vehicle_id=V9)
+    d = decide(state, _u(feature_asked="trợ lý ảo", question="xe có trợ lý ảo không"))
+    assert isinstance(d.action, VehicleQa) and d.action.vehicle_id == V9
+
+
+def test_go_hai_ten_xe_thi_so_sanh() -> None:
+    from src.agents.core.actions import Compare
+    from src.agents.core.policy import decide
+
+    state = CoreState(session_id="s1", stage=Stage.COLLECTING)
+    d = decide(state, _u(vehicle_ids=(V9, V3)))
+    assert isinstance(d.action, Compare) and d.action.vehicle_ids == (V9, V3)
+
+
+def test_luot_khong_hieu_that_su_van_di_duong_cu() -> None:
+    """Không tên xe, không hỏi trang bị → vẫn là đường UNCLEAR cũ."""
+
+    from src.agents.core.actions import Ask, Reply
+    from src.agents.core.policy import decide
+
+    state = CoreState(session_id="s1", stage=Stage.COLLECTING)
+    d = decide(state, _u())
+    assert isinstance(d.action, Ask | Reply)

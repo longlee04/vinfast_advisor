@@ -36,6 +36,7 @@ from src.agents.core.validate import (
 )
 from src.agents.domain.canonical_text import build_canonical_text
 from src.agents.domain.conversation_memory import redact_sensitive
+from src.agents.domain.feature_question import asked_feature
 from src.agents.domain.pricing_intent import PROVINCES, detect_province, mentions_on_road_price
 from src.agents.domain.text_normalization import has_diacritics, normalize, strip_diacritics
 from src.agents.domain.values import SlotName, SlotValue
@@ -1056,6 +1057,7 @@ def to_understanding(
         next_steps_asked=_next_steps_question(user_message),
         off_topic_asked=_off_topic_question(user_message),
         stop_asked=_stop_requested(user_message),
+        feature_asked=asked_feature(user_message),
         concern_topic=_concern_topic(user_message),
         aspect=_lookup_aspect(user_message, intent=intent, vehicle_ids=vehicle_ids),
         unresolved_mention=_unresolved_mention(raw, user_message, vehicle_ids),
