@@ -35,8 +35,19 @@ class OpenAIModerationAdapter:
 
         if not user_message.strip():
             return False
+        if blocklist_verdict(user_message, canonical):
+            # Đáy sàn chạy TRƯỚC provider, không phải THAY provider khi nó hỏng.
+            #
+            # Bản cũ chỉ hỏi blocklist ở hai nhánh lỗi, nên khi có API key thì nó
+            # không bao giờ được chấm — mà OpenAI moderation KHÔNG gắn cờ chửi
+            # tiếng Việt: đo trên máy 2026-09-23, "con mẹ chúng mày" đi thẳng qua
+            # cổng và bot đáp lại bằng một bài chào hàng hai mẫu xe.
+            #
+            # Gộp bằng OR: danh sách tất định hẹp hơn provider rất nhiều nên nó
+            # không làm provider yếu đi, chỉ bịt đúng vùng provider không phủ.
+            return True
         if not self._api_key:
-            return blocklist_verdict(user_message, canonical)
+            return False
         try:
             response = await AsyncOpenAI(api_key=self._api_key).moderations.create(
                 model=self._model_name,

@@ -43,6 +43,37 @@ _ABUSE: Final[tuple[str, ...]] = (
     "cau dau",
     "do khon nan",
     "do mat day",
+    # [2026-09-23] Nhóm chửi phổ biến NHẤT tiếng Việt mà cả OpenAI moderation lẫn
+    # danh sách cũ đều bỏ sót — khách gõ "con mẹ chúng mày" và bot đáp lại bằng
+    # một bài chào hàng hai mẫu xe (Sếp bắt được trên giao diện).
+    #
+    # CHỈ cụm nhiều từ, cố ý: bỏ dấu xong thì từ đơn tục đụng từ thường
+    # ("lớn"→"lon", "các"→"cac", "buổi"→"buoi", "ngủ"→"ngu"), mà một cổng kêu oan
+    # suốt là một cổng sắp bị tắt — đúng lời module này tự dặn ở đầu file.
+    "con me may",
+    "con me chung may",
+    "me may",
+    "me chung may",
+    "dit me",
+    "dit con me",
+    "du me",
+    "du ma",
+    "dmm",
+    "vkl",
+    "clm",
+    "clgt",
+    "oc cho",
+    "ngu nhu cho",
+    "ngu nhu bo",
+    "cam mom",
+    "cam cai mom",
+    "cut di",
+    "may ngu",
+    "bot ngu",
+    "chung may ngu",
+    "do ngu nguoi",
+    "do rac ruoi",
+    "vo dung",
 )
 
 #: Mệnh lệnh tiêm nhiễm lộ mặt. `extract_slots` đã có fence `<utterance>` (T3);
