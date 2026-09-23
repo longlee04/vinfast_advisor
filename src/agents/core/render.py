@@ -113,6 +113,48 @@ def closing_question(
     return assert_clean(f"Đặt lái thử {name} luôn để cảm nhận thật nhé, hay anh/chị muốn xem giá lăn bánh trước?")
 
 
+#: Trần chữ của phần TRÍCH lại lời khách. Dài hơn thế thì câu mở đầu dài hơn cả
+#: câu trả lời; ngắn hơn thì không đủ để khách nhận ra ý của mình.
+ECHO_MAX_CHARS: int = 60
+#: Quá ngắn ("ok", "ừ") thì trích lại chỉ làm câu nghe máy móc.
+ECHO_MIN_CHARS: int = 8
+
+
+def echo_lead(user_message: str, *, prefix: str = "Dạ, về ý") -> str:
+    """Một câu NHẮC LẠI ý khách vừa hỏi, hoặc rỗng khi không trích được an toàn.
+
+    Vì sao cần: lõi trả lời bằng mẫu câu cố định, nên khi mẫu câu không khớp
+    đúng thứ khách hỏi ("xe nào cốp rộng nhất" → "em chưa có mẫu nào khác hợp
+    hơn"), khách không biết bot đang trả lời câu nào và nghe như bot nói vớ vẩn
+    (Sếp 2026-09-23). Nhắc lại ý trước khi trả lời làm rõ bot nghe được gì.
+
+    Chữ khách là chữ CHƯA KIỂM: nó có thể chứa mã máy, token nút, số `.00` —
+    mọi thứ `assert_clean` cấm. Nên bản trích phải tự qua cửa đó, và trượt thì
+    trả RỖNG (nơi gọi bỏ câu nhắc, không bao giờ làm hỏng cả lượt).
+    """
+
+    trimmed = " ".join((user_message or "").split())
+    if len(trimmed) < ECHO_MIN_CHARS:
+        return ""
+    if len(trimmed) > ECHO_MAX_CHARS:
+        trimmed = trimmed[:ECHO_MAX_CHARS].rsplit(" ", 1)[0].rstrip(",;:.")
+    trimmed = trimmed.strip("\"'“”‘’ ").rstrip("?!.,;:")
+    if len(trimmed) < ECHO_MIN_CHARS:
+        return ""
+    try:
+        return assert_clean(f'{prefix} "{trimmed}" của anh/chị ạ:')
+    except RenderError:
+        # Câu khách dính mã máy / token nội bộ: bỏ câu nhắc, giữ phần trả lời.
+        return ""
+
+
+def with_echo(user_message: str, body: str, *, prefix: str = "Dạ, về ý") -> str:
+    """Ghép câu nhắc ý khách trước `body`. Không trích được thì trả nguyên `body`."""
+
+    lead = echo_lead(user_message, prefix=prefix)
+    return "\n\n".join((lead, body)) if lead else body
+
+
 def format_number(value: float, unit: str) -> str:
     if unit == "đ":
         if value >= 1_000_000_000 and value % 100_000_000 == 0:
@@ -302,7 +344,13 @@ def render_reply(action: Reply, *, vehicle_name: str | None = None, closing: str
             "anh/chị nhắn em một câu là được ạ."
         )
     if action.template == TEMPLATE_CLARIFY:
-        return assert_clean(_CLARIFY.get(action.args.get("stage", ""), _CLARIFY["COLLECTING"]))
+        # Nhắc lại ý khách TRƯỚC câu hỏi lại: "em chưa rõ ý anh/chị" trơ không
+        # cho khách biết bot nghe được gì, nên lượt nào cũng đọc như nhau.
+        return with_echo(
+            action.args.get("user_message", ""),
+            assert_clean(_CLARIFY.get(action.args.get("stage", ""), _CLARIFY["COLLECTING"])),
+            prefix="Dạ, em nghe anh/chị nói",
+        )
     if action.template == TEMPLATE_SAME_PICK:
         # Đề xuất lại mà không có mẫu nào MỚI: nói NGẮN, không đọc lại nguyên
         # bài (khách vừa đọc xong), và không nói dối "chưa tìm được mẫu nào".

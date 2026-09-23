@@ -302,7 +302,9 @@ async def act(
             transcript=transcript,
         )
         result = agent if agent is not None else await _reply(
-            Reply(template=TEMPLATE_CLARIFY, args={"stage": state.stage.value}), state, services
+            Reply(template=TEMPLATE_CLARIFY, args={"stage": state.stage.value, "user_message": user_message}),
+            state,
+            services,
         )
     else:  # pragma: no cover - union đã phủ hết
         raise TypeError(f"Action lạ ở act(): {action!r}")
@@ -1437,18 +1439,27 @@ async def _kept_cards(state: CoreState, services: AgentServices, ids: Sequence[s
     return {"recommendations": views} if views else {}
 
 
-async def _no_better(state: CoreState, services: AgentServices) -> ActResult:
-    """Đã chỉnh theo yêu cầu nhưng không còn mẫu nào hợp hơn — nói thật, GIỮ thẻ."""
+async def _no_better(state: CoreState, services: AgentServices, *, user_message: str = "") -> ActResult:
+    """Đã chỉnh theo yêu cầu nhưng không còn mẫu nào hợp hơn — nói thật, GIỮ thẻ.
+
+    Nhắc lại ý khách trước câu từ chối: mẫu câu cố định không khớp đúng thứ họ
+    vừa hỏi ("xe nào cốp rộng nhất" → "em chưa có mẫu nào khác hợp hơn") nên
+    thiếu câu nhắc thì khách không biết bot đang trả lời câu nào.
+    """
 
     vehicle_id = state.recommended_ids[0] if state.recommended_ids else state.chosen_vehicle_id
     name = await _name_of(services, state, vehicle_id)
     return ActResult(
-        text=render.render_reply(Reply(template=TEMPLATE_NO_BETTER), vehicle_name=name or None),
+        text=render.with_echo(
+            user_message, render.render_reply(Reply(template=TEMPLATE_NO_BETTER), vehicle_name=name or None)
+        ),
         cards=await _kept_cards(state, services, state.recommended_ids),
     )
 
 
-async def _same_pick(state: CoreState, services: AgentServices, *, ids: tuple[str, ...] | None = None) -> ActResult:
+async def _same_pick(
+    state: CoreState, services: AgentServices, *, ids: tuple[str, ...] | None = None, user_message: str = ""
+) -> ActResult:
     """Không có mẫu nào MỚI để nói: một câu ngắn về lựa chọn cũ, không đọc lại bài.
 
     Hai lối vào: (a) `reason=retry` mà lọc hết ứng viên, (b) chạy xong lại ra
@@ -1463,7 +1474,10 @@ async def _same_pick(state: CoreState, services: AgentServices, *, ids: tuple[st
     name = await _name_of(services, state, vehicle_id)
     shown = ids if ids is not None else state.recommended_ids
     closing = await _closing(services, state.with_(recommended_ids=shown), vehicle_name=name)
-    text = render.render_reply(Reply(template=TEMPLATE_SAME_PICK), vehicle_name=name or None, closing=closing)
+    text = render.with_echo(
+        user_message,
+        render.render_reply(Reply(template=TEMPLATE_SAME_PICK), vehicle_name=name or None, closing=closing),
+    )
     cards = await _kept_cards(state, services, shown)
     if state.chosen_vehicle_id and name:
         # Khách đã chốt mẫu này và lõi xác nhận không có mẫu mới → dẫn sang trang xe.
@@ -1625,11 +1639,11 @@ async def _dead_end(
     if agent is not None:
         return agent
     if ids is not None:
-        return await _same_pick(state, services, ids=ids)
+        return await _same_pick(state, services, ids=ids, user_message=user_message)
     if refine:
-        return await _no_better(state, services)
+        return await _no_better(state, services, user_message=user_message)
     if retrying:
-        return await _same_pick(state, services)
+        return await _same_pick(state, services, user_message=user_message)
     return await _nearest_by_price(services, state, criteria)
 
 

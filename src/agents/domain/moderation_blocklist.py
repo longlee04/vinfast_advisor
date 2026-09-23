@@ -129,9 +129,13 @@ _BLOCKED_VARIANTS: Final[tuple[str, ...]] = compile_keyword_variants(_ABUSE + _I
 #: (`core/run_turn.py`) chạy cùng cổng kiểm duyệt mà không được import `chain`
 #: (spec mục 6.5b), nên để hằng lại bên đó thì hai lõi từ chối bằng hai câu
 #: khác nhau và bộ đo `CONTENT_BLOCKED` đọc ra hai nhóm.
+#: Câu từ chối phải NÓI RÕ vì sao và em còn làm được gì (Sếp 2026-09-23): một
+#: câu "không hỗ trợ nội dung này" trơ không cho khách biết họ chạm vào đâu và
+#: đi tiếp bằng cách nào, nên nghe như bot né việc.
 MODERATION_BLOCK_MESSAGE: Final[str] = (
-    "Xin lỗi, em không thể hỗ trợ nội dung này. Anh/chị có thể đặt câu hỏi khác "
-    "về sản phẩm hoặc nhu cầu sử dụng xe VinFast ạ."
+    "Dạ, nội dung vừa rồi nằm ngoài phần em được phép trả lời nên em xin phép bỏ qua ạ. "
+    "Em vẫn ở đây để giúp anh/chị chọn xe VinFast: giá lăn bánh, chi phí sử dụng, "
+    "tầm chạy, chỗ sạc hay đặt lái thử — anh/chị cần phần nào ạ?"
 )
 
 #: `terminal_reason` của một lượt bị chặn — cùng nhãn cho cả hai lõi.

@@ -27,6 +27,7 @@ V2 = "22222222-2222-2222-2222-222222222222"
 RUN_ID = UUID("99999999-9999-9999-9999-999999999999")
 CUSTOMER = "c1"
 ANSWER = "Dạ, VF 5 hợp với nhu cầu đi trong phố của anh/chị vì xe nhỏ gọn ạ."
+QUESTION = "tính năng nào phù hợp với anh nhất"
 
 pytestmark = pytest.mark.asyncio
 
@@ -113,25 +114,31 @@ def _state(**kw: Any) -> CoreState:
 
 
 async def _run(services: AgentServices, state: CoreState | None = None, **kw: Any) -> ActResult:
-    action = OpenQuestion(question="tính năng nào phù hợp với anh nhất", reason=OPEN_REASON_UNCLEAR)
+    action = OpenQuestion(question=QUESTION, reason=OPEN_REASON_UNCLEAR)
     return await act(
         action,
         state or _state(),
         services,
         run_id=kw.pop("run_id", RUN_ID),
         customer_id=kw.pop("customer_id", CUSTOMER),
-        user_message="tính năng nào phù hợp với anh nhất",
+        user_message=QUESTION,
     )
 
 
 async def _clarify_text(state: CoreState, services: AgentServices) -> str:
+    """Chữ tất định của lượt — dựng với CÙNG câu khách mà `_run` gửi.
+
+    Câu clarify nay nhắc lại ý khách (Sếp 2026-09-23), nên mốc so sánh phải
+    nhận đúng câu đó; khác câu là so hai lượt khác nhau, không phải so cờ.
+    """
+
     result = await act(
-        Reply(template=TEMPLATE_CLARIFY, args={"stage": state.stage.value}),
+        Reply(template=TEMPLATE_CLARIFY, args={"stage": state.stage.value, "user_message": QUESTION}),
         state,
         services,
         run_id=None,
         customer_id=CUSTOMER,
-        user_message="x",
+        user_message=QUESTION,
     )
     return result.text
 
