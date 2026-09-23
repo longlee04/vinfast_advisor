@@ -1,0 +1,15 @@
+# tests/agents/integration voi AGENT_DATABASE_URL tro toi Postgres local (port 5433)
+# Chay 2026-09-22 sau Buoc 2 (cac fail deu thuoc loi v1 graph=None / NLU pipeline cu / schema drift co san):
+33 failed, 362 passed (chua ke test_migration_0036 moi)
+FAILED test_ask_attempt_cap.py x3 (KeyError budget_max_vnd - pipeline v1)
+FAILED test_booking.py x5
+FAILED test_bottleneck_turn_flow.py x4
+FAILED test_conversation_api.py::test_create_list_detail_and_turn_contract
+FAILED test_conversation_memory_flow.py x2
+FAILED test_graph_boundary.py::test_agent_services_only_contains_advisory_use_cases
+FAILED test_migrations.py x2 (thieu conversation_core_state/turn_traces trong EXPECTED; FLOAT vs DOUBLE PRECISION)
+FAILED test_post_pitch_test_drive_e2e.py x3
+FAILED test_prd_acceptance_e2e.py x3
+FAILED test_pre_llm_escalation.py x6
+FAILED test_run_created_per_turn.py x2 (graph None .ainvoke)
+FAILED test_turn_never_returns_silence.py x1
