@@ -37,6 +37,11 @@ REQUIRED_CALLS_PER_TURN: Final[int] = 4
 #: thứ hai rơi về bản tất định. Giữ ở 1 để chi phí mỗi lượt còn dự đoán được.
 OPTIONAL_CALLS_PER_TURN: Final[int] = 1
 
+#: Slot cho AGENT LOOP (plan agent-migration Bước 5): `max_steps=3` + 1 dự phòng.
+#: Slot RIÊNG, không đụng `REQUIRED`/`OPTIONAL` — cùng bất biến "việc phụ không
+#: bao giờ cướp slot bắt buộc". [GIẢ ĐỊNH] hiệu chỉnh sau Bước 9.
+AGENT_CALLS_PER_TURN: Final[int] = 4
+
 
 class CallKind(StrEnum):
     """Lần gọi này có phải thứ lượt KHÔNG THỂ thiếu hay không.
@@ -50,6 +55,9 @@ class CallKind(StrEnum):
 
     REQUIRED = "REQUIRED"
     OPTIONAL = "OPTIONAL"
+    #: Mỗi bước của agent loop (một call LLM). Cạn thì loop dừng và lượt rơi về
+    #: đường tất định — không bao giờ ném.
+    AGENT = "AGENT"
 
 
 class CallBudgetExhaustedError(RuntimeError):
@@ -74,10 +82,12 @@ class TurnCallBudget:
         *,
         required: int = REQUIRED_CALLS_PER_TURN,
         optional: int = OPTIONAL_CALLS_PER_TURN,
+        agent: int = AGENT_CALLS_PER_TURN,
     ) -> None:
         self._remaining: dict[CallKind, int] = {
             CallKind.REQUIRED: required,
             CallKind.OPTIONAL: optional,
+            CallKind.AGENT: agent,
         }
         self._provider_calls = 0
 
@@ -151,6 +161,7 @@ def use_call_budget(budget: TurnCallBudget) -> Iterator[TurnCallBudget]:
 
 
 __all__ = [
+    "AGENT_CALLS_PER_TURN",
     "OPTIONAL_CALLS_PER_TURN",
     "REQUIRED_CALLS_PER_TURN",
     "CallBudgetExhaustedError",
