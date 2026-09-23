@@ -794,11 +794,18 @@ async def _commit(
             trace=trace,
             advisor_review=hitl_request,
         )
-    # Legacy path: không lease → dùng finalize_turn (giữ nguyên behavior cũ).
+    # Legacy path: không lease → `finalize_turn` ghi tin nhắn + slot + outcome,
+    # nhưng KHÔNG ghi `conversation_core_state` lẫn `turn_traces` (hai thứ đó chỉ
+    # nằm trong `commit_core_turn`). Route `/agent/turn` — route mà frontend đang
+    # gọi — chạy đúng nhánh này, nên lõi v2 mất sạch trí nhớ giữa các lượt:
+    # `stage`, `pending`, `ask_counts`, `recommended_ids`, `chosen_vehicle_id`
+    # đều về mặc định ở lượt sau. Hệ quả đo được trên máy thật (2026-09-23):
+    # "xe khác đi" / "tư vấn lại xe vừa nãy" đều rơi về câu hỏi hồ sơ, và trần
+    # `MAX_ASKS` không bao giờ chạm vì `ask_counts` reset mỗi lượt.
     finalizer = getattr(services.memory, "finalize_turn", None)
     if finalizer is None:
         return result
-    return await finalizer(
+    persisted = await finalizer(
         session_id=session_id,
         customer_id=customer_id,
         client_turn_id=client_turn_id,
@@ -806,6 +813,36 @@ async def _commit(
         result=result,
         slots=_slots_for_persist(state),
     )
+    # Ghi SAU khi lượt đã chốt, mỗi thứ một transaction riêng (đúng khuôn
+    # `ConversationServiceImpl.record_turn_trace`): hai bảng này phục vụ trí nhớ
+    # và quan sát, chúng KHÔNG được phép làm hỏng một lượt đã trả lời xong.
+    await _persist_core_state(services, state)
+    await _persist_trace(services, trace)
+    return persisted
+
+
+async def _persist_core_state(services: AgentServices, state: CoreState) -> None:
+    """Ghi `conversation_core_state` cho nhánh KHÔNG lease. Hỏng thì chỉ log."""
+
+    saver = getattr(services.conversation, "save_core_state", None)
+    if saver is None:
+        return
+    try:
+        await saver(state)
+    except Exception:
+        logger.warning("core.run_turn: khong ghi duoc core state, luot sau se mat mach", exc_info=True)
+
+
+async def _persist_trace(services: AgentServices, trace: TurnTrace) -> None:
+    """Ghi `turn_traces` cho nhánh KHÔNG lease. Hỏng thì chỉ log."""
+
+    recorder = getattr(services.conversation, "record_turn_trace", None)
+    if recorder is None:
+        return
+    try:
+        await recorder(trace)
+    except Exception:
+        logger.warning("core.run_turn: khong ghi duoc turn trace", exc_info=True)
 
 
 def build_core_trace(
