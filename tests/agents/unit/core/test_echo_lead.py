@@ -124,6 +124,8 @@ async def test_no_better_nhac_lai_y_khach() -> None:
     )
     assert HOI in result.text
     assert "chưa có mẫu nào khác hợp hơn" in result.text
+    # Câu đuôi không được chỉ nói về tiền: khách vừa hỏi về CỐP.
+    assert "bớt một tiêu chí" in result.text
 
 
 @pytest.mark.asyncio

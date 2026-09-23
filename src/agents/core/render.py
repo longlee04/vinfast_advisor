@@ -363,7 +363,11 @@ def render_reply(action: Reply, *, vehicle_name: str | None = None, closing: str
         name = action.args.get("vehicle_name") or vehicle_name or "mẫu em vừa gợi ý"
         return assert_clean(
             f"Với yêu cầu anh/chị vừa nêu, em chưa có mẫu nào khác hợp hơn ạ — gần nhất vẫn là {name}. "
-            "Anh/chị nới thêm một chút để em tìm rộng hơn nhé?"
+            # Câu đuôi CŨ chỉ nói về tiền ("nới thêm một chút"), nên khi khách hỏi
+            # một thuộc tính khác (cốp, tầm chạy, số chỗ) thì bot trả lời lạc hẳn
+            # sang ngân sách (Sếp 2026-09-23). Nêu cả hai hướng nới.
+            "Anh/chị nới ngân sách hoặc bớt một tiêu chí để em tìm rộng hơn, "
+            "hay muốn em nói kỹ mẫu này ở điểm anh/chị vừa hỏi ạ?"
         )
     if action.template == TEMPLATE_CHOSEN_SUMMARY:
         # FALLBACK khi act không lấy được thông số xe (catalog lỗi): câu ngắn,
