@@ -293,6 +293,11 @@ def _transcript_lines(transcript: Sequence[TranscriptMessage]) -> tuple[str, ...
     return tuple(lines)
 
 
+#: Tên CÔNG KHAI của bộ dựng dòng transcript đã rào thẻ `<utterance>`. `core/act`
+#: dùng lại cho prompt agent — MỘT bộ rào chèn-chỉ-dẫn cho cả lõi, không hai bản.
+transcript_lines = _transcript_lines
+
+
 def build_user_prompt(
     *,
     state: CoreState,

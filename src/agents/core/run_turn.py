@@ -169,6 +169,7 @@ async def run_turn(
         # nhận ở sổ bước 3, Task 4). Lượt vẫn ghi vệt như mọi lượt khác, kèm lý do bỏ
         # qua, để bộ đo bước 4 không đọc nhầm "lõi v2 hiểu ý kém đi" ở các phiên HITL.
         understand_skipped = "handed_off" if state.stage is Stage.HANDED_OFF else None
+        transcript: Sequence[Any] = ()
         if understand_skipped is not None:
             understanding, understand_error = UNCLEAR_UNDERSTANDING, None
         else:
@@ -190,7 +191,15 @@ async def run_turn(
         run_id = await _run_id_for(services, action, session_id=session_id, state=state_after)
         try:
             outcome = await act(
-                action, state_after, services, run_id=run_id, customer_id=customer_id, user_message=user_message
+                action,
+                state_after,
+                services,
+                run_id=run_id,
+                customer_id=customer_id,
+                user_message=user_message,
+                # Đường agent cần hội thoại gần nhất để trả lời lớp câu tham
+                # chiếu ("xe vừa nãy"); transcript này đã nạp sẵn cho `understand`.
+                transcript=transcript,
             )
         except Exception:
             logger.warning("core.run_turn: act hong, tra loi an toan", exc_info=True)

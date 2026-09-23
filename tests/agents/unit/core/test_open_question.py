@@ -277,3 +277,70 @@ async def test_executor_chi_chay_tool_chi_doc() -> None:
         assert (await execute(AgentToolCall(name=forbidden, args={}))).error == "unknown_tool"
     ok = await execute(AgentToolCall(name=AGENT_TOOL_DANH_MUC, args={"vehicle_type": "CAR"}))
     assert ok.ok is True and "VinFast VF 5" in ok.payload["vehicles"]
+
+
+# ---------- transcript: agent phải biết hội thoại vừa rồi ----------
+
+
+class _Msg:
+    def __init__(self, role: str, content: str) -> None:
+        self.role = role
+        self.content = content
+
+
+async def test_prompt_agent_co_hoi_thoai_gan_nhat() -> None:
+    """Lớp câu tham chiếu ("xe vừa nãy", "tôi đang hỏi gì") cần transcript.
+
+    Quan sát trên máy 2026-09-23: thiếu nó, lượt "không hiểu tôi đang hỏi cái j
+    à" nhận lại một đoạn về ngân sách — agent trả lời một câu khách không hỏi.
+    """
+
+    loop = _Loop()
+    services = _services(agent_loop=loop)
+    captured: dict[str, Any] = {}
+
+    async def _run(**kwargs: Any) -> AgentLoopOutcome:
+        captured.update(kwargs)
+        loop.calls += 1
+        return loop.outcome
+
+    loop.run = _run  # type: ignore[method-assign]
+    await act(
+        OpenQuestion(question="", reason=OPEN_REASON_UNCLEAR),
+        _state(),
+        services,
+        run_id=RUN_ID,
+        customer_id=CUSTOMER,
+        user_message="tôi đang hỏi cái gì đấy",
+        transcript=[_Msg("user", "vf5 giá bao nhiêu"), _Msg("assistant", "Dạ VF 5 có giá niêm yết ạ.")],
+    )
+    prompt = captured["user_prompt"]
+    assert "vf5 giá bao nhiêu" in prompt
+    assert "<utterance>" in prompt  # đi qua đúng bộ rào chèn-chỉ-dẫn của understand
+    assert "tôi đang hỏi cái gì đấy" in prompt
+
+
+async def test_khong_co_transcript_thi_prompt_van_dung() -> None:
+    loop = _Loop()
+    services = _services(agent_loop=loop)
+    captured: dict[str, Any] = {}
+
+    async def _run(**kwargs: Any) -> AgentLoopOutcome:
+        captured.update(kwargs)
+        return loop.outcome
+
+    loop.run = _run  # type: ignore[method-assign]
+    await _run_turn_like(services)
+    assert "Cau khach vua hoi:" in captured["user_prompt"]
+    assert "Hoi thoai gan nhat" not in captured["user_prompt"]
+
+
+async def _run_turn_like(services: AgentServices) -> None:
+    await act(
+        OpenQuestion(question="tính năng nào hợp nhất", reason=OPEN_REASON_UNCLEAR),
+        _state(),
+        services,
+        run_id=RUN_ID,
+        customer_id=CUSTOMER,
+        user_message="tính năng nào hợp nhất",
+    )

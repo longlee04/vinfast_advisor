@@ -69,7 +69,7 @@ from src.agents.core.actions import (
     VehicleQa,
 )
 from src.agents.core.state import CoreState, Pending, PendingKind, Stage
-from src.agents.core.understand import sanitize_prompt_text
+from src.agents.core.understand import sanitize_prompt_text, transcript_lines
 from src.agents.core.validate import VehicleDirectory, VehicleRef
 from src.agents.core.suggest import profile_examples
 from src.agents.domain.agent_flag import FLAG_AGENT_FALLBACK, is_enabled_for
@@ -223,6 +223,7 @@ async def act(
     run_id: UUID | None,
     customer_id: str,
     user_message: str,
+    transcript: Sequence[Any] = (),
 ) -> ActResult:
     """Một Action → một lời gọi service cũ → `ActResult`.
 
@@ -238,7 +239,15 @@ async def act(
         text = HANDOFF_REQUESTED_TEXT if action.reason == "requested" else HANDOFF_TEXT
         return ActResult(text=text, state_patch={"stage": Stage.HANDED_OFF, "pending": None})
     if isinstance(action, Ask):
-        result = await _ask(action, state, services, user_message=user_message, run_id=run_id, customer_id=customer_id)
+        result = await _ask(
+            action,
+            state,
+            services,
+            user_message=user_message,
+            run_id=run_id,
+            customer_id=customer_id,
+            transcript=transcript,
+        )
     elif isinstance(action, Reply):
         result = await _reply(action, state, services)
     elif isinstance(action, Lookup):
@@ -259,7 +268,13 @@ async def act(
         result = await _scope_note(action, state, services)
     elif isinstance(action, Recommend):
         result = await _recommend(
-            action, state, services, run_id=run_id, user_message=user_message, customer_id=customer_id
+            action,
+            state,
+            services,
+            run_id=run_id,
+            user_message=user_message,
+            customer_id=customer_id,
+            transcript=transcript,
         )
     elif isinstance(action, Tco):
         result = await _tco(action, state, services, user_message=user_message, run_id=run_id)
@@ -277,7 +292,13 @@ async def act(
         # Móc 1: lõi tất định đã bí. Agent trả `None` thì lượt ra ĐÚNG câu mà
         # `policy._unclear` vẫn trả hôm nay — không có "câu an toàn riêng".
         agent = await _open_question_or_none(
-            action, state, services, run_id=run_id, customer_id=customer_id, user_message=user_message
+            action,
+            state,
+            services,
+            run_id=run_id,
+            customer_id=customer_id,
+            user_message=user_message,
+            transcript=transcript,
         )
         result = agent if agent is not None else await _reply(
             Reply(template=TEMPLATE_CLARIFY, args={"stage": state.stage.value}), state, services
@@ -391,6 +412,7 @@ async def _ask(
     user_message: str = "",
     run_id: UUID | None = None,
     customer_id: str = "",
+    transcript: Sequence[Any] = (),
 ) -> ActResult:
     """Điền nhãn khách đọc được rồi mới sinh chữ.
 
@@ -444,6 +466,7 @@ async def _ask(
             run_id=run_id,
             customer_id=customer_id,
             user_message=user_message,
+            transcript=transcript,
         )
         if answered is not None:
             # Bỏ câu kết của agent (`_closing` mời xem chi phí/lái thử): lượt này
@@ -1544,6 +1567,7 @@ async def _dead_end(
     run_id: UUID | None,
     customer_id: str,
     user_message: str,
+    transcript: Sequence[Any] = (),
 ) -> ActResult:
     """MÓC 2 (plan agent-migration §1.3): ba ngõ cụt của `_recommend`.
 
@@ -1567,6 +1591,7 @@ async def _dead_end(
         run_id=run_id,
         customer_id=customer_id,
         user_message=user_message,
+        transcript=transcript,
     )
     if agent is not None:
         return agent
@@ -1587,6 +1612,7 @@ async def _recommend(
     run_id: UUID | None,
     user_message: str,
     customer_id: str = "",
+    transcript: Sequence[Any] = (),
 ) -> ActResult:
     """`retrieval → snapshotting → recommendation → synthesis → verification`.
 
@@ -1656,6 +1682,7 @@ async def _recommend(
             run_id=run_id,
             customer_id=customer_id,
             user_message=user_message,
+            transcript=transcript,
         )
     assertions = await services.retrieval.layer2(
         utterance=user_message, vehicle_type=str(criteria.vehicle_type), candidate_ids=candidates
@@ -1707,6 +1734,7 @@ async def _recommend(
             run_id=run_id,
             customer_id=customer_id,
             user_message=user_message,
+            transcript=transcript,
         )
     ids = tuple(str(item.vehicle_id) for item in recommendations)
     if state.recommended_ids and ids == state.recommended_ids:
@@ -1722,6 +1750,7 @@ async def _recommend(
             run_id=run_id,
             customer_id=customer_id,
             user_message=user_message,
+            transcript=transcript,
         )
 
     text, views = await _pitch_text(
@@ -2839,17 +2868,29 @@ def _agent_vehicle_directory(names: Mapping[str, str]) -> VehicleDirectory:
     )
 
 
-def _agent_user_prompt(state: CoreState, *, question: str, user_message: str, names: Mapping[str, str]) -> str:
-    """Ngữ cảnh lượt cho agent: câu khách, slot đã biết, xe đang xét, danh mục.
+def _agent_user_prompt(
+    state: CoreState,
+    *,
+    question: str,
+    user_message: str,
+    names: Mapping[str, str],
+    transcript: Sequence[Any] = (),
+) -> str:
+    """Ngữ cảnh lượt cho agent: hội thoại gần nhất, slot, xe đang xét, danh mục.
 
-    [LỆCH PLAN] KHÔNG có transcript 6 tin nhắn: `act()` không nhận transcript và
-    thêm tham số cho nó là đổi chữ ký hàm mà `run_turn` và hàng trăm test đang
-    gọi. `CoreState` đã mang slot, chặng, xe đã chốt và bộ đề xuất — đủ để trả
-    lời đúng chủ đề. Nối transcript là việc của một bước riêng nếu Bước 9 đo
-    thấy thiếu.
+    Transcript là BẮT BUỘC cho lớp câu tham chiếu ("xe vừa nãy", "tôi đang hỏi
+    cái gì đấy"): thiếu nó agent trả lời một câu khác hẳn câu khách hỏi — quan
+    sát trên máy 2026-09-23, lượt "không hiểu tôi đang hỏi cái j à" nhận lại một
+    đoạn về ngân sách. Dòng transcript đi qua ĐÚNG bộ rào `<utterance>` của
+    `understand`, không có bản thứ hai.
     """
 
-    lines = [f"Cau khach vua hoi: {sanitize_prompt_text(question or user_message)}"]
+    lines: list[str] = []
+    recent = tuple(transcript_lines(transcript))
+    if recent:
+        lines.append("Hoi thoai gan nhat (cu -> moi):")
+        lines.extend(recent)
+    lines.append(f"Cau khach vua hoi: {sanitize_prompt_text(question or user_message)}")
     if state.slots:
         lines.append("Da biet ve khach: " + "; ".join(f"{key.value}={value}" for key, value in state.slots.items()))
     chosen = names.get(str(state.chosen_vehicle_id or ""), "")
@@ -3066,6 +3107,7 @@ async def _open_question(
     run_id: UUID | None,
     customer_id: str,
     user_message: str,
+    transcript: Sequence[Any] = (),
 ) -> ActResult | None:
     """Trả lời câu MỞ bằng agent loop (plan agent-migration §2.3).
 
@@ -3094,7 +3136,9 @@ async def _open_question(
     started = time.monotonic()
     outcome = await loop.run(
         system_prompt=AGENT_SYSTEM_PROMPT,
-        user_prompt=_agent_user_prompt(state, question=action.question, user_message=user_message, names=names),
+        user_prompt=_agent_user_prompt(
+            state, question=action.question, user_message=user_message, names=names, transcript=transcript
+        ),
         tools=build_agent_tools(),
         execute=_agent_executor(state, services, run_id=run_id, names=names, user_message=user_message),
         max_steps=AGENT_MAX_STEPS,
@@ -3148,6 +3192,7 @@ async def _open_question_or_none(
     run_id: UUID | None,
     customer_id: str,
     user_message: str,
+    transcript: Sequence[Any] = (),
 ) -> ActResult | None:
     """`_open_question` bọc lưới: exception lạ KHÔNG được thoát lên `act()`.
 
@@ -3157,7 +3202,13 @@ async def _open_question_or_none(
 
     try:
         return await _open_question(
-            action, state, services, run_id=run_id, customer_id=customer_id, user_message=user_message
+            action,
+            state,
+            services,
+            run_id=run_id,
+            customer_id=customer_id,
+            user_message=user_message,
+            transcript=transcript,
         )
     except Exception:
         logger.warning("agent.open_question loi la, ve duong tat dinh", exc_info=True)
