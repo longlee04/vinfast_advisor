@@ -15,6 +15,7 @@ from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from decimal import ROUND_HALF_UP, Decimal
 from types import MappingProxyType
+from contextvars import ContextVar
 from typing import Any, Final
 from uuid import UUID, uuid4
 
@@ -3086,6 +3087,35 @@ async def _run_agent_tool(
     return AgentToolResult(name=name, ok=False, error=ERROR_UNKNOWN_TOOL)
 
 
+#: Vệt của lần thử agent trong lượt HIỆN TẠI, kể cả lần THẤT BẠI.
+#:
+#: Agent hỏng thì `_open_question` trả `None` và lượt đi đường tất định — nhưng
+#: `ActResult` của đường đó không mang vệt nào, nên bảng đo mất trắng mọi lần
+#: agent thử và trượt (đúng thứ ngưỡng A7/A8 cần đếm). `ContextVar` vì `act`
+#: chạy trong một task của đúng một lượt; `run_turn` đọc lại ở cuối lượt.
+_AGENT_ATTEMPT: ContextVar[tuple[Mapping[str, Any], ...]] = ContextVar("agent_attempt", default=())
+
+
+def _with_agent_error(steps: tuple[Mapping[str, Any], ...], error: str) -> tuple[Mapping[str, Any], ...]:
+    """Đổi lý do ở bước cuối — cửa nào chặn thì bảng đo phải đọc ra đúng cửa đó."""
+
+    if not steps:
+        return ({"tool": "", "args_keys": [], "ok": False, "error": error, "ms": 0, "agent": True},)
+    return (*steps[:-1], {**dict(steps[-1]), "ok": False, "error": error})
+
+
+def take_agent_attempt() -> tuple[Mapping[str, Any], ...]:
+    """Lấy và XOÁ vệt lần thử agent của lượt vừa chạy."""
+
+    steps = _AGENT_ATTEMPT.get()
+    _AGENT_ATTEMPT.set(())
+    return steps
+
+
+def _record_agent_attempt(steps: tuple[Mapping[str, Any], ...]) -> None:
+    _AGENT_ATTEMPT.set(steps)
+
+
 async def _agent_catalog_ids(services: AgentServices, state: CoreState, *, limit: int = 6) -> tuple[str, ...]:
     """Vài mẫu xe của đúng loại đang xét — làm EVIDENCE cho lượt chưa đề xuất gì.
 
@@ -3146,6 +3176,11 @@ async def _open_question(
         total_timeout_seconds=AGENT_TOTAL_TIMEOUT_SECONDS,
     )
     elapsed_ms = int((time.monotonic() - started) * 1000)
+    steps_so_far = (
+        *outcome.steps,
+        {"tool": "", "args_keys": [], "ok": False, "error": outcome.error, "ms": elapsed_ms, "agent": True},
+    )
+    _record_agent_attempt(steps_so_far)
     answer = (outcome.answer or "").strip()
     if not answer:
         logger.info("agent.loop khong ra cau tra loi error=%s", outcome.error)
@@ -3155,9 +3190,11 @@ async def _open_question(
     # Cửa 1 — SỐ: mọi chữ số phải có citation khớp `run_evidence` cùng run.
     if not await services.verification.verify(run_id=run_id, draft_answer=answer):
         logger.info("agent.loop verify tu choi reason=%s", "verify_rejected")
+        _record_agent_attempt(_with_agent_error(steps_so_far, "verify_rejected"))
         return None
     # Cửa 2 — CAM KẾT THƯƠNG MẠI.
     if not await _commercial_guard(answer, state, services):
+        _record_agent_attempt(_with_agent_error(steps_so_far, "quote_gate_blocked"))
         return None
     # Cửa 3 — MÃ MÁY / XƯNG HÔ.
     try:
@@ -3165,6 +3202,7 @@ async def _open_question(
     except render.RenderError as exc:
         match = _OFFENDING_FRAGMENT.search(str(exc))
         logger.info("agent.loop render chan manh %r", match.group(1) if match else "khong-ro")
+        _record_agent_attempt(_with_agent_error(steps_so_far, "render_blocked"))
         return None
 
     name = await _name_of(services, state, state.chosen_vehicle_id or (state.recommended_ids[0] if state.recommended_ids else None))
@@ -3176,6 +3214,7 @@ async def _open_question(
         *outcome.steps,
         {"tool": "", "args_keys": [], "ok": True, "error": outcome.error, "ms": elapsed_ms, "agent": True},
     )
+    _record_agent_attempt(())  # thành công thì vệt đi theo `ActResult`, không cần đường phụ
     return ActResult(
         text=f"{text}\n\n{closing}" if closing else text,
         cards=await _kept_cards(state, services, state.recommended_ids),

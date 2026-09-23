@@ -181,8 +181,15 @@ class OpenAIAgentLoop:
 
             tool_calls = list(getattr(response, "tool_calls", None) or [])
             if not tool_calls:
-                steps.append(_step("", ok=False, error=ERROR_NO_TOOL_CALL, elapsed=self._clock() - started))
-                return self._done(None, steps, ERROR_NO_TOOL_CALL, llm_calls)
+                # Model đáp bằng CHỮ THƯỜNG thay vì gọi `tra_loi_khach` — quan sát
+                # trên máy 2026-09-23 ở đúng lớp câu hội thoại (khách hỏi meta,
+                # không hỏi số liệu). Chữ đó vẫn phải qua đủ ba cửa `verify` →
+                # `quote_gate` → `assert_clean` ở `core/act`, nên nhận nó an
+                # toàn y như nhận qua tool, và giữ được lượt thay vì vứt đi.
+                spoken = _plain_text(response)
+                error = "" if spoken else ERROR_NO_TOOL_CALL
+                steps.append(_step("", ok=bool(spoken), error=error or ERROR_NO_TOOL_CALL, elapsed=self._clock() - started))
+                return self._done(spoken or None, steps, error, llm_calls)
             extra = len(tool_calls) > 1
             name, raw_args = _read_call(tool_calls[0])
 
@@ -246,6 +253,26 @@ class OpenAIAgentLoop:
             default=str,
         )[:MAX_TOOL_PAYLOAD_CHARS]
         return ToolMessage(content=body, tool_call_id=_call_id(call))
+
+
+def _plain_text(response: Any) -> str:
+    """Chữ model tự viết khi nó không gọi tool. Rỗng nghĩa là không có gì để nhận.
+
+    `content` của LangChain có thể là chuỗi hoặc danh sách block (model đa phương
+    thức) — lấy đúng phần chữ, bỏ mọi block khác.
+    """
+
+    content = getattr(response, "content", "")
+    if isinstance(content, str):
+        return content.strip()
+    if isinstance(content, list):
+        parts = [
+            str(block.get("text", "")) if isinstance(block, Mapping) else str(block)
+            for block in content
+            if not isinstance(block, Mapping) or block.get("type") in {None, "text"}
+        ]
+        return " ".join(part for part in parts if part).strip()
+    return ""
 
 
 def _read_call(call: Any) -> tuple[str, Mapping[str, Any]]:

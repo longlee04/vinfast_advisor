@@ -23,7 +23,14 @@ from uuid import UUID, uuid4
 
 from src.agents.contracts import PENDING_HANDOFF_REASON, QuickReplyView, TurnResult
 from src.agents.core import render
-from src.agents.core.act import ActResult, act, catalog_names, is_profile_reask, needs_run
+from src.agents.core.act import (
+    ActResult,
+    act,
+    catalog_names,
+    is_profile_reask,
+    needs_run,
+    take_agent_attempt,
+)
 from src.agents.core.actions import TEMPLATE_CLARIFY, Action, Ask, EnqueueHitl, Handoff, Reply, Silent
 from src.agents.core.policy import decide
 from src.agents.core.render import short_vehicle_name
@@ -205,6 +212,11 @@ async def run_turn(
             logger.warning("core.run_turn: act hong, tra loi an toan", exc_info=True)
             outcome = ActResult(text=_fallback_text(state_after))
 
+        # Agent THỬ mà trượt thì `act` trả kết quả tất định, không mang vệt nào —
+        # đọc lại vệt đó ở đây để bảng đo đếm được cả lần trượt (ngưỡng A7/A8).
+        attempt = take_agent_attempt()
+        tool_calls = outcome.tool_calls or attempt
+
         # ---- (6) render đã xảy ra trong act; ở đây chỉ áp state_patch
         state_after = _apply_patch(state_after, outcome.state_patch)
 
@@ -229,7 +241,7 @@ async def run_turn(
             understanding=understanding,
             action_name=type(action).__name__,
             resume_pending=bool(getattr(action, "resume_pending", False)),
-            tool_calls=outcome.tool_calls,
+            tool_calls=tool_calls,
             understand_error=understand_error,
             understand_skipped=understand_skipped,
         )

@@ -38,8 +38,9 @@ TOOLS = build_agent_tools()
 
 
 class _Response:
-    def __init__(self, tool_calls: list[dict[str, Any]]) -> None:
+    def __init__(self, tool_calls: list[dict[str, Any]], content: Any = "") -> None:
         self.tool_calls = tool_calls
+        self.content = content
 
 
 def _call(name: str, args: dict[str, Any] | None = None, *, call_id: str = "c1") -> dict[str, Any]:
@@ -233,10 +234,29 @@ async def test_step_timeout_tinh_la_1_buoc() -> None:
     assert outcome.llm_calls == 3 and len(outcome.steps) == 3
 
 
-async def test_khong_co_tool_call_tra_none() -> None:
+async def test_khong_co_tool_call_va_khong_co_chu_thi_tra_none() -> None:
     client = _FakeClient([_Response([])])
     outcome = await _run(_loop(client), _Spy())
     assert outcome.answer is None and outcome.error == ERROR_NO_TOOL_CALL
+
+
+async def test_model_dap_bang_chu_thuong_thi_van_nhan() -> None:
+    """Quan sát 2026-09-23: ở lớp câu hội thoại, model đáp thẳng bằng chữ.
+
+    Chữ đó vẫn qua đủ ba cửa ở `core/act`, nên nhận nó an toàn y như nhận qua
+    tool — và giữ được lượt thay vì vứt đi.
+    """
+
+    client = _FakeClient([_Response([], content="Dạ anh/chị vừa hỏi về mẫu xe đang hiển thị ạ.")])
+    outcome = await _run(_loop(client), _Spy())
+    assert outcome.answer == "Dạ anh/chị vừa hỏi về mẫu xe đang hiển thị ạ."
+    assert outcome.error == ""
+
+
+async def test_chu_thuong_dang_block_cung_doc_duoc() -> None:
+    client = _FakeClient([_Response([], content=[{"type": "text", "text": "Dạ em nghe ạ."}])])
+    outcome = await _run(_loop(client), _Spy())
+    assert outcome.answer == "Dạ em nghe ạ."
 
 
 async def test_parallel_tool_calls_chi_lay_cai_dau() -> None:

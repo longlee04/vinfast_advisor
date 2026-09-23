@@ -344,3 +344,50 @@ async def _run_turn_like(services: AgentServices) -> None:
         customer_id=CUSTOMER,
         user_message="tính năng nào hợp nhất",
     )
+
+
+# ---------- vệt của lần thử agent THẤT BẠI ----------
+
+
+async def test_agent_truot_cua_van_de_lai_vet_de_do() -> None:
+    """Agent trượt → lượt đi đường tất định, nhưng bảng đo PHẢI đếm được lần trượt.
+
+    Thiếu vệt này thì ngưỡng A7 (`verify` từ chối < 15%) và A8 (`quote_gate`
+    chặn < 5%) không có mẫu số.
+    """
+
+    from src.agents.core.act import take_agent_attempt
+
+    take_agent_attempt()  # dọn vệt của test trước
+    await _run(_services(verification=_Verification(ok=False)))
+    steps = take_agent_attempt()
+    assert steps and steps[-1]["error"] == "verify_rejected"
+    assert steps[-1]["agent"] is True
+
+
+async def test_quote_gate_chan_cung_de_lai_vet() -> None:
+    from src.agents.core.act import take_agent_attempt
+
+    take_agent_attempt()
+    loop = _Loop(AgentLoopOutcome(answer="Dạ em giảm cho anh/chị thêm một chút ạ."))
+    await _run(_services(agent_loop=loop))
+    steps = take_agent_attempt()
+    assert steps and steps[-1]["error"] == "quote_gate_blocked"
+
+
+async def test_loop_hong_de_lai_dung_ly_do_cua_loop() -> None:
+    from src.agents.core.act import take_agent_attempt
+
+    take_agent_attempt()
+    await _run(_services(agent_loop=_Loop(AgentLoopOutcome(answer=None, error="max_steps"))))
+    steps = take_agent_attempt()
+    assert steps and steps[-1]["error"] == "max_steps"
+
+
+async def test_agent_thanh_cong_thi_vet_di_theo_actresult() -> None:
+    from src.agents.core.act import take_agent_attempt
+
+    take_agent_attempt()
+    result = await _run(_services())
+    assert result.tool_calls and result.tool_calls[-1]["agent"] is True
+    assert take_agent_attempt() == ()  # không nhân đôi vệt
