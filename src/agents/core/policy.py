@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import replace
+from typing import Final
 
 from src.agents.core.actions import (
     CONFIRM_BOOK,

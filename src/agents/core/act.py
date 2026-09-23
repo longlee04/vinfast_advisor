@@ -11,11 +11,11 @@ from __future__ import annotations
 import re
 import time
 from collections.abc import Mapping, Sequence
+from contextvars import ContextVar
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from decimal import ROUND_HALF_UP, Decimal
 from types import MappingProxyType
-from contextvars import ContextVar
 from typing import Any, Final
 from uuid import UUID, uuid4
 
@@ -37,10 +37,10 @@ from src.agents.contracts import (
 from src.agents.core import fit, render
 from src.agents.core.actions import (
     ASPECT_PRICE,
-    OPEN_REASON_DEAD_END,
     CONFIRM_OFFER,
     FIT_YES,
     LOOKUP_POLICY,
+    OPEN_REASON_DEAD_END,
     PENDING_PROFILE,
     PENDING_VEHICLE,
     REASON_RETRY,
@@ -70,9 +70,9 @@ from src.agents.core.actions import (
     VehicleQa,
 )
 from src.agents.core.state import CoreState, Pending, PendingKind, Stage
+from src.agents.core.suggest import profile_examples
 from src.agents.core.understand import sanitize_prompt_text, transcript_lines
 from src.agents.core.validate import VehicleDirectory, VehicleRef
-from src.agents.core.suggest import profile_examples
 from src.agents.domain.agent_flag import FLAG_AGENT_FALLBACK, is_enabled_for
 from src.agents.domain.agent_tools import (
     AGENT_TOOL_DANH_MUC,
@@ -100,7 +100,6 @@ from src.agents.domain.customer_profile import Bottleneck, BottleneckEvidence, O
 from src.agents.domain.location_tool import LOCATION_TOOL_NAME, LocationToolArgs
 from src.agents.domain.nearby_location import LocationKind, UserLocation, detect_location_kinds
 from src.agents.domain.need_tags import need_tag_display
-from src.agents.domain.scoring import LONG_TRIP_MIN_RANGE_KM
 from src.agents.domain.pricing_intent import (
     PROVINCES,
     assumption_note,
@@ -109,15 +108,16 @@ from src.agents.domain.pricing_intent import (
     region_for_province_code,
 )
 from src.agents.domain.quote_risk import DeliveryAction, classify_draft_delivery
+from src.agents.domain.scoring import LONG_TRIP_MIN_RANGE_KM
 from src.agents.domain.spec_tool import SPEC_TOOL_NAME
-from src.agents.domain.text_normalization import contains_keyword
 from src.agents.domain.tco_tool import TCO_TOOL_NAME, TcoToolArgs
 from src.agents.domain.test_drive import now_in_vietnam
+from src.agents.domain.text_normalization import contains_keyword
 from src.agents.domain.values import SlotName, VehicleType
 from src.agents.logging import get_agent_logger
 from src.agents.prompts.question_variants import get_profile_variant, get_reask_lead
-from src.agents.services.conversation_memory import AdvisorReviewRequest
 from src.agents.services.call_budget import CallKind, current_call_budget
+from src.agents.services.conversation_memory import AdvisorReviewRequest
 from src.agents.services.registry import AgentServices
 from src.agents.services.slot_token import read_slot_token
 from src.config import get_settings

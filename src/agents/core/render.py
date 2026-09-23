@@ -6,11 +6,12 @@ Cấm ba thứ đã lộ 80 lần trên prod: enum thô (`7_SEATER`), số `.00`
 from __future__ import annotations
 
 import re
-from urllib.parse import quote
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
+from typing import Final
+from urllib.parse import quote
 
 from src.agents.core.actions import (
     FIT_PARTIAL,
@@ -19,11 +20,11 @@ from src.agents.core.actions import (
     TEMPLATE_CANCELLED,
     TEMPLATE_CHOSEN_SUMMARY,
     TEMPLATE_CLARIFY,
+    TEMPLATE_CONCERN,
     TEMPLATE_NO_BETTER,
     TEMPLATE_SAME_PICK,
-    TEMPLATE_STOPPED,
-    TEMPLATE_CONCERN,
     TEMPLATE_SOCIAL,
+    TEMPLATE_STOPPED,
     Ask,
     Reply,
 )
