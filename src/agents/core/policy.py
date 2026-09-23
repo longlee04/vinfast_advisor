@@ -548,7 +548,14 @@ def decide(state: CoreState, u: Understanding) -> Decision:
     # tên xe thì tên xe mới là toàn bộ ý khách.
     # Chỉ chen vào đường TƯ VẤN: `TEST_DRIVE`, `COST`, `COMPARE`, `CATALOG_LOOKUP`…
     # đều có nhánh riêng bên dưới và chúng biết dùng `vehicle_ids` đúng cách hơn.
-    if u.vehicle_ids and not u.slots and intent in {Intent.ADVISORY, Intent.NONE}:
+    if (
+        u.vehicle_ids
+        # Chỉ xét slot TƯ VẤN (bỏ `vehicle_type`): LLM gắn kèm `vehicle_type=CAR`
+        # cho gần như mọi lượt nhắc tên ô tô, nên `not u.slots` thẳng là điều kiện
+        # không bao giờ đúng — đo trên máy 2026-09-23, luật này câm hoàn toàn.
+        and not any(slot in _ANSWER_ADVISORY_SLOTS for slot in u.slots)
+        and intent in {Intent.ADVISORY, Intent.NONE}
+    ):
         if len(u.vehicle_ids) >= 2:
             # Hai mẫu trở lên → so sánh, và chúng thành bộ ứng viên của phiên
             # (cùng cách `_lookup_decision` xử lý một lượt COMPARE).

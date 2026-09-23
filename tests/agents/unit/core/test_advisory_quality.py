@@ -488,3 +488,29 @@ def test_goi_ten_xe_giua_phien_da_co_slot_van_noi_ve_xe_do() -> None:
         _u(DialogueAct.REQUEST, intent=Intent.ADVISORY, vehicle_ids=(V1, V2), question="tư vấn lại cho tôi xe vf2 và vf 3"),
     )
     assert isinstance(d.action, Compare)
+
+
+def test_vehicle_type_llm_gan_kem_khong_lam_cam_luat() -> None:
+    """LLM gắn `vehicle_type=CAR` cho gần như mọi lượt nhắc tên ô tô.
+
+    Xét cả slot đó là điều kiện không bao giờ đúng — luật câm hoàn toàn (đo trên
+    máy 2026-09-23).
+    """
+
+    from src.agents.core.actions import Compare
+
+    state = CoreState(
+        session_id="s1", stage=Stage.RECOMMENDED, intent=Intent.ADVISORY, recommended_ids=(V1, V2),
+        slots={N.VEHICLE_TYPE: "CAR", N.BUDGET_MAX_VND: 400_000_000},
+    )
+    d = decide(
+        state,
+        _u(
+            DialogueAct.REQUEST,
+            intent=Intent.ADVISORY,
+            vehicle_ids=(V1, V2),
+            slots={N.VEHICLE_TYPE: "CAR"},
+            question="tư vấn lại cho tôi xe vf2 và vf 3",
+        ),
+    )
+    assert isinstance(d.action, Compare)
