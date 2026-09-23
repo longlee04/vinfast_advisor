@@ -63,6 +63,11 @@ function isAuthError(error: unknown): boolean {
   return error instanceof AgentApiError && (error.status === 401 || error.status === 403);
 }
 
+/** Gộp mọi khoảng trắng về một dấu cách — so chữ giữa bong bóng và thẻ xe. */
+function squashSpaces(text: string): string {
+  return text.replace(/\s+/g, " ").trim();
+}
+
 function messageForError(error: unknown): string {
   if (isAuthError(error)) {
     return "Bạn cần đăng nhập để tiếp tục hội thoại.";
@@ -607,8 +612,21 @@ export function ConsultationFlow({
             //
             // `pitchHidden` (guardrail chặn bản nháp) vẫn giữ bong bóng: lúc đó
             // `pitch` của từng thẻ rỗng, bong bóng là chỗ DUY NHẤT khách đọc được.
+            //
+            // 2026-09-23: giấu bong bóng CHỈ KHI nó lặp lại nội dung card. Điều
+            // kiện cũ ("có card là giấu") đúng cho đường `synthesize`, nhưng sai
+            // cho mọi đường khác: lượt dự phòng và lượt đi một bậc giá có
+            // `answer` là LỜI DẪN ("Em đưa anh/chị lên tầm cao hơn một bậc ạ:"),
+            // khác hẳn pitch trên card. Giấu nó đi thì khách nhận một rừng thẻ
+            // không ai dẫn — đúng thứ Sếp bắt được trên giao diện.
+            const pitchRepeatsBubble = (pitch: string | null | undefined) => {
+              const body = squashSpaces(pitch ?? "");
+              return body.length > 0 && squashSpaces(message.text ?? "").includes(body);
+            };
             const hasVisiblePitches =
-              (message.vehicles?.length ?? 0) > 0 && !message.pitchHidden;
+              (message.vehicles?.length ?? 0) > 0 &&
+              !message.pitchHidden &&
+              (message.vehicles ?? []).every((vehicle) => pitchRepeatsBubble(vehicle.pitch));
             const comparison = message.comparison ?? null;
             const hasVisibleComparison = Boolean(
               comparison && comparison.vehicles && comparison.vehicles.some((v) => v.found),

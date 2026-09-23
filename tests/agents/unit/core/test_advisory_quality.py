@@ -28,6 +28,8 @@ from src.agents.services.registry import AgentServices
 V1 = "11111111-1111-1111-1111-111111111111"  # VF 3 — 278 triệu
 V2 = "22222222-2222-2222-2222-222222222222"  # VF 2 — 188 triệu
 V3 = "33333333-3333-3333-3333-333333333333"  # VF 6 — 675 triệu
+V4 = "44444444-4444-4444-4444-444444444444"  # VF 5 — 496 triệu
+V5 = "55555555-5555-5555-5555-555555555555"  # VF 9 — 1,4 tỷ
 RUN_ID = UUID("99999999-9999-9999-9999-999999999999")
 
 
@@ -285,3 +287,102 @@ async def test_dat_hon_loai_cac_mau_duoi_san_truoc_khi_snapshot() -> None:
     assert snap.calls == [] or all(UUID(V1) not in call and UUID(V2) not in call for call in snap.calls)
     # Và bộ xếp hạng phải biết lượt này đã nới trần.
     assert ranking.budget_relaxed in ([], [True])
+
+
+# ---------------------------------------------------------------- 6. MỘT bậc giá, có lời dẫn
+
+
+class _StepRetrieval:
+    """Catalog nhiều mẫu — đủ để thấy lượt "đắt hơn" bị đổ cả danh mục hay không."""
+
+    async def layer1(self, criteria: FilterCriteria) -> list[UUID]:
+        return [UUID(V1), UUID(V2), UUID(V3), UUID(V4), UUID(V5)]
+
+    async def layer2(self, *, utterance: str, vehicle_type: str, candidate_ids: Any) -> list:
+        return []
+
+
+class _StepCatalog:
+    """VF 2 188tr · VF 3 278tr · VF 5 496tr · VF 6 699tr · VF 9 1.4 tỷ."""
+
+    async def answer(self, *, user_message: str, vehicle_type_hint: str | None = None) -> CatalogBrowseResult:
+        priced = (
+            (V2, "VinFast VF 2", "188000000"),
+            (V1, "VinFast VF 3", "278000000"),
+            (V4, "VinFast VF 5", "496000000"),
+            (V3, "VinFast VF 6", "699000000"),
+            (V5, "VinFast VF 9", "1400000000"),
+        )
+        return CatalogBrowseResult(
+            answer="danh mục",
+            pitches=tuple(
+                VehiclePitch(
+                    vehicle_id=UUID(vehicle_id), rank=rank, display_name=name, pitch="",
+                    starting_price_vnd=Decimal(price),
+                )
+                for rank, (vehicle_id, name, price) in enumerate(priced, start=1)
+            ),
+        )
+
+
+class _StepSnapshot:
+    def __init__(self) -> None:
+        self.calls: list[tuple[UUID, ...]] = []
+
+    async def snapshot(self, *, run_id: UUID, candidate_ids: Any, assertions: Any) -> None:
+        self.calls.append(tuple(candidate_ids))
+
+
+async def _step_turn(message: str, *, seen: tuple[str, ...]) -> tuple[Any, _StepSnapshot]:
+    from src.agents.core.act import act
+
+    snap = _StepSnapshot()
+    services = AgentServices(
+        catalog_browse=_StepCatalog(), retrieval=_StepRetrieval(), snapshotting=snap, recommendation=_Recommendation()
+    )
+    state = CoreState(
+        session_id="s1", stage=Stage.RECOMMENDED, recommended_ids=seen,
+        slots={N.VEHICLE_TYPE: "CAR", N.BUDGET_MAX_VND: 300_000_000},
+    )
+    result = await act(
+        Recommend(reason="revised", exclude_ids=seen, refine=message),
+        state,
+        services,
+        run_id=RUN_ID,
+        customer_id="c1",
+        user_message=message,
+    )
+    return result, snap
+
+
+@pytest.mark.asyncio
+async def test_dat_hon_chi_buoc_mot_nac_khong_do_ca_danh_muc() -> None:
+    """Sếp 2026-09-23: đổ 8 thẻ một lượt là khách loạn và hết chỗ hỏi tiếp."""
+
+    from src.agents.core.render import PRICE_STEP_LIMIT
+
+    _, snap = await _step_turn("xe khác đắt hơn đi", seen=(V2, V1))
+    assert snap.calls, "phải có snapshot của bậc vừa tìm"
+    assert len(snap.calls[0]) <= PRICE_STEP_LIMIT
+    # Và là các mẫu GẦN NHẤT phía trên (VF 5, VF 6, VF 9), theo giá tăng dần.
+    assert snap.calls[0][0] == UUID(V4)
+
+
+@pytest.mark.asyncio
+async def test_re_hon_cung_chi_buoc_mot_nac() -> None:
+    from src.agents.core.render import PRICE_STEP_LIMIT
+
+    _, snap = await _step_turn("rẻ hơn được không", seen=(V3,))
+    assert snap.calls and len(snap.calls[0]) <= PRICE_STEP_LIMIT
+
+
+def test_cau_dan_va_loi_di_tiep_cua_bac_gia() -> None:
+    from src.agents.core.render import price_step_lead, price_step_tail
+
+    assert "cao hơn" in price_step_lead(pricier=True)
+    assert "thấp hơn" in price_step_lead(pricier=False)
+    assert "cao hơn nữa" in price_step_tail(pricier=True, more=True)
+    assert "rẻ hơn nữa" in price_step_tail(pricier=False, more=True)
+    # Hết mẫu thì nói thật, không mời khách hỏi thêm một thứ không còn.
+    assert "cao nhất" in price_step_tail(pricier=True, more=False)
+    assert "thấp nhất" in price_step_tail(pricier=False, more=False)

@@ -1635,6 +1635,8 @@ async def _recommend(
     candidates = await services.retrieval.layer1(criteria)
     excluded = {str(value) for value in action.exclude_ids}
     candidates = [value for value in candidates if str(value) not in excluded]
+    price_step = revision is not None and (revision.pricier or revision.cheaper)
+    step_more = False
     if revision is not None and revision.pricier and criteria.budget_min_vnd is not None:
         # `catalog_reader.hard_filter` CHỈ đọc `budget_max_vnd` — sàn trong
         # `FilterCriteria` không có ai thi hành. Không chặn ở đây thì lượt "đắt
@@ -1651,6 +1653,22 @@ async def _recommend(
             for value in candidates
             if (price := floor_prices.get(str(value))) is not None and price >= criteria.budget_min_vnd
         ]
+    if price_step and candidates and revision is not None:
+        # MỘT BẬC, không phải cả danh mục. Khách gõ "đắt hơn" muốn bước lên nấc
+        # kế tiếp; đổ tám thẻ một lượt làm khách loạn và mất luôn chỗ để hỏi tiếp
+        # (Sếp 2026-09-23: "để họ có nhiều khoảng để hỏi đắt hơn rẻ hơn").
+        #
+        # Sắp theo GIÁ chứ không theo điểm: "gần nhất phía trên" mới là thứ khách
+        # vừa hỏi, và thứ tự đó giữ cho lượt sau ("đắt hơn nữa") bước tiếp đúng
+        # một nấc thay vì nhảy thẳng lên mẫu cao nhất.
+        step_prices = await catalog_prices(services, vehicle_type=str(criteria.vehicle_type))
+        ordered = sorted(
+            (value for value in candidates if str(value) in step_prices),
+            key=lambda value: step_prices[str(value)],
+            reverse=bool(revision.cheaper),
+        )
+        step_more = len(ordered) > render.PRICE_STEP_LIMIT
+        candidates = ordered[: render.PRICE_STEP_LIMIT] or candidates[: render.PRICE_STEP_LIMIT]
     relaxed: tuple[str, ...] = ()
     if not candidates and not action.refine and not retrying:
         # Bộ lọc chặt ra rỗng: TỰ nới rồi nói ra, không đẩy việc nới sang khách
@@ -1667,6 +1685,10 @@ async def _recommend(
         )
     else:
         lead = ""
+    if price_step and revision is not None:
+        # Nói ra mình vừa bước hướng nào: khách 278 triệu nhận về mẫu 699 triệu
+        # phải đọc được lý do ở dòng đầu.
+        lead = "\n".join(part for part in (render.price_step_lead(pricier=revision.pricier), lead) if part)
     if action.switched_type:
         # Câu chuyển loại đứng TRƯỚC mọi câu dẫn khác: đó là việc khách vừa xin.
         lead = "\n".join(part for part in (render.type_switch_lead(action.switched_type), lead) if part)
@@ -1766,6 +1788,10 @@ async def _recommend(
         # Câu nói-ra-đã-nới-gì đứng TRƯỚC bài: khách 300 triệu nhận về mẫu 420
         # triệu phải đọc lý do ở dòng đầu, không phải tự đoán giữa bài.
         text = f"{lead}\n\n{text}"
+    if price_step and revision is not None:
+        # Lối đi tiếp đứng CUỐI: khách đọc xong danh sách mới cần biết mình còn
+        # bước được một nấc nữa hay đã chạm tầm cuối.
+        text = f"{text}\n\n{render.price_step_tail(pricier=revision.pricier, more=step_more)}"
     patch: dict[str, Any] = {"recommended_ids": ids}
     if state.slots.get(SlotName.VEHICLE_TYPE) != vehicle_type_value:
         # Slot vừa SUY (không phải khách nói) — ghi lại để lượt sau đọc

@@ -525,6 +525,36 @@ RELAX_RANGE = "range"
 RELAX_OTHER = "other"
 
 
+#: Số mẫu tối đa cho MỘT bậc giá. Khách xin "đắt hơn" muốn bước lên một nấc,
+#: không muốn đọc cả danh mục: đổ 8 thẻ một lượt là khách hết chỗ để hỏi tiếp
+#: (Sếp 2026-09-23 — "để họ có nhiều khoảng để hỏi đắt hơn rẻ hơn").
+PRICE_STEP_LIMIT: int = 3
+
+
+def price_step_lead(*, pricier: bool) -> str:
+    """Câu dẫn cho lượt bước MỘT nấc giá, đứng trước danh sách."""
+
+    if pricier:
+        return assert_clean("Em đưa anh/chị lên tầm giá cao hơn một bậc ạ:")
+    return assert_clean("Em tìm giúp anh/chị mấy mẫu ở tầm thấp hơn ạ:")
+
+
+def price_step_tail(*, pricier: bool, more: bool) -> str:
+    """Câu mời đi tiếp, đứng CUỐI bài — chỗ khách đọc xong danh sách.
+
+    `more=False` nghĩa là hết mẫu ở hướng đó: nói thật, đừng mời khách hỏi thêm
+    một thứ không còn.
+    """
+
+    if not more:
+        return assert_clean(
+            "Đây đã là tầm cao nhất em có ạ." if pricier else "Đây đã là tầm thấp nhất em có ạ."
+        )
+    if pricier:
+        return assert_clean("Anh/chị muốn xem tầm cao hơn nữa thì nói em nhé, hoặc quay lại tầm cũ cũng được ạ.")
+    return assert_clean("Anh/chị cần rẻ hơn nữa thì nói em nhé, hoặc quay lại tầm cũ cũng được ạ.")
+
+
 def relax_lead(
     relaxed: Sequence[str],
     *,

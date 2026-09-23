@@ -478,6 +478,43 @@ describe("ConsultationFlow with vehicle recommendations", () => {
     vi.unstubAllGlobals();
   });
 
+  // 2026-09-23 (Sếp bắt trên giao diện): lượt đề xuất đi qua đường dự phòng /
+  // đường "một bậc giá" có `answer` là LỜI DẪN, còn pitch trên card là chữ
+  // catalog chung chung. Luật cards-only cũ ("có card là giấu bong bóng") nuốt
+  // mất lời dẫn và khách nhận một rừng thẻ không ai dẫn.
+  it("keeps the lead bubble when card pitches are not the answer text", async () => {
+    const user = userEvent.setup();
+    sendTurn.mockResolvedValueOnce({
+      answer: ["Em đưa anh/chị lên tầm giá cao hơn một bậc ạ:", "1. VF 6 — hợp vì đủ chỗ"].join("\n\n"),
+      pending_question: null,
+      lookup_facts: [],
+      terminal_reason: null,
+      awaiting_review: false,
+      recommendations: [
+        {
+          vehicle_id: "20000000-0000-0000-0000-000000000101",
+          rank: 1,
+          display_name: "VF 6",
+          image_url: null,
+          starting_price_vnd: "690000000",
+          pitch: "Mẫu xe đang có trong danh mục VinFast.",
+          citations: [],
+        },
+      ],
+    });
+
+    render(
+      <AgentSessionProvider>
+        <ConsultationFlow />
+      </AgentSessionProvider>,
+    );
+    await user.type(screen.getByLabelText("Tin nhắn gửi trợ lý"), "xe khác đắt hơn");
+    await user.click(screen.getByLabelText("Gửi"));
+
+    await waitFor(() => expect(screen.getByText("VF 6")).toBeInTheDocument());
+    expect(screen.getByText(/Em đưa anh\/chị lên tầm giá cao hơn một bậc/)).toBeInTheDocument();
+  });
+
   it("renders one card per recommended vehicle and hides the joined answer bubble", async () => {
     const user = userEvent.setup();
     sendTurn.mockResolvedValueOnce({
