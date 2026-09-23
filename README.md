@@ -94,7 +94,6 @@ CI (GitHub Actions) chạy đúng chuỗi này trên Postgres + pgvector và Min
 - [FE.md](FE.md) — quy ước frontend
 - [docs/vinfast-agent-mvp.md](docs/vinfast-agent-mvp.md) — phạm vi MVP
 - [docs/vehicle-catalog-schema.md](docs/vehicle-catalog-schema.md) — thiết kế dữ liệu catalog
-- [docs/guide/](docs/guide/) — hướng dẫn kỹ thuật theo chương
 - [docs/runbooks/](docs/runbooks/) — runbook vận hành
 - [notes/architecture-learning/](notes/architecture-learning/) — ghi chú đọc mã nguồn
 
