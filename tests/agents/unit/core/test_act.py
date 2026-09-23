@@ -269,7 +269,13 @@ class FakeRecommendation:
         self.features: list[list[str]] = []
 
     async def recommend(
-        self, run_id: UUID, *, customer_asked_feature_codes=(), preferred_trait_codes=(), vehicle_type=None
+        self,
+        run_id: UUID,
+        *,
+        customer_asked_feature_codes=(),
+        preferred_trait_codes=(),
+        vehicle_type=None,
+        budget_relaxed: bool = False,
     ) -> list[Recommendation]:
         self.features.append(list(customer_asked_feature_codes))
         return [
@@ -290,7 +296,13 @@ class RawReasonRecommendation(FakeRecommendation):
     """
 
     async def recommend(
-        self, run_id: UUID, *, customer_asked_feature_codes=(), preferred_trait_codes=(), vehicle_type=None
+        self,
+        run_id: UUID,
+        *,
+        customer_asked_feature_codes=(),
+        preferred_trait_codes=(),
+        vehicle_type=None,
+        budget_relaxed: bool = False,
     ) -> list[Recommendation]:
         self.features.append(list(customer_asked_feature_codes))
         return [
@@ -386,7 +398,13 @@ class VehicleTypeCapturingRecommendation(FakeRecommendation):
         self.vehicle_types: list[str | None] = []
 
     async def recommend(
-        self, run_id: UUID, *, customer_asked_feature_codes=(), preferred_trait_codes=(), vehicle_type=None
+        self,
+        run_id: UUID,
+        *,
+        customer_asked_feature_codes=(),
+        preferred_trait_codes=(),
+        vehicle_type=None,
+        budget_relaxed: bool = False,
     ) -> list[Recommendation]:
         self.vehicle_types.append(vehicle_type)
         return await super().recommend(run_id, customer_asked_feature_codes=customer_asked_feature_codes)
@@ -416,7 +434,13 @@ class BoomOnceRecommendation(FakeRecommendation):
     """`recommend` ném ĐÚNG lỗi thật trên prod — act phải bắt, không được nổ."""
 
     async def recommend(
-        self, run_id: UUID, *, customer_asked_feature_codes=(), preferred_trait_codes=(), vehicle_type=None
+        self,
+        run_id: UUID,
+        *,
+        customer_asked_feature_codes=(),
+        preferred_trait_codes=(),
+        vehicle_type=None,
+        budget_relaxed: bool = False,
     ) -> list[Recommendation]:
         raise ValueError("vehicle_type slot is required and must be valid")
 
@@ -1241,7 +1265,13 @@ class SpyRecommendation(FakeRecommendation):
         self.seen: dict[str, Any] = {}
 
     async def recommend(
-        self, run_id: UUID, *, customer_asked_feature_codes=(), preferred_trait_codes=(), vehicle_type=None
+        self,
+        run_id: UUID,
+        *,
+        customer_asked_feature_codes=(),
+        preferred_trait_codes=(),
+        vehicle_type=None,
+        budget_relaxed: bool = False,
     ) -> list[Recommendation]:
         self.seen.update(features=list(customer_asked_feature_codes), traits=list(preferred_trait_codes))
         return await super().recommend(run_id, customer_asked_feature_codes=customer_asked_feature_codes)
@@ -2385,7 +2415,13 @@ class FillerReasonRecommendation(FakeRecommendation):
     """Lý do chấm điểm CHỈ có claim loại xe — đúng hình lượt prod "đi rạo"."""
 
     async def recommend(
-        self, run_id: UUID, *, customer_asked_feature_codes=(), preferred_trait_codes=(), vehicle_type=None
+        self,
+        run_id: UUID,
+        *,
+        customer_asked_feature_codes=(),
+        preferred_trait_codes=(),
+        vehicle_type=None,
+        budget_relaxed: bool = False,
     ) -> list[Recommendation]:
         return [
             Recommendation(

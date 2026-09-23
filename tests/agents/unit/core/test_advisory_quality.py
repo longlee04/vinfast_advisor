@@ -191,3 +191,35 @@ def test_reject_kem_slot_van_di_duong_tu_van() -> None:
     )
     d = decide(state, _u(DialogueAct.REJECT, slots={N.BUDGET_MAX_VND: 500_000_000}))
     assert not (isinstance(d.action, Reply) and d.action.template == TEMPLATE_STOPPED)
+
+
+# ---------------------------------------------------------------- 4. xếp hạng phải biết lượt đã nới trần
+
+
+@pytest.mark.parametrize(
+    ("slot_budget", "criteria_max", "relaxed"),
+    [
+        (300_000_000, None, True),  # khách xin xe đắt hơn → trần bị BỎ
+        (300_000_000, Decimal("420000000"), True),  # bậc thang tự nới +40%
+        (300_000_000, Decimal("300000000"), False),  # lượt thường
+        (300_000_000, Decimal("187999999"), False),  # khách xin RẺ hơn
+        (None, None, False),  # khách chưa nêu ngân sách
+    ],
+)
+def test_budget_relaxed_dung_khi_luot_co_y_vuot_tran(
+    slot_budget: int | None, criteria_max: Decimal | None, relaxed: bool
+) -> None:
+    """`recommend` loại mọi mẫu vượt trần đọc từ slot, nên nó PHẢI biết lượt nới.
+
+    Thiếu cờ này thì `layer1` tìm ra xe đắt hơn xong bộ xếp hạng loại sạch, và
+    lượt rơi về "em chưa có mẫu nào khác hợp hơn" (đo trên máy 2026-09-23).
+    """
+
+    from src.agents.core.act import _budget_relaxed
+
+    slots: dict[Any, Any] = {N.VEHICLE_TYPE: "CAR"}
+    if slot_budget is not None:
+        slots[N.BUDGET_MAX_VND] = slot_budget
+    state = CoreState(session_id="s1", stage=Stage.RECOMMENDED, slots=slots)
+    criteria = FilterCriteria(vehicle_type=VehicleType.CAR, budget_max_vnd=criteria_max)
+    assert _budget_relaxed(state, criteria) is relaxed

@@ -1277,6 +1277,27 @@ async def catalog_prices(services: AgentServices, *, vehicle_type: str | None) -
     return prices
 
 
+def _budget_relaxed(state: CoreState, criteria: FilterCriteria) -> bool:
+    """Lượt này có cố ý đi QUÁ trần ngân sách khách đã nêu không.
+
+    `recommendation.recommend` xếp hạng trên snapshot nhưng vẫn đọc ngân sách từ
+    `conversation_slots` và LOẠI mọi mẫu vượt trần (`scoring._is_unlabelled_over_budget`).
+    Nên hai đường đã nới trần ở Lớp 1 — khách xin xe đắt hơn, và bậc thang tự nới
+    khi lọc chặt ra rỗng — đều bị chính bộ xếp hạng loại sạch kết quả, và lượt
+    rơi về "em chưa có mẫu nào khác hợp hơn" kèm y nguyên thẻ cũ (đo trên máy
+    2026-09-23: hai lượt "đắt hơn" liên tiếp).
+
+    So TRẦN CỦA LƯỢT với trần trong slot: cao hơn (hoặc đã bỏ) nghĩa là lượt này
+    cố ý vượt, và bộ xếp hạng phải biết. Lượt xin RẺ hơn siết trần xuống nên
+    không lọt vào đây.
+    """
+
+    slot_budget = _as_int(state.slots.get(SlotName.BUDGET_MAX_VND))
+    if not slot_budget:
+        return False
+    return criteria.budget_max_vnd is None or Decimal(slot_budget) < criteria.budget_max_vnd
+
+
 async def _refined(
     services: AgentServices, state: CoreState, *, criteria: FilterCriteria, refine: str, seen_ids: Sequence[str]
 ) -> tuple[FilterCriteria, ComparativeRevision | None]:
@@ -1636,7 +1657,11 @@ async def _recommend(
     vehicle_type_value = str(criteria.vehicle_type)
     try:
         recommendations = await services.recommendation.recommend(
-            run_id, customer_asked_feature_codes=features, preferred_trait_codes=traits, vehicle_type=vehicle_type_value
+            run_id,
+            customer_asked_feature_codes=features,
+            preferred_trait_codes=traits,
+            vehicle_type=vehicle_type_value,
+            budget_relaxed=_budget_relaxed(state, criteria),
         )
     except ValueError:
         # Bug prod 15:20:30: `_profile_from_slots` (services/recommendation.py:234)
