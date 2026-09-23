@@ -133,3 +133,17 @@ def test_so_sanh_ma_tra_khong_ra_ten_thi_bo_han_khong_doc_id() -> None:
 def test_so_sanh_chen_ngang_thi_van_nhuong_cho_cau_dang_treo() -> None:
     state = S(recommended_ids=(V1, V2), pending=Pending(kind=PendingKind.SLOT, key="profile"))
     assert _suggest(state, Compare(vehicle_ids=(V1, V2), resume_pending=True)) == OPENING
+
+
+# ---------- [agent-migration Bước 6] Action OpenQuestion không làm vỡ bảng gợi ý ----------
+
+
+def test_quick_replies_voi_open_question() -> None:
+    """`OpenQuestion` rơi đúng nhánh mặc định theo chặng, không ném."""
+
+    from src.agents.core.actions import OPEN_REASON_UNCLEAR, OpenQuestion
+
+    action = OpenQuestion(question="tính năng nào hợp nhất", reason=OPEN_REASON_UNCLEAR)
+    assert _suggest(S(stage=Stage.RECOMMENDED, recommended_ids=(V1, V2)), action)
+    assert _suggest(S(), action) == OPENING
+    assert _suggest(S(stage=Stage.CHOSEN, chosen_vehicle_id=V1), action)

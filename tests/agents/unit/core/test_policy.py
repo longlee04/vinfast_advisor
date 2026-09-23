@@ -10,6 +10,7 @@ from typing import Any
 import pytest
 
 from src.agents.core.actions import (
+    OPEN_REASON_UNCLEAR,
     REASON_REVISED,
     TEMPLATE_CHOSEN_SUMMARY,
     Ask,
@@ -21,6 +22,7 @@ from src.agents.core.actions import (
     Nearby,
     NextSteps,
     OnRoadPrice,
+    OpenQuestion,
     Recommend,
     Reply,
     ScopeNote,
@@ -530,8 +532,16 @@ def test_restart_xoa_het() -> None:
 
 
 def test_unclear_o_recommended_hoi_mau_nao() -> None:
+    """[agent-migration Bước 6] Nhánh CUỐI của `_unclear` giờ trả `OpenQuestion`.
+
+    Chữ KHÔNG đổi: cờ agent tắt (mặc định) thì `act._open_question_or_none` trả
+    `None` và `act` phát đúng `Reply(TEMPLATE_CLARIFY)` cũ — xem
+    `tests/agents/unit/core/test_open_question.py::test_co_tat_thi_ra_dung_chu_cu`.
+    """
+
     d = decide(S(stage=Stage.RECOMMENDED, recommended_ids=("v1",)), UNCLEAR_UNDERSTANDING)
-    assert d.action == Reply(template="clarify", args={"stage": "RECOMMENDED"})
+    assert isinstance(d.action, OpenQuestion)
+    assert d.action.reason == OPEN_REASON_UNCLEAR
 
 
 def test_unclear_qua_2_lan_thi_handoff() -> None:
@@ -1086,7 +1096,9 @@ def test_khong_hieu_that_o_chang_de_xuat_van_duoc_hoi_lai() -> None:
 
     state = S(stage=Stage.RECOMMENDED, intent=I.ADVISORY, recommended_ids=("v1", "v2"), slots={N.VEHICLE_TYPE: "CAR"})
     d = decide(state, U(A.UNCLEAR))
-    assert isinstance(d.action, Reply)
+    # [agent-migration Bước 6] Đường hỏi lại vẫn là đường này; Action đổi tên,
+    # còn chữ tới khách do `act` phát ra và không đổi khi cờ agent tắt.
+    assert isinstance(d.action, OpenQuestion)
 
 
 # ---------- prod vòng 7 (LP35): xe khách gọi ĐÍCH DANH luôn thắng ----------

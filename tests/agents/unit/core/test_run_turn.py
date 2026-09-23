@@ -836,3 +836,28 @@ def test_navigate_la_the_cua_luot_di_qua_build_result() -> None:
     outcome = ActResult(text="Dạ, em ghi nhận.", cards={"navigate": nav})
     result = _build_result(SESSION, Reply(template="chosen_summary"), outcome, awaiting_review=False)
     assert result.navigate == nav
+
+
+# ---------- [agent-migration Bước 6] OpenQuestion đi hết lượt mà không vỡ contract ----------
+
+
+@pytest.mark.asyncio
+async def test_build_result_voi_open_question() -> None:
+    """Lượt UNCLEAR ở RECOMMENDED giờ đi qua Action `OpenQuestion` (cờ agent TẮT).
+
+    Contract phải nguyên: `answer` có chữ, không khoá lạ ngoài `_CARD_FIELDS`,
+    `terminal_reason` không bị đặt, và trace ghi đúng tên Action mới.
+    """
+
+    from src.agents.core.run_turn import _CARD_FIELDS
+
+    state = CoreState(session_id=SESSION, stage=Stage.RECOMMENDED, recommended_ids=(V1,))
+    result, memory, _ = await _turn(
+        _outcome(dialogue_act="UNCLEAR", intent="NONE"), state=state, user_message="ờ thế à"
+    )
+    assert result.answer and result.answer.strip()
+    assert result.terminal_reason is None
+    trace = memory.committed[-1]["trace"]
+    assert trace.payload["action"] == "OpenQuestion"
+    # Không field nào của TurnResult bị điền ngoài danh sách thẻ đã khai.
+    assert {key for key in _CARD_FIELDS if getattr(result, key, None)} <= _CARD_FIELDS

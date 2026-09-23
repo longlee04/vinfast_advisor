@@ -16,6 +16,7 @@ from src.agents.core.actions import (
     LOOKUP_BROWSE,
     LOOKUP_LOOKUP,
     LOOKUP_POLICY,
+    OPEN_REASON_UNCLEAR,
     PENDING_PROFILE,
     PENDING_SHOWROOM_SLOT,
     PENDING_VEHICLE,
@@ -42,6 +43,7 @@ from src.agents.core.actions import (
     NextSteps,
     NotInCatalog,
     OnRoadPrice,
+    OpenQuestion,
     Recommend,
     Reply,
     ScopeNote,
@@ -302,7 +304,7 @@ def decide(state: CoreState, u: Understanding) -> Decision:
                 # Khách có đáp, nhưng bộ hiểu ý không rút ra được slot nào: đó là
                 # KHÔNG HIỂU, không phải "đã thu thập xong". Đi đúng đường UNCLEAR
                 # để có trần và có đường chuyển TVV, thay vì đề xuất mù.
-                return _unclear(state, slots_before)
+                return _unclear(state, slots_before, u)
             if u.dialogue_act is DialogueAct.REJECT and pending.key == FEATURE_SLOT.value:
                 state = _merge_slots(state, {FEATURE_SLOT: []}).with_(pending=None)
             elif u.dialogue_act is DialogueAct.SLOT_ANSWER:
@@ -493,7 +495,7 @@ def decide(state: CoreState, u: Understanding) -> Decision:
             # ADVISORY, và lượt sau khách đáp "ngày anh đi 30km" bị hiểu là xin
             # tư vấn lại — lõi đề xuất lại từ đầu giữa lúc đã chọn xong xe.
             state = state.with_(intent=u.intent)
-        return _unclear(state, slots_before)
+        return _unclear(state, slots_before, u)
 
     # 6a. Đã chọn xe rồi: một câu trả lời rời KHÔNG mang intent là bổ sung cho
     # việc đang làm, không bao giờ là "tư vấn lại từ đầu".
@@ -1078,7 +1080,7 @@ def _run_irreversible(state: CoreState, key: str, treo: str) -> Decision:
     return Decision(Reply(template=TEMPLATE_CLARIFY, args={"stage": state.stage.value}), state.with_(pending=None))
 
 
-def _unclear(state: CoreState, slots_before: dict[SlotName, SlotValue]) -> Decision:
+def _unclear(state: CoreState, slots_before: dict[SlotName, SlotValue], u: Understanding) -> Decision:
     n = state.ask_counts.get(UNCLEAR_KEY, 0)
     if n >= MAX_UNCLEAR:
         return Decision(Handoff(), state.with_(stage=Stage.HANDED_OFF))
@@ -1087,4 +1089,12 @@ def _unclear(state: CoreState, slots_before: dict[SlotName, SlotValue]) -> Decis
         # Đang trong luồng tư vấn: hỏi lại ĐÚNG câu hồ sơ (một câu duy nhất) khi
         # chưa biết gì; biết được gì rồi thì đề xuất luôn thay vì hỏi vòng vo.
         return _advise(bumped, slots_before)
-    return Decision(Reply(template=TEMPLATE_CLARIFY, args={"stage": bumped.stage.value}), bumped)
+    # MÓC 1 (plan agent-migration §1.3): nhánh CUỐI của `_unclear` là ngõ cụt
+    # thật — lõi sắp trả câu "em chưa rõ ý anh/chị". `act` thử agent trước; agent
+    # tắt/hỏng thì chính `act` trả ĐÚNG `Reply(TEMPLATE_CLARIFY)` này, nên hành
+    # vi khi cờ OFF không đổi một ký tự. Trần `MAX_UNCLEAR` ở trên vẫn chạy
+    # trước: quá trần vẫn `Handoff`, agent không được kéo dài vòng không hiểu.
+    return Decision(
+        OpenQuestion(question=u.question.strip(), reason=OPEN_REASON_UNCLEAR, vehicle_ids=tuple(u.vehicle_ids)),
+        bumped,
+    )
