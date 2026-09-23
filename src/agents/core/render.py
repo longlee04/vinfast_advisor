@@ -1453,6 +1453,50 @@ def _spec_verdict(code: str, value: object) -> str:
     return ""
 
 
+#: Câu hỏi CÓ/KHÔNG về một trang bị: "VF 9 có trợ lý ảo không", "xe này có
+#: cửa sổ trời không". Bắt phần giữa "có" và "không" — đó chính là thứ khách hỏi.
+_YES_NO_FEATURE: re.Pattern[str] = re.compile(
+    r"\bcó\s+(?P<thing>[^?]{2,40}?)\s+(?:hay\s+)?(?:không|ko|hông|chưa)\b",
+    re.IGNORECASE,
+)
+#: Từ nối/động từ lọt vào giữa làm bản trích hết nghĩa ("có được trang bị X không").
+_FEATURE_NOISE: tuple[str, ...] = ("được", "trang bị", "tích hợp", "kèm", "sẵn", "cái", "loại", "thêm")
+
+
+def asked_feature(question: str) -> str:
+    """Trang bị khách hỏi CÓ/KHÔNG, hoặc rỗng. Thuần, không đọc catalog.
+
+    Khách hỏi một câu có/không mà nhận cả bảng thông số (Sếp 2026-09-23: "xe vf9
+    có trợ lý ảo không" → nguyên bản mô tả VF 9) là trả lời sai ý định: họ hỏi
+    MỘT điều, bot đáp bằng MỌI điều và điều họ hỏi thì không có trong đó.
+    """
+
+    found = _YES_NO_FEATURE.search(question or "")
+    if found is None:
+        return ""
+    thing = " ".join(found.group("thing").split())
+    for noise in _FEATURE_NOISE:
+        thing = re.sub(rf"^{re.escape(noise)}\s+", "", thing, flags=re.IGNORECASE).strip()
+    return thing if len(thing) >= 2 else ""
+
+
+def feature_yes_no(*, vehicle_name: str, feature: str, found: bool, closing: str | None = None) -> str:
+    """Câu trả lời CÓ/KHÔNG cho đúng trang bị khách hỏi.
+
+    Không tìm thấy KHÔNG có nghĩa là xe không có: dữ liệu của em có thể thiếu.
+    Nói đúng mức đó — khẳng định "xe không có" là một khẳng định sai về sản phẩm.
+    """
+
+    name = vehicle_name or "mẫu xe này"
+    body = (
+        f"Dạ, {name} có {feature} ạ."
+        if found
+        else f"Dạ, trong phần thông tin em đang có về {name} thì chưa thấy nhắc tới {feature} ạ. "
+        "Em nhờ tư vấn viên xác nhận lại cho chắc nhé?"
+    )
+    return assert_clean(f"{body} {closing}" if closing else body)
+
+
 def qa_follow_up(vehicle_name: str) -> str:
     """Câu kết SAU một thắc mắc về xe: mời soi tiếp về xe, KHÔNG lái sang tiền.
 

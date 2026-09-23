@@ -110,6 +110,7 @@ from src.agents.domain.pricing_intent import (
 )
 from src.agents.domain.quote_risk import DeliveryAction, classify_draft_delivery
 from src.agents.domain.spec_tool import SPEC_TOOL_NAME
+from src.agents.domain.text_normalization import contains_keyword
 from src.agents.domain.tco_tool import TCO_TOOL_NAME, TcoToolArgs
 from src.agents.domain.test_drive import now_in_vietnam
 from src.agents.domain.values import SlotName, VehicleType
@@ -1152,7 +1153,29 @@ async def _vehicle_qa(action: VehicleQa, state: CoreState, services: AgentServic
     if result is None or not (result.answer or "").strip():
         return ActResult(text=render.no_fact(name))
     facts = list(result.lookup_facts)
-    closing = await _closing(services, state, vehicle_name=name)
+    # Câu kết phải nói về CHÍNH chiếc vừa hỏi. `_closing` đọc `recommended_ids`
+    # theo thứ tự, mà bộ đó còn là bản đề xuất CŨ — nên lượt hỏi VF 9 kết bằng
+    # "anh/chị ưng VF 3 không, hay để em so với VF 2" (Sếp bắt được 2026-09-23).
+    #
+    # Đưa chiếc vừa hỏi lên ĐẦU chứ không thay cả bộ: mẫu còn lại vẫn là lời mời
+    # so sánh có ích ("ưng VF 9 không, hay để em so với VF 3?").
+    asked_first = (action.vehicle_id, *(value for value in state.recommended_ids if value != action.vehicle_id))
+    closing = await _closing(services, state.with_(recommended_ids=asked_first), vehicle_name=name)
+    # Câu CÓ/KHÔNG về một trang bị: trả lời ĐÚNG điều đó, đừng đổ cả bảng.
+    feature = render.asked_feature(action.question or "")
+    if feature:
+        haystack = " ".join(
+            [result.answer or "", *(str(value) for fact in facts for value in dict(fact.specs).values())]
+        )
+        return ActResult(
+            text=render.feature_yes_no(
+                vehicle_name=name,
+                feature=feature,
+                found=contains_keyword(haystack, feature),
+                closing=render.qa_follow_up(name),
+            ),
+            cards={"lookup_facts": facts},
+        )
     tool_calls: tuple[dict[str, Any], ...] = ()
     if action.question and facts:
         # Câu hỏi MỘT thông số → trả đúng cột đó kèm ĐÁNH GIÁ; câu kết mời soi
