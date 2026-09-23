@@ -484,6 +484,63 @@ class GoalKpi:
         return f"{self.hit}/{self.total} = {100.0 * self.hit / self.total:.0f}%"
 
 
+#: [Agent] Năm chỉ số của đường agent (plan agent-migration Bước 8). Script này
+#: CHỈ ĐỌC `turn_traces.payload` — không ghi gì, giữ nguyên tính chất.
+def agent_kpis(rows: list[dict[str, Any]]) -> list[GoalKpi]:
+    """Năm chỉ số agent từ các vệt v2 trong cửa sổ ngày.
+
+    Lượt không đi agent thì payload không có khoá `agent_*` — mẫu số là TỔNG
+    lượt v2 cho tỷ lệ "lượt đi agent", còn bốn chỉ số sau chỉ tính trên lượt
+    agent (mẫu số nhỏ hơn, ghi rõ trong cột giá trị).
+    """
+
+    agent_rows = [r for r in rows if (r.get("payload") or {}).get("agent_used")]
+    total_agent = len(agent_rows)
+
+    def _payload(row: dict[str, Any]) -> dict[str, Any]:
+        return row.get("payload") or {}
+
+    answered = [r for r in agent_rows if not _payload(r).get("agent_error")]
+    steps = [len(_payload(r).get("agent_steps") or []) for r in agent_rows]
+    calls = [int(_payload(r).get("agent_llm_calls") or 0) for r in agent_rows]
+    millis = [int(_payload(r).get("agent_ms") or 0) for r in agent_rows]
+    return [
+        GoalKpi("Lượt đi qua agent", total_agent, len(rows)),
+        GoalKpi("Lượt agent trả lời được", len(answered), total_agent),
+        GoalKpi(
+            "Số lần gọi tool / lượt agent",
+            len(steps),
+            len(steps),
+            average=(sum(steps) / len(steps)) if steps else None,
+        ),
+        GoalKpi(
+            "Số call LLM / lượt agent",
+            len(calls),
+            len(calls),
+            average=(sum(calls) / len(calls)) if calls else None,
+        ),
+        GoalKpi(
+            "Thoi gian agent (ms)",
+            len(millis),
+            len(millis),
+            average=(sum(millis) / len(millis)) if millis else None,
+        ),
+    ]
+
+
+def agent_error_counts(rows: list[dict[str, Any]]) -> dict[str, int]:
+    """Đếm lý do fallback của đường agent — `payload.agent_error`."""
+
+    counts: dict[str, int] = {}
+    for row in rows:
+        payload = row.get("payload") or {}
+        if not payload.get("agent_used"):
+            continue
+        reason = str(payload.get("agent_error") or "")
+        counts[reason or "(tra loi duoc)"] = counts.get(reason or "(tra loi duoc)", 0) + 1
+    return dict(sorted(counts.items(), key=lambda item: -item[1]))
+
+
 def goal_kpis(sessions: list[dict[str, Any]]) -> list[GoalKpi]:
     """Bốn KPI theo đích từ danh sách phiên v2 (thuần — test được bằng dữ liệu bịa)."""
 
@@ -557,6 +614,15 @@ def main() -> int:
     print(render_table(by_core))
     print("\nGhi chú: cột 'Đạt' xét theo lõi cuối cùng trong bảng. Chỉ số 6 cần truyền --probe-v1/--probe-v2.")
     if "v2" in wanted:
+        agent_rows = by_core_rows["v2"]
+        print(f"\nChi so agent - {len(agent_rows)} luot v2 trong {args.days} ngay")
+        print(render_goal_table(agent_kpis(agent_rows)))
+        errors = agent_error_counts(agent_rows)
+        if errors:
+            print("| Ly do fallback cua agent | So luot |")
+            print("|---|---|")
+            for reason, count in errors.items():
+                print(f"| {reason} | {count} |")
         try:
             sessions = asyncio.run(fetch_goal_sessions(dsn, args.days))
         except Exception:  # noqa: BLE001 — KPI đích hỏng không được kéo bảng 6 chỉ số đi theo

@@ -302,3 +302,32 @@ def test_kpi_dich_khong_co_phien_thi_gach_ngang() -> None:
     table = m.render_goal_table(m.goal_kpis([]))
     assert table.count("| — |") == 4
     assert "Phiên có chọn xe" in table and "Phiên rơi vào TVV" in table
+
+
+# ---------- [agent-migration Bước 8] chỉ số agent ----------
+
+
+def test_agent_kpis_doc_tu_payload() -> None:
+    from scripts.core_v2_metrics import agent_error_counts, agent_kpis
+
+    rows = [
+        {"payload": {"core": "v2", "agent_used": True, "agent_steps": [{"tool": "a"}, {"tool": "b"}],
+                     "agent_error": "", "agent_llm_calls": 3, "agent_ms": 2000}},
+        {"payload": {"core": "v2", "agent_used": True, "agent_steps": [{"tool": "a"}],
+                     "agent_error": "max_steps", "agent_llm_calls": 3, "agent_ms": 4000}},
+        {"payload": {"core": "v2"}},
+    ]
+    kpis = agent_kpis(rows)
+    assert kpis[0].hit == 2 and kpis[0].total == 3
+    assert kpis[1].hit == 1 and kpis[1].total == 2
+    assert kpis[2].average == 1.5
+    assert kpis[3].average == 3.0
+    assert agent_error_counts(rows) == {"(tra loi duoc)": 1, "max_steps": 1}
+
+
+def test_agent_kpis_khong_co_luot_agent_thi_khong_no() -> None:
+    from scripts.core_v2_metrics import agent_error_counts, agent_kpis
+
+    rows = [{"payload": {"core": "v2"}}]
+    assert agent_kpis(rows)[0].hit == 0
+    assert agent_error_counts(rows) == {}
