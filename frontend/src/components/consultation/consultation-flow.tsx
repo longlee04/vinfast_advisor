@@ -37,7 +37,7 @@ import type {
   TestDriveOptionsResponse,
   TurnNavigate,
 } from "@/types/agent";
-import { createAgentSessionState, readStoredSession, useAgentSession } from "@/store/agent-session";
+import { clearStoredSession, createAgentSessionState, readStoredSession, useAgentSession } from "@/store/agent-session";
 
 // Lời chào của màn chat trống. Trùng nguyên văn `nodes/classify_scope.SOCIAL_REPLY`
 // — câu backend đáp khi khách chào — nên hai đường vào nói cùng một giọng.
@@ -190,11 +190,14 @@ export function ConsultationFlow({
   const handleNewConversation = useCallback(() => {
     loadedConversationId.current = undefined;
     if (typeof window !== "undefined") {
-      window.sessionStorage.removeItem("p150.agent-session");
+      // Xoá CẢ khoá theo id của phiên đang rời đi, không chỉ khoá chung: phiên
+      // được ghi ở HAI khoá (`writeStoredSession`), nên bỏ sót khoá theo id là
+      // hội thoại cũ vẫn khôi phục được và nút này trông như chết.
+      clearStoredSession(state.sessionId);
       window.history.pushState({}, "", "/consultation");
     }
     dispatch({ type: "restarted", sessionId: crypto.randomUUID() });
-  }, [dispatch]);
+  }, [dispatch, state.sessionId]);
 
   const sendMessage = useCallback(
     async (rawMessage: string, options?: { readonly silent?: boolean }): Promise<void> => {

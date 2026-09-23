@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useReducer, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
 
 import type {
   VehicleDetails,
@@ -535,6 +535,13 @@ export function AgentSessionProvider({
   );
   const [ready, setReady] = useState(false);
 
+  // Đã khôi phục cho `conversationId` nào rồi. Thiếu cờ này thì hiệu ứng chạy
+  // lại MỖI KHI `state.sessionId` đổi — và lần đổi quan trọng nhất là lúc khách
+  // bấm "Cuộc trò chuyện mới": hiệu ứng đọc lại `p150.agent-session.<id cũ>` rồi
+  // dispatch `restored`, kéo nguyên hội thoại cũ về. Nhìn từ ngoài là nút chết
+  // (Sếp báo 2026-09-23).
+  const restoredFor = useRef<string | null>(null);
+
   useEffect(() => {
     if (!conversationId) {
       clearStoredSession();
@@ -544,6 +551,11 @@ export function AgentSessionProvider({
       setReady(true);
       return;
     }
+    if (restoredFor.current === conversationId) {
+      setReady(true);
+      return;
+    }
+    restoredFor.current = conversationId;
     const stored = readStoredSession(conversationId);
     if (stored && stored.sessionId === conversationId) {
       dispatch({ type: "restored", state: stored });
