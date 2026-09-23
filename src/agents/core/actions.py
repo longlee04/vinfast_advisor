@@ -258,6 +258,26 @@ class Silent:
     resume_pending: bool = False
 
 
+#: Vì sao lượt rơi xuống agent — hai móc của plan agent-migration §1.3.
+OPEN_REASON_UNCLEAR = "unclear"
+OPEN_REASON_DEAD_END = "dead_end"
+
+
+@dataclass(frozen=True, slots=True)
+class OpenQuestion:
+    """Lõi TẤT ĐỊNH đã tới ngõ cụt — thử trả lời bằng agent loop (chỉ-đọc).
+
+    KHÔNG phải một việc mới: mọi nhánh hỏng của agent đều rơi về ĐÚNG kết quả
+    tất định mà hệ thống trả hôm nay (`act._open_question` trả `None`). Vì vậy
+    Action này không mang `state_patch` nào và không bao giờ chạm ownership.
+    """
+
+    question: str
+    reason: str
+    vehicle_ids: tuple[str, ...] = ()
+    resume_pending: bool = False
+
+
 Action = (
     Ask
     | Reply
@@ -277,6 +297,7 @@ Action = (
     | EnqueueHitl
     | Handoff
     | Silent
+    | OpenQuestion
 )
 
 #: Hành động không đảo ngược — confidence thấp phải hỏi xác nhận trước (spec mục 5).
