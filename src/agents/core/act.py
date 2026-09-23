@@ -9,6 +9,7 @@ lần duy nhất cuối lượt (bài học `_write_pending`).
 from __future__ import annotations
 
 import re
+import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
@@ -42,6 +43,7 @@ from src.agents.core.actions import (
     PENDING_VEHICLE,
     REASON_RETRY,
     TEMPLATE_CHOSEN_SUMMARY,
+    TEMPLATE_CLARIFY,
     TEMPLATE_NO_BETTER,
     TEMPLATE_SAME_PICK,
     Action,
@@ -56,6 +58,7 @@ from src.agents.core.actions import (
     NextSteps,
     NotInCatalog,
     OnRoadPrice,
+    OpenQuestion,
     Recommend,
     Reply,
     ScopeNote,
@@ -65,7 +68,28 @@ from src.agents.core.actions import (
     VehicleQa,
 )
 from src.agents.core.state import CoreState, Pending, PendingKind, Stage
+from src.agents.core.understand import sanitize_prompt_text
+from src.agents.core.validate import VehicleDirectory, VehicleRef
 from src.agents.core.suggest import profile_examples
+from src.agents.domain.agent_flag import FLAG_AGENT_FALLBACK, is_enabled_for
+from src.agents.domain.agent_tools import (
+    AGENT_TOOL_DANH_MUC,
+    AGENT_TOOL_SO_SANH,
+    AGENT_TOOL_TIM_DIEM,
+    AGENT_TOOL_TINH_CHI_PHI,
+    AGENT_TOOL_TRA_THONG_SO,
+    ERROR_BAD_ARGS,
+    ERROR_EMPTY,
+    ERROR_TOOL_FAILED,
+    ERROR_UNKNOWN_TOOL,
+    ERROR_UNKNOWN_VEHICLE,
+    AgentToolCall,
+    AgentToolResult,
+    ValidationError,
+    build_agent_tools,
+    is_read_only,
+    parse_tool_args,
+)
 from src.agents.domain.bottleneck_signal import ConfirmedBottleneckEvidence
 from src.agents.domain.canonical_text import build_canonical_text
 from src.agents.domain.catalog_browse import page_path_for_name, page_slug_for_name
@@ -89,8 +113,10 @@ from src.agents.domain.test_drive import now_in_vietnam
 from src.agents.domain.values import SlotName, VehicleType
 from src.agents.logging import get_agent_logger
 from src.agents.services.conversation_memory import AdvisorReviewRequest
+from src.agents.services.call_budget import CallKind, current_call_budget
 from src.agents.services.registry import AgentServices
 from src.agents.services.slot_token import read_slot_token
+from src.config import get_settings
 
 logger = get_agent_logger("agent.core.act")
 #: Bóc đúng mảnh bị chặn từ thông điệp `RenderError` (`render.assert_clean`:
@@ -105,11 +131,18 @@ FEATURE_SLOT = SlotName.HABIT_NEED_TAGS
 #: lấy con số này. Mức đi làm phổ thông ở đô thị Việt Nam.
 DEFAULT_DAILY_KM = 30
 
+#: Tham số agent loop. [GIẢ ĐỊNH] chốt theo plan §2.2, hiệu chỉnh sau Bước 9.
+AGENT_MAX_STEPS: Final = 3
+AGENT_STEP_TIMEOUT_SECONDS: Final = 4.0
+AGENT_TOTAL_TIMEOUT_SECONDS: Final = 10.0
+#: Trần chữ của một khối chữ service nhét vào payload tool.
+MAX_TOOL_TEXT_CHARS: Final = 1200
+
 #: Action cần một `run_id` (đọc snapshot bất biến). `run_turn` tạo run TRƯỚC khi
 #: gọi `act` chỉ cho đúng những Action này — không tạo run cho lượt hỏi slot.
 #: `EnqueueHitl` PHẢI có run: `AdvisorReviewRequest` cần `run_id`, thiếu là mục
 #: ưu đãi không bao giờ vào `review_queue` (prod 2026-08-30: 0 dòng từ lõi v2).
-NEEDS_RUN: tuple[type, ...] = (Recommend, VehicleQa, Tco, EnqueueHitl)
+NEEDS_RUN: tuple[type, ...] = (Recommend, VehicleQa, Tco, EnqueueHitl, OpenQuestion)
 
 
 def needs_run(action: object) -> bool:
@@ -224,6 +257,15 @@ async def act(
     elif isinstance(action, EnqueueHitl):
         result = await _enqueue_hitl(
             action, state, services, run_id=run_id, user_message=user_message, customer_id=customer_id
+        )
+    elif isinstance(action, OpenQuestion):
+        # Móc 1: lõi tất định đã bí. Agent trả `None` thì lượt ra ĐÚNG câu mà
+        # `policy._unclear` vẫn trả hôm nay — không có "câu an toàn riêng".
+        agent = await _open_question_or_none(
+            action, state, services, run_id=run_id, customer_id=customer_id, user_message=user_message
+        )
+        result = agent if agent is not None else await _reply(
+            Reply(template=TEMPLATE_CLARIFY, args={"stage": state.stage.value}), state, services
         )
     else:  # pragma: no cover - union đã phủ hết
         raise TypeError(f"Action lạ ở act(): {action!r}")
@@ -2558,4 +2600,342 @@ async def _customer_snapshot(
         return snapshot
     except Exception:
         logger.warning("core.act: khong dung duoc tong hop khach cho muc duyet", exc_info=True)
+        return None
+
+
+# --------------------------------------------------------------- OpenQuestion (agent)
+
+#: Trần chữ của câu trả lời agent — dài hơn thế là đọc bài, không phải trả lời.
+AGENT_MAX_ANSWER_CHARS: Final = 700
+#: Trần số mẫu xe nhét vào prompt agent (cùng tinh thần `understand.MAX_VEHICLE_LINES`).
+AGENT_MAX_CATALOG_LINES: Final = 40
+
+AGENT_SYSTEM_PROMPT: Final = """Ban la Vivi, tro ly ban hang xe dien VinFast, xung "em" voi khach la "anh/chi".
+
+Loi cua he thong tat dinh da khong tra loi duoc cau nay, nen ban duoc goi de tra loi.
+
+LUAT CUNG:
+1. Chi dung du lieu tu ket qua tool. Khong tu suy, khong doan, khong nho tu kien thuc chung.
+2. TUYET DOI khong viet chu so nao trong cau tra loi (gia, km, so cho, nam...). Neu khach
+   can con so, noi ho co the xem the chi phi hoac hoi tiep de em bay so chinh xac.
+3. Khong hua giam gia, khuyen mai, tra gop, tang qua, dat coc hay bat ky cam ket thuong mai nao.
+4. Khong nhac ma may, ma field, id xe. Chi goi ten xe dung nhu trong khoi "Danh sach xe".
+5. Khong hen dat lich lai thu va khong noi se chuyen sang tu van vien.
+6. Tra loi ngan (2-4 cau), dung chu de khach vua hoi, bang tieng Viet co dau.
+
+Cach lam: goi toi da hai tool de lay du lieu, roi goi tool tra_loi_khach de nop cau tra loi.
+Neu tool khong co du lieu, van goi tra_loi_khach va noi that la em chua co thong tin do."""
+
+
+def _agent_vehicle_directory(names: Mapping[str, str]) -> VehicleDirectory:
+    """Danh bạ của lượt agent — khớp tên CHÍNH XÁC, không đoán (`validate.py`)."""
+
+    return VehicleDirectory(
+        refs=tuple(VehicleRef(vehicle_id=vehicle_id, display_name=name) for vehicle_id, name in names.items() if name)
+    )
+
+
+def _agent_user_prompt(state: CoreState, *, question: str, user_message: str, names: Mapping[str, str]) -> str:
+    """Ngữ cảnh lượt cho agent: câu khách, slot đã biết, xe đang xét, danh mục.
+
+    [LỆCH PLAN] KHÔNG có transcript 6 tin nhắn: `act()` không nhận transcript và
+    thêm tham số cho nó là đổi chữ ký hàm mà `run_turn` và hàng trăm test đang
+    gọi. `CoreState` đã mang slot, chặng, xe đã chốt và bộ đề xuất — đủ để trả
+    lời đúng chủ đề. Nối transcript là việc của một bước riêng nếu Bước 9 đo
+    thấy thiếu.
+    """
+
+    lines = [f"Cau khach vua hoi: {sanitize_prompt_text(question or user_message)}"]
+    if state.slots:
+        lines.append("Da biet ve khach: " + "; ".join(f"{key.value}={value}" for key, value in state.slots.items()))
+    chosen = names.get(str(state.chosen_vehicle_id or ""), "")
+    if chosen:
+        lines.append(f"Xe khach da chon: {chosen}")
+    shown = [label for vehicle_id in state.recommended_ids if (label := names.get(str(vehicle_id)))]
+    if shown:
+        lines.append("Xe dang hien tren man hinh: " + ", ".join(shown))
+    catalog = [name for name in names.values() if name][:AGENT_MAX_CATALOG_LINES]
+    lines.append("Danh sach xe (chi duoc goi ten trong danh sach nay): " + ", ".join(catalog))
+    return "\n".join(lines)
+
+
+async def _agent_flag_on(services: AgentServices, customer_id: str) -> bool:
+    """Cổng G1 + G2. Đọc hỏng / chưa cắm / chưa có hàng → TẮT (chiều an toàn)."""
+
+    port = services.agent_flag
+    if port is None:
+        return False
+    try:
+        flag = await port.load(FLAG_AGENT_FALLBACK)
+    except Exception:
+        logger.warning("agent.flag doc loi, coi nhu TAT", exc_info=True)
+        return False
+    return is_enabled_for(flag, customer_id, kill_switch=get_settings().agent_fallback_kill_switch)
+
+
+def _agent_gates_local(state: CoreState, services: AgentServices) -> bool:
+    """Cổng G4-G7 — thuần, không I/O, chạy TRƯỚC khi đọc cờ (rẻ hơn một query)."""
+
+    if state.stage is Stage.HANDED_OFF:
+        return False
+    if state.pending is not None and state.pending.kind is PendingKind.CONFIRM:
+        # Đang chờ khách xác nhận một việc KHÔNG ĐẢO NGƯỢC: chen một câu trả lời
+        # tự do vào đây là làm loãng đúng câu hỏi đang cần một chữ "vâng".
+        return False
+    if services.agent_loop is None or services.verification is None or services.snapshotting is None:
+        return False
+    budget = current_call_budget()
+    return budget is None or budget.remaining(CallKind.AGENT) > 0
+
+
+def _agent_candidate_ids(action: OpenQuestion, state: CoreState) -> tuple[UUID, ...]:
+    """Ứng viên để snapshot: xe đang đề xuất ∪ xe đã chốt ∪ xe trong Action."""
+
+    ordered: dict[str, None] = {}
+    for raw in (*state.recommended_ids, state.chosen_vehicle_id or "", *action.vehicle_ids):
+        if raw:
+            ordered.setdefault(str(raw), None)
+    found: list[UUID] = []
+    for raw in ordered:
+        try:
+            found.append(UUID(raw))
+        except ValueError:
+            continue
+    return tuple(found)
+
+
+def _agent_executor(
+    state: CoreState, services: AgentServices, *, run_id: UUID | None, names: Mapping[str, str], user_message: str
+) -> Any:
+    """Bộ chạy tool cho agent loop — CHỈ ĐỌC, mọi lỗi thành `AgentToolResult`."""
+
+    directory = _agent_vehicle_directory(names)
+
+    def _resolve(name: str) -> str | None:
+        return directory.resolve(name)
+
+    async def execute(call: AgentToolCall) -> AgentToolResult:
+        name = call.name
+        if not is_read_only(name):
+            return AgentToolResult(name=name, ok=False, error=ERROR_UNKNOWN_TOOL)
+        try:
+            args = parse_tool_args(name, call.args)
+        except KeyError:
+            return AgentToolResult(name=name, ok=False, error=ERROR_UNKNOWN_TOOL)
+        except ValidationError:
+            return AgentToolResult(name=name, ok=False, error=ERROR_BAD_ARGS)
+        try:
+            return await _run_agent_tool(
+                name, args, state, services, run_id=run_id, names=names, resolve=_resolve, user_message=user_message
+            )
+        except Exception:
+            # KHÔNG log args: args mang chữ khách (`agent_tools` §2.1).
+            logger.warning("agent.tool loi ten=%s", name, exc_info=True)
+            return AgentToolResult(name=name, ok=False, error=ERROR_TOOL_FAILED)
+
+    return execute
+
+
+def _agent_unknown_vehicle(name: str, names: Mapping[str, str]) -> AgentToolResult:
+    return AgentToolResult(
+        name=name,
+        ok=False,
+        error=ERROR_UNKNOWN_VEHICLE,
+        payload={"vehicles": [label for label in names.values() if label][:AGENT_MAX_CATALOG_LINES]},
+    )
+
+
+async def _run_agent_tool(
+    name: str,
+    args: Any,
+    state: CoreState,
+    services: AgentServices,
+    *,
+    run_id: UUID | None,
+    names: Mapping[str, str],
+    resolve: Any,
+    user_message: str,
+) -> AgentToolResult:
+    """Một tool → ĐÚNG một service cũ. Không service nào ở đây ghi gì."""
+
+    if name == AGENT_TOOL_DANH_MUC:
+        catalog = await catalog_names(services, vehicle_type=args.vehicle_type)
+        labels = [label for label in catalog.values() if label][:AGENT_MAX_CATALOG_LINES]
+        return AgentToolResult(name=name, ok=True, payload={"vehicles": labels}, error="" if labels else ERROR_EMPTY)
+
+    if name == AGENT_TOOL_TRA_THONG_SO:
+        vehicle_id = resolve(args.vehicle_name)
+        if vehicle_id is None:
+            return _agent_unknown_vehicle(name, names)
+        service = services.vehicle_overview
+        if service is None:
+            return AgentToolResult(name=name, ok=False, error=ERROR_TOOL_FAILED)
+        result = await service.answer(vehicle_name=names.get(vehicle_id, args.vehicle_name), session_id=state.session_id)
+        answer = (getattr(result, "answer", "") or "").strip() if result is not None else ""
+        if not answer:
+            return AgentToolResult(name=name, ok=True, error=ERROR_EMPTY)
+        facts = list(getattr(result, "lookup_facts", ()) or ())
+        payload: dict[str, Any] = {"overview": answer[:MAX_TOOL_TEXT_CHARS]}
+        if facts:
+            payload["specs"] = {key: str(value) for key, value in dict(facts[0].specs).items()}
+        return AgentToolResult(name=name, ok=True, payload=payload)
+
+    if name == AGENT_TOOL_TINH_CHI_PHI:
+        vehicle_id = resolve(args.vehicle_name)
+        if vehicle_id is None:
+            return _agent_unknown_vehicle(name, names)
+        service = services.tco_estimation
+        if service is None:
+            return AgentToolResult(name=name, ok=False, error=ERROR_TOOL_FAILED)
+        code = _province_code(args.province) if args.province else None
+        daily = args.daily_km if args.daily_km is not None else _as_int(state.slots.get(SlotName.REQUIRED_RANGE_KM))
+        result = await service.estimate(
+            vehicle_id=UUID(vehicle_id),
+            daily_distance_km=float(daily if daily is not None else DEFAULT_DAILY_KM),
+            run_id=run_id,
+            region_code=region_for_province_code(code) if code else province_options()[1],
+        )
+        if result is None or result.unavailable_reason is not None or result.total_vnd is None:
+            return AgentToolResult(name=name, ok=True, error=ERROR_EMPTY)
+        return AgentToolResult(
+            name=name,
+            ok=True,
+            payload={
+                "vehicle": names.get(vehicle_id, ""),
+                "total_5_nam_vnd": str(result.total_vnd),
+                "components_vnd": {key: str(value) for key, value in dict(result.components_vnd).items()},
+            },
+        )
+
+    if name == AGENT_TOOL_SO_SANH:
+        service = services.compare_vehicles
+        if service is None:
+            return AgentToolResult(name=name, ok=False, error=ERROR_TOOL_FAILED)
+        wanted: list[str] = []
+        for raw in args.vehicle_names:
+            vehicle_id = resolve(raw)
+            if vehicle_id is None:
+                return _agent_unknown_vehicle(name, names)
+            wanted.append(names.get(vehicle_id, raw))
+        result = await service.answer(user_message=user_message, vehicle_names=wanted)
+        answer = (getattr(result, "answer", "") or "").strip() if result is not None else ""
+        if not answer:
+            return AgentToolResult(name=name, ok=True, error=ERROR_EMPTY)
+        return AgentToolResult(name=name, ok=True, payload={"comparison": answer[:MAX_TOOL_TEXT_CHARS]})
+
+    if name == AGENT_TOOL_TIM_DIEM:
+        service = services.nearby_location
+        if service is None:
+            return AgentToolResult(name=name, ok=False, error=ERROR_TOOL_FAILED)
+        result = await service.answer(
+            user_message=user_message,
+            location_kinds=(args.kind,),
+            location_text=args.area or _province_text(state),
+            assume_request=True,
+        )
+        answer = (getattr(result, "answer", "") or "").strip() if result is not None else ""
+        if not answer:
+            return AgentToolResult(name=name, ok=True, error=ERROR_EMPTY)
+        return AgentToolResult(name=name, ok=True, payload={"locations": answer[:MAX_TOOL_TEXT_CHARS]})
+
+    return AgentToolResult(name=name, ok=False, error=ERROR_UNKNOWN_TOOL)
+
+
+async def _open_question(
+    action: OpenQuestion,
+    state: CoreState,
+    services: AgentServices,
+    *,
+    run_id: UUID | None,
+    customer_id: str,
+    user_message: str,
+) -> ActResult | None:
+    """Trả lời câu MỞ bằng agent loop (plan agent-migration §2.3).
+
+    Trả `None` = KHÔNG dùng được kết quả agent; nơi gọi PHẢI chạy đúng đường
+    tất định đang chạy hôm nay. Đây là hợp đồng quan trọng nhất của hàm này:
+    agent là đường PHỤ, không bao giờ là điểm chết của lượt.
+
+    Thứ tự bắt buộc: cổng → snapshot → loop → verify → quote_gate → assert_clean.
+    Trượt bất kỳ cửa nào là `None`, và KHÔNG cửa nào được bỏ qua.
+    """
+
+    if not _agent_gates_local(state, services) or not await _agent_flag_on(services, customer_id):
+        return None  # chưa phát một call LLM nào
+    if run_id is None or services.snapshotting is None or services.verification is None:
+        return None
+    candidates = _agent_candidate_ids(action, state)
+    if not candidates:
+        # Không có evidence thì `verify` chắc chắn từ chối — đừng tốn call LLM.
+        return None
+    await services.snapshotting.snapshot(run_id=run_id, candidate_ids=candidates, assertions=())
+
+    names = await catalog_names(services, vehicle_type=_vehicle_type(state))
+    loop = services.agent_loop
+    if loop is None:
+        return None
+    started = time.monotonic()
+    outcome = await loop.run(
+        system_prompt=AGENT_SYSTEM_PROMPT,
+        user_prompt=_agent_user_prompt(state, question=action.question, user_message=user_message, names=names),
+        tools=build_agent_tools(),
+        execute=_agent_executor(state, services, run_id=run_id, names=names, user_message=user_message),
+        max_steps=AGENT_MAX_STEPS,
+        step_timeout_seconds=AGENT_STEP_TIMEOUT_SECONDS,
+        total_timeout_seconds=AGENT_TOTAL_TIMEOUT_SECONDS,
+    )
+    elapsed_ms = int((time.monotonic() - started) * 1000)
+    answer = (outcome.answer or "").strip()
+    if not answer:
+        logger.info("agent.loop khong ra cau tra loi error=%s", outcome.error)
+        return None
+    answer = answer[:AGENT_MAX_ANSWER_CHARS]
+
+    # Cửa 1 — SỐ: mọi chữ số phải có citation khớp `run_evidence` cùng run.
+    if not await services.verification.verify(run_id=run_id, draft_answer=answer):
+        logger.info("agent.loop verify tu choi reason=%s", "verify_rejected")
+        return None
+    # Cửa 2 — CAM KẾT THƯƠNG MẠI.
+    if not await _commercial_guard(answer, state, services):
+        return None
+    # Cửa 3 — MÃ MÁY / XƯNG HÔ.
+    try:
+        text = render.assert_clean(answer)
+    except render.RenderError as exc:
+        match = _OFFENDING_FRAGMENT.search(str(exc))
+        logger.info("agent.loop render chan manh %r", match.group(1) if match else "khong-ro")
+        return None
+
+    name = await _name_of(services, state, state.chosen_vehicle_id or (state.recommended_ids[0] if state.recommended_ids else None))
+    closing = await _closing(services, state, vehicle_name=name)
+    steps = (*outcome.steps, {"tool": "", "args_keys": [], "ok": True, "error": outcome.error, "ms": elapsed_ms})
+    return ActResult(
+        text=f"{text}\n\n{closing}" if closing else text,
+        cards=await _kept_cards(state, services, state.recommended_ids),
+        # `state_patch` RỖNG là bất biến của Action này (§2.4): agent không ghi gì.
+        tool_calls=steps,
+    )
+
+
+async def _open_question_or_none(
+    action: OpenQuestion,
+    state: CoreState,
+    services: AgentServices,
+    *,
+    run_id: UUID | None,
+    customer_id: str,
+    user_message: str,
+) -> ActResult | None:
+    """`_open_question` bọc lưới: exception lạ KHÔNG được thoát lên `act()`.
+
+    Lưới ở `run_turn` sẽ trả `_fallback_text` (câu clarify trơ) — TỆ HƠN kết quả
+    tất định mà nhánh `None` dẫn tới.
+    """
+
+    try:
+        return await _open_question(
+            action, state, services, run_id=run_id, customer_id=customer_id, user_message=user_message
+        )
+    except Exception:
+        logger.warning("agent.open_question loi la, ve duong tat dinh", exc_info=True)
         return None

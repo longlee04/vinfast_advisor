@@ -274,6 +274,11 @@ def _sanitize_customer_text(text: str, *, max_chars: int = MAX_MESSAGE_CHARS) ->
     return cleaned
 
 
+#: Tên CÔNG KHAI của bộ làm sạch chữ khách trước khi vào prompt. `core/act`
+#: dùng lại cho prompt agent — một bộ lọc chèn-chỉ-dẫn duy nhất cho cả lõi.
+sanitize_prompt_text = _sanitize_customer_text
+
+
 def _transcript_lines(transcript: Sequence[TranscriptMessage]) -> tuple[str, ...]:
     recent = tuple(transcript)[-TRANSCRIPT_LIMIT:]
     lines: list[str] = []
