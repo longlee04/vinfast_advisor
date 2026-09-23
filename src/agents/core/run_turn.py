@@ -858,6 +858,10 @@ def build_core_trace(
             #: [Tool-calling] Vệt LLM gọi tool trong act — đủ ba tầng đã-biết/
             #: LLM-trả/được-dùng để màn admin thấy QUÁ TRÌNH, không chỉ kết quả.
             **({"tool_calls": [dict(t) for t in tool_calls]} if tool_calls else {}),
+            #: [Agent] Năm khoá quan sát đường agent (plan agent-migration Bước 8).
+            #: CHỈ thêm khoá vào `payload` JSON — 5 cột vô hướng của `turn_traces`
+            #: không đổi, nên mọi SQL cũ chạy nguyên.
+            **_agent_trace_fields(action_name, tool_calls),
             #: `None` = có chạy understand. Chuỗi = lý do bỏ qua ("handed_off").
             #: Phân biệt được "hiểu ra UNCLEAR" với "không hỏi câu nào" là điều
             #: kiện để chỉ số hiểu ý của bước 4 không bị pha loãng bởi các lượt
@@ -877,6 +881,29 @@ def _pending_snapshot(pending: Pending | None) -> dict[str, object] | None:
     if pending is None:
         return None
     return {"kind": pending.kind.value, "key": pending.key, "asked_at_turn": pending.asked_at_turn}
+
+
+def _agent_trace_fields(action_name: str, tool_calls: tuple[Mapping[str, Any], ...]) -> dict[str, object]:
+    """Năm khoá `agent_*` cho một lượt. Lượt KHÔNG phải agent thì trả rỗng.
+
+    `agent_steps` chép nguyên vệt của loop — vệt đó chỉ mang TÊN KHOÁ của args
+    (`adapters/agent_loop_llm._step`), không bao giờ mang chữ khách.
+    """
+
+    if action_name != "OpenQuestion" or not tool_calls:
+        return {}
+    steps = [dict(step) for step in tool_calls]
+    #: Bước CUỐI do `act._open_question` gắn thêm: nó mang `error` của loop và
+    #: tổng thời gian, chứ không phải một lần gọi tool.
+    tail = steps[-1] if steps else {}
+    tool_steps = [step for step in steps if step.get("tool")]
+    return {
+        "agent_used": True,
+        "agent_steps": tool_steps,
+        "agent_error": str(tail.get("error") or ""),
+        "agent_llm_calls": len(steps) - 1 if len(steps) > 1 else len(steps),
+        "agent_ms": int(tail.get("ms") or 0),
+    }
 
 
 def trace_payload(*, state_before: Stage, state_after: CoreState, action_name: str, **extra: object) -> dict:
