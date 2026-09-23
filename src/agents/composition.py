@@ -24,6 +24,7 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from src.agents.adapters.agent_flag_repository import SqlAlchemyAgentFlagAdapter
+from src.agents.adapters.agent_loop_llm import OpenAIAgentLoop
 from src.agents.adapters.bottleneck_detector import OpenAIBottleneckDetector
 from src.agents.adapters.bottleneck_signal_repository import (
     SqlAlchemyBottleneckSignalRepository,
@@ -605,6 +606,8 @@ class AgentComposition:
             understanding=OpenAIUnderstander(),
             # Cờ động đường agent — chỉ ĐỌC bảng `agent_feature_flags`, TTL 60s.
             agent_flag=SqlAlchemyAgentFlagAdapter(session_factory),
+            # Vòng ReAct chỉ chạy khi cờ `agent_fallback` bật (mặc định TẮT).
+            agent_loop=OpenAIAgentLoop(),
         )
         self._graph = None  # lõi v1 (LangGraph) đã xoá — xem chain.py
 

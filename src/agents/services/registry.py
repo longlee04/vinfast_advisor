@@ -54,7 +54,13 @@ from src.agents.domain.task_state import ActiveTask
 from src.agents.domain.tco_tool import TcoArgResolverPort
 from src.agents.domain.values import ScopeLabel, SlotValue, VehicleType
 from src.agents.domain.vehicle_overview import VehicleOverviewResult
-from src.agents.ports import AgentFlagPort, OfferSuggestionPort, PolicySearchPort, UnderstandingPort
+from src.agents.ports import (
+    AgentFlagPort,
+    AgentLoopPort,
+    OfferSuggestionPort,
+    PolicySearchPort,
+    UnderstandingPort,
+)
 from src.agents.services.candidate_tuning import DelegatedFeatureChoice
 from src.agents.services.conversation_memory import StartedMemoryTurn
 from src.agents.services.nlu_pipeline import NluDecision
@@ -666,3 +672,6 @@ class AgentServices:
     #: [Agent] Cờ động `agent_feature_flags` (plan agent-migration Bước 3). Field
     #: MỚI mặc định `None` — `None` = TẮT, không đường nào đọc tới khi chưa cắm.
     agent_flag: AgentFlagPort | None = None
+    #: [Agent] Vòng ReAct chỉ-đọc cho hai móc ngõ cụt. `None` = không móc nào
+    #: chạy, lõi tất định y nguyên.
+    agent_loop: AgentLoopPort | None = None
