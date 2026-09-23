@@ -814,8 +814,10 @@ async def _compare(action: Compare, state: CoreState, services: AgentServices, *
     service = services.compare_vehicles
     result = None
     if service is not None and names:
-        result = await service.answer(user_message=user_message, vehicle_names=names)
-    if result is None:
+        result = await service.answer(user_message=_compare_question(user_message, names), vehicle_names=names)
+    if result is None or not (getattr(result, "answer", "") or "").strip():
+        # Service trả RỖNG cũng là "không tra được": trả `ActResult(text="")` là
+        # lượt câm trên giao diện (spec mục 8 cấm), nên rơi về câu nói thật.
         return ActResult(text=render.no_fact(", ".join(names)))
     text = result.answer if not result.follow_up else f"{result.answer}\n\n{result.follow_up}"
     lead = _compare_fit_lead(state, result.comparison, user_message=user_message)
@@ -824,6 +826,29 @@ async def _compare(action: Compare, state: CoreState, services: AgentServices, *
         # được câu trả lời ở dòng đầu, không phải tự xếp hạng hai cột số.
         text = f"{lead}\n\n{text}"
     return ActResult(text=text, cards={"comparison": result.comparison})
+
+
+#: Lối hỏi SO SÁNH trong câu khách. Không có nó thì `compare_vehicles` không
+#: biết khách muốn so gì và trả về RỖNG (đo trên máy 2026-09-23: "tư vấn lại cho
+#: tôi xe vf2 và vf 3" → chuỗi rỗng, trong khi "so sánh A và B" → bảng đầy đủ).
+_COMPARE_QUESTION: Final[re.Pattern[str]] = re.compile(
+    r"so\s*sánh|khác\s*(?:nhau|gì)|cái\s*nào|con\s*nào|mẫu\s*nào|xe\s*nào|nên\s*(?:chọn|mua|lấy)|hơn",
+    re.IGNORECASE,
+)
+
+
+def _compare_question(user_message: str, names: Sequence[str]) -> str:
+    """Câu đưa cho `compare_vehicles`: giữ lời khách khi họ HỎI so sánh.
+
+    Khách chỉ gọi tên hai xe ("tư vấn lại cho tôi xe vf2 và vf 3") thì dựng một
+    câu so sánh chuẩn từ chính hai tên đó — service cần biết so cái gì, còn lời
+    khách ở đây không mang khía cạnh nào.
+    """
+
+    text = (user_message or "").strip()
+    if text and _COMPARE_QUESTION.search(text):
+        return text
+    return f"so sánh {' và '.join(names)}"
 
 
 def _compare_fit_lead(state: CoreState, comparison: object, *, user_message: str = "") -> str:

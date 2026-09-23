@@ -516,3 +516,48 @@ def test_slot_llm_chep_lai_tu_transcript_khong_lam_cam_luat() -> None:
         ),
     )
     assert isinstance(d.action, Compare)
+
+
+# ---------------------------------------------------------------- 8. câu đưa cho compare_vehicles
+
+
+@pytest.mark.parametrize(
+    ("message", "expected"),
+    [
+        # Khách HỎI so sánh → giữ nguyên lời họ (service cần khía cạnh họ nêu).
+        ("so sánh vf2 với vf3", "so sánh vf2 với vf3"),
+        ("con nào đi xa hơn", "con nào đi xa hơn"),
+        ("vf2 với vf3 khác nhau chỗ nào", "vf2 với vf3 khác nhau chỗ nào"),
+        # Khách chỉ GỌI TÊN → dựng câu so sánh chuẩn, nếu không service trả RỖNG.
+        ("tư vấn lại cho tôi xe vf2 và vf 3", "so sánh VF 2 và VF 3"),
+        ("", "so sánh VF 2 và VF 3"),
+    ],
+)
+def test_cau_dua_cho_compare_vehicles(message: str, expected: str) -> None:
+    from src.agents.core.act import _compare_question
+
+    assert _compare_question(message, ["VF 2", "VF 3"]) == expected
+
+
+@pytest.mark.asyncio
+async def test_compare_tra_rong_thi_noi_that_khong_de_luot_cam() -> None:
+    """Service trả chuỗi rỗng cũng là "không tra được" — lượt câm bị spec cấm."""
+
+    from src.agents.contracts import CompareVehiclesResult
+    from src.agents.core.act import act
+    from src.agents.core.actions import Compare
+
+    class _EmptyCompare:
+        async def answer(self, *, user_message: str, vehicle_names: Any) -> CompareVehiclesResult:
+            return CompareVehiclesResult(answer="", comparison=None, follow_up=None)
+
+    services = AgentServices(catalog_browse=_StepCatalog(), compare_vehicles=_EmptyCompare())
+    result = await act(
+        Compare(vehicle_ids=(V1, V2)),
+        CoreState(session_id="s1", stage=Stage.RECOMMENDED, slots={N.VEHICLE_TYPE: "CAR"}),
+        services,
+        run_id=None,
+        customer_id="c1",
+        user_message="tư vấn lại cho tôi xe vf2 và vf 3",
+    )
+    assert result.text.strip()
