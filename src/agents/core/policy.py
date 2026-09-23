@@ -160,7 +160,7 @@ def decide(state: CoreState, u: Understanding) -> Decision:
     # câu trả lời cho câu hỏi đó (huỷ lái thử, bỏ qua tính năng), đã có đường
     # riêng ở nhánh pending bên dưới. Và không đổi chặng: khách quay lại là mạch
     # cũ còn nguyên.
-    if u.dialogue_act is DialogueAct.REJECT and state.pending is None and not u.slots:
+    if u.stop_asked and state.pending is None and not u.slots:
         return Decision(Reply(template=TEMPLATE_STOPPED), state)
 
     # 3b. Câu LO NGẠI ("pin chai bán ai mua", "hầm chung cư chưa có trụ sạc"):

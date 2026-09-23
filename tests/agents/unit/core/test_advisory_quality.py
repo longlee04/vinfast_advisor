@@ -167,7 +167,9 @@ def test_khach_noi_thoi_thi_dung_khong_day_them_the() -> None:
         session_id="s1", stage=Stage.RECOMMENDED, intent=Intent.ADVISORY, recommended_ids=(V1, V2),
         slots={N.VEHICLE_TYPE: "CAR", N.BUDGET_MAX_VND: 300_000_000},
     )
-    d = decide(state, _u(DialogueAct.REJECT))
+    # Cờ `stop_asked` do cửa tất định `understand._stop_requested` bật, KHÔNG
+    # suy từ `dialogue_act=REJECT`: LLM gắn REJECT cho cả "rẻ hơn đi".
+    d = decide(state, _u(DialogueAct.REJECT, stop_asked=True))
     assert isinstance(d.action, Reply) and d.action.template == TEMPLATE_STOPPED
     assert not isinstance(d.action, Recommend)
     # Không xoá mạch: khách quay lại là bộ đề xuất cũ còn nguyên.
@@ -180,8 +182,23 @@ def test_reject_dang_tra_loi_mot_cau_treo_thi_khong_bi_doc_thanh_thoi() -> None:
 
     pending = Pending(kind=PendingKind.CONFIRM, key="book", options=("14h",))
     state = CoreState(session_id="s1", stage=Stage.SCHEDULING, chosen_vehicle_id=V1, pending=pending)
-    d = decide(state, _u(DialogueAct.REJECT))
+    d = decide(state, _u(DialogueAct.REJECT, stop_asked=True))
     assert not (isinstance(d.action, Reply) and d.action.template == TEMPLATE_STOPPED)
+
+
+def test_loi_xin_chinh_bi_gan_reject_thi_khong_bi_doc_thanh_thoi() -> None:
+    """Đo trên máy 2026-09-23: "rẻ hơn đi" về REJECT và bot chào tạm biệt.
+
+    Cửa dừng đọc CHÍNH lời khách, nên câu xin chỉnh giá vẫn đi đường tư vấn.
+    """
+
+    state = CoreState(
+        session_id="s1", stage=Stage.RECOMMENDED, intent=Intent.ADVISORY, recommended_ids=(V1, V2),
+        slots={N.VEHICLE_TYPE: "CAR", N.BUDGET_MAX_VND: 300_000_000},
+    )
+    d = decide(state, _u(DialogueAct.REJECT, question="rẻ hơn đi"))
+    assert not (isinstance(d.action, Reply) and d.action.template == TEMPLATE_STOPPED)
+    assert isinstance(d.action, Recommend) and d.action.refine == "rẻ hơn đi"
 
 
 def test_reject_kem_slot_van_di_duong_tu_van() -> None:
@@ -191,7 +208,7 @@ def test_reject_kem_slot_van_di_duong_tu_van() -> None:
         session_id="s1", stage=Stage.RECOMMENDED, intent=Intent.ADVISORY, recommended_ids=(V1,),
         slots={N.VEHICLE_TYPE: "CAR"},
     )
-    d = decide(state, _u(DialogueAct.REJECT, slots={N.BUDGET_MAX_VND: 500_000_000}))
+    d = decide(state, _u(DialogueAct.REJECT, stop_asked=True, slots={N.BUDGET_MAX_VND: 500_000_000}))
     assert not (isinstance(d.action, Reply) and d.action.template == TEMPLATE_STOPPED)
 
 
@@ -381,6 +398,8 @@ def test_cau_dan_va_loi_di_tiep_cua_bac_gia() -> None:
 
     assert "cao hơn" in price_step_lead(pricier=True)
     assert "thấp hơn" in price_step_lead(pricier=False)
+    # Không kết bằng dấu hai chấm: ngay sau nó là câu mở danh sách của bài.
+    assert not price_step_lead(pricier=True).endswith(":")
     assert "cao hơn nữa" in price_step_tail(pricier=True, more=True)
     assert "rẻ hơn nữa" in price_step_tail(pricier=False, more=True)
     # Hết mẫu thì nói thật, không mời khách hỏi thêm một thứ không còn.

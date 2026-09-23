@@ -1396,3 +1396,37 @@ def test_co_dau_van_giu_nguyen_hanh_vi(co_dau: str, khong_dau: str) -> None:
     b = _u_khong_dau(khong_dau, intent="ADVISORY")
     for field_name in ("dialogue_act", "intent", "vehicle_ids", "fit_asked", "next_steps_asked", "off_topic_asked", "concern_topic", "aspect"):
         assert getattr(a, field_name) == getattr(b, field_name), field_name
+
+
+# ---------- [2026-09-23] cửa DỪNG: đọc chính lời khách, không tin REJECT ----------
+
+
+@pytest.mark.parametrize(
+    ("message", "expected"),
+    [
+        ("t ko muốn tư vấn nữa", True),
+        ("thôi không tư vấn nữa", True),
+        ("dừng ở đây nhé", True),
+        ("để sau em nhé", True),
+        ("tôi không mua nữa", True),
+        ("không muốn xem nữa", True),
+        # Lời XIN CHỈNH — LLM hay gán REJECT cho chúng, nhưng khách vẫn đang chọn xe.
+        ("rẻ hơn đi", False),
+        ("thôi rẻ hơn đi", False),
+        ("xe khác đi", False),
+        ("đắt hơn nữa", False),
+        ("thôi cho em xem VinFast VF 3", False),
+    ],
+)
+def test_cua_dung_phan_biet_loi_dung_voi_loi_xin_chinh(message: str, expected: bool) -> None:
+    from src.agents.core.understand import _stop_requested
+
+    assert _stop_requested(message) is expected
+
+
+def test_stop_asked_duoc_dien_vao_understanding() -> None:
+    raw = RawUnderstanding(dialogue_act="REJECT", intent="NONE", confidence=0.9)
+    dung = to_understanding(raw, state=CoreState(session_id="s"), vehicles=LP35, user_message="thôi không tư vấn nữa")
+    chinh = to_understanding(raw, state=CoreState(session_id="s"), vehicles=LP35, user_message="rẻ hơn đi")
+    assert dung.stop_asked is True
+    assert chinh.stop_asked is False

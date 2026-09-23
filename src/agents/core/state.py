@@ -166,6 +166,11 @@ class Understanding:
     #: lịch ở Việt Nam, ở đâu"). Không có cờ này thì câu đó rơi vào đường xin
     #: CHỈNH đề xuất và khách nhận "em chưa có mẫu nào khác hợp hơn" (prod vòng 9).
     off_topic_asked: bool = False
+    #: Lượt này có phải lời DỪNG không ("thôi không tư vấn nữa", "khỏi", "để
+    #: sau"). Đọc TẤT ĐỊNH ở `understand`, KHÔNG tin `dialogue_act=REJECT` một
+    #: mình: đo trên máy 2026-09-23, LLM gắn REJECT cho cả "rẻ hơn đi" — một
+    #: lời XIN CHỈNH — và lượt đó bị đọc thành khách bỏ cuộc.
+    stop_asked: bool = False
     #: Chủ đề LO NGẠI của lượt ("pin chai bán ai mua", "hầm chung cư chưa có trụ
     #: sạc") — đọc TẤT ĐỊNH ở `understand`. Rỗng = không phải câu lo ngại. Log
     #: prod 2026-08-31: các câu này bị LLM gắn act lửng lơ và rơi vào câu mặc

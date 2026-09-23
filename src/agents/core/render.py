@@ -532,11 +532,16 @@ PRICE_STEP_LIMIT: int = 3
 
 
 def price_step_lead(*, pricier: bool) -> str:
-    """Câu dẫn cho lượt bước MỘT nấc giá, đứng trước danh sách."""
+    """Câu dẫn cho lượt bước MỘT nấc giá, đứng trước danh sách.
+
+    KHÔNG kết bằng dấu hai chấm: ngay sau nó là câu mở danh sách của bài
+    (`recommend_fallback`: "Em gợi ý anh/chị mấy mẫu sau ạ:"), hai câu cùng vai
+    trò mở danh sách đứng cạnh nhau đọc như bot lắp.
+    """
 
     if pricier:
-        return assert_clean("Em đưa anh/chị lên tầm giá cao hơn một bậc ạ:")
-    return assert_clean("Em tìm giúp anh/chị mấy mẫu ở tầm thấp hơn ạ:")
+        return assert_clean("Dạ, em bước lên tầm giá cao hơn một bậc cho anh/chị ạ.")
+    return assert_clean("Dạ, em lùi xuống tầm giá thấp hơn một bậc cho anh/chị ạ.")
 
 
 def price_step_tail(*, pricier: bool, more: bool) -> str:

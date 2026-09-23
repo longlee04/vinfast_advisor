@@ -379,7 +379,10 @@ def _search(pattern: re.Pattern[str], text: str) -> re.Match[str] | None:
 #: "rẻ hơn" không có gì để so — điền `question` ở đó là biến một lượt khai nhu
 #: cầu thành một lượt xin đổi kết quả.
 _REFINE_STAGES: Final = frozenset({Stage.RECOMMENDED, Stage.CHOSEN})
-_REFINE_ACTS: Final = frozenset({DialogueAct.REQUEST, DialogueAct.SLOT_ANSWER})
+#: REJECT có mặt vì LLM gắn nó cho cả lời xin chỉnh ("rẻ hơn đi", "xe khác đi"
+#: — đo trên máy 2026-09-23). Lượt REJECT trả lời một câu TREO đã được `policy`
+#: xử lý ở nhánh pending trước khi tới đường chỉnh, nên `question` thừa vô hại.
+_REFINE_ACTS: Final = frozenset({DialogueAct.REQUEST, DialogueAct.SLOT_ANSWER, DialogueAct.REJECT})
 _REFINE_INTENTS: Final = frozenset({Intent.ADVISORY, Intent.NONE})
 #: Trần độ dài lời xin chỉnh chép từ câu khách. `act` chỉ đọc nó bằng bộ dò cụm
 #: so sánh; một đoạn dài hơn thế không thêm thông tin, chỉ thêm chữ vào log.
@@ -661,6 +664,31 @@ _HUMAN_REQUEST: Final = re.compile(
     r"(tư vấn viên|tvv|nhân viên|người thật|người tư vấn|chuyên viên|sale|nhân sự)",
     re.IGNORECASE,
 )
+
+
+#: Lời DỪNG hẳn việc tư vấn. Đòi một động từ dừng ĐI KÈM ngữ cảnh tư vấn/xem
+#: xe, hoặc một cụm dừng đứng riêng — "thôi" trần KHÔNG tính: nó là từ đệm phổ
+#: thông ("thôi rẻ hơn đi", "thôi cho em xem VF 5").
+_STOP_REQUEST: Final = re.compile(
+    r"(?:không|ko|chẳng|chả)\s+(?:muốn|cần)\s+(?:\w+\s+){0,2}?(?:tư vấn|xem|mua|tìm)"
+    r"|(?:thôi|dừng|ngưng|ngừng)\s+(?:\w+\s+){0,2}?(?:tư vấn|xem xe|tìm xe|nhé|vậy|đây|ở đây)"
+    r"|(?:không|ko)\s+(?:tư vấn|mua)\s+(?:nữa|thêm)"
+    r"|(?:tư vấn|xem|mua)\s+(?:\w+\s+){0,2}?nữa\s*(?:đâu|nhé)?$"
+    r"|để\s+(?:sau|lúc khác|khi khác)"
+    r"|(?:cảm ơn|cám ơn)[\s,]*(?:nhé|nha|ạ)?\s*(?:thôi|dừng)",
+    re.IGNORECASE,
+)
+
+
+def _stop_requested(user_message: str) -> bool:
+    """Khách xin DỪNG hẳn, không phải từ chối một đề xuất cụ thể.
+
+    Cửa tất định vì `dialogue_act=REJECT` quá rộng: đo trên máy 2026-09-23, LLM
+    gắn REJECT cho "rẻ hơn đi" — một lời xin chỉnh — và lượt đó bị đọc thành
+    khách bỏ cuộc, bot chào tạm biệt giữa lúc khách đang chọn xe.
+    """
+
+    return bool(_search(_STOP_REQUEST, (user_message or "").casefold()))
 
 
 def _human_requested(user_message: str) -> bool:
@@ -997,6 +1025,7 @@ def to_understanding(
         fit_asked=_fit_question(user_message),
         next_steps_asked=_next_steps_question(user_message),
         off_topic_asked=_off_topic_question(user_message),
+        stop_asked=_stop_requested(user_message),
         concern_topic=_concern_topic(user_message),
         aspect=_lookup_aspect(user_message, intent=intent, vehicle_ids=vehicle_ids),
         unresolved_mention=_unresolved_mention(raw, user_message, vehicle_ids),
