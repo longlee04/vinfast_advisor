@@ -680,6 +680,32 @@ _STOP_REQUEST: Final = re.compile(
 )
 
 
+#: Lời LÀM LẠI TỪ ĐẦU. Đòi chữ "từ đầu"/"lại từ đầu" hoặc một động từ reset rõ
+#: nghĩa — "tư vấn lại", "quay lại", "xem lại" một mình KHÔNG tính: chúng là lời
+#: xin quay về thứ vừa xem, không phải lời xoá hồ sơ.
+_RESTART_REQUEST: Final = re.compile(
+    r"(?:từ|tu)\s*đầu"
+    r"|bắt\s*đầu\s*lại"
+    r"|làm\s*lại(?:\s+(?:từ\s*đầu|hết))?"
+    r"|reset"
+    r"|(?:xoá|xóa|bỏ)\s+(?:hết|sạch|toàn bộ)",
+    re.IGNORECASE,
+)
+
+
+def _restart_requested(user_message: str) -> bool:
+    """Khách xin LÀM LẠI TỪ ĐẦU — đọc tất định, không tin nhãn LLM một mình.
+
+    `RESTART` là hành động phá nhiều nhất của lõi: nó xoá slot, xoá bộ đề xuất,
+    xoá xe đã chốt và xoá cả bộ đếm hỏi lại. Đo trên máy 2026-09-23: LLM gán
+    RESTART cho "thôi quay lại với giá ban đầu đi" — một lời xin QUAY VỀ tầm giá
+    cũ — và cả phiên bị xoá trắng, hai lượt sau khách chạm trần hỏi lại rồi bị
+    đẩy sang tư vấn viên.
+    """
+
+    return bool(_search(_RESTART_REQUEST, (user_message or "").casefold()))
+
+
 def _stop_requested(user_message: str) -> bool:
     """Khách xin DỪNG hẳn, không phải từ chối một đề xuất cụ thể.
 
@@ -979,6 +1005,10 @@ def to_understanding(
         # thật là lệnh dừng bot — phải trúng 100%.
         intent = Intent.HANDOFF
     act = _settle_act(to_dialogue_act(raw.dialogue_act), intent, clamp_confidence(raw.confidence))
+    if act is DialogueAct.RESTART and not _restart_requested(user_message):
+        # LLM gọi RESTART cho một câu không hề xin làm lại: hạ về REQUEST để lượt
+        # đi đường chỉnh/tra cứu bình thường, giữ nguyên hồ sơ khách đã kể.
+        act = DialogueAct.REQUEST
     if intent is Intent.HANDOFF:
         act = DialogueAct.REQUEST
     act = _choice_act(act, intent=intent, vehicle_ids=vehicle_ids, user_message=user_message, vehicles=vehicles)

@@ -49,6 +49,9 @@ import { createAgentSessionState, readStoredSession, useAgentSession } from "@/s
 // Sếp 2026-08-31 (cách B): bot KHÔNG mở lời. Khung chat mở trống, chỉ có dòng mờ
 // mời hỏi; thiện cảm đến từ câu trả lời đầu tiên, không từ lời chào.
 const NO_ANSWER_FALLBACK = "Mình chưa hỗ trợ được yêu cầu này, bạn thử diễn đạt lại nhé.";
+/** Bot đang im vì tư vấn viên cầm phiên — nói ra, đừng để khách gõ vào khoảng không. */
+const ADVISOR_ACTIVE_NOTE =
+  "Tư vấn viên đang hỗ trợ trực tiếp cuộc trò chuyện này. Anh/chị cứ nhắn, tư vấn viên sẽ trả lời ngay tại đây ạ.";
 // Không có gợi ý nào (chưa có lượt trợ lý, hoặc lượt đó không kèm quick_replies)
 // thì rơi về đúng chữ tĩnh cũ — hành vi hiện tại KHÔNG đổi trong trường hợp này.
 // Sếp 2026-08-31: trong đoạn chat KHÔNG gợi ý gì nữa (không nút, không chữ mờ,
@@ -217,7 +220,14 @@ export function ConsultationFlow({
           // Tư vấn viên đang trực tiếp chat với khách, bot giữ im lặng. Phải xoá
           // submission: lượt này ĐÃ tới server, giữ lại id cũ thì lần gửi sau bị
           // server khử trùng lặp và câu mới không bao giờ được xử lý.
+          //
+          // Nhưng im lặng TUYỆT ĐỐI là khách gõ vào khoảng không: tin nhắn của
+          // họ hiện lên rồi không có gì đáp lại, và không ai nói cho họ biết vì
+          // sao (đo 2026-09-23: hai lượt cuối của phiên không hiện gì). Một dòng
+          // hệ thống nói rõ ai đang cầm phiên — không phải bot trả lời, nên
+          // không phá luật HITL.
           dispatch({ type: "submission_cleared" });
+          dispatch({ type: "system_noted", text: ADVISOR_ACTIVE_NOTE });
           return;
         }
         // `awaiting_review` là thứ DUY NHẤT quyết định có dựng màn chờ duyệt hay

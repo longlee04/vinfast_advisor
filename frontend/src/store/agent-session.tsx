@@ -108,6 +108,7 @@ export type AgentSessionEvent =
   | { readonly type: "customer_said"; readonly text: string }
   | { readonly type: "submission_started"; readonly submission: PendingSubmission }
   | { readonly type: "submission_cleared" }
+  | { readonly type: "system_noted"; readonly text: string }
   | {
       readonly type: "agent_asked";
       readonly text: string;
@@ -376,6 +377,17 @@ export function reduceAgentSession(
           : message,
       );
       return { ...state, messages };
+    }
+    case "system_noted": {
+      // Dòng hệ thống nhỏ cho những lượt bot CỐ Ý im (tư vấn viên đang cầm
+      // phiên). Không có nó, khách gõ vào khoảng không: lượt đã tới server,
+      // server trả `answer=""`, và giao diện không hiện gì cả (đo 2026-09-23).
+      //
+      // Lặp lại y nguyên dòng vừa hiện thì bỏ qua: khách nhắn ba câu liên tiếp
+      // không cần ba dòng giống hệt nhau.
+      const last = state.messages[state.messages.length - 1];
+      if (last && last.role === "system" && last.text === event.text) return state;
+      return { ...state, messages: [...state.messages, { role: "system", text: event.text }] };
     }
     case "navigated": {
       // Xe máy chưa có trang chi tiết: backend có thể gửi kind=vehicle với slug

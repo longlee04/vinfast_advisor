@@ -794,13 +794,32 @@ def test_dong_tu_chon_thang_moi_act_llm_gan(act: str) -> None:
     assert u.vehicle_ids == ("c5new",)
 
 
-@pytest.mark.parametrize("act", ["REJECT", "RESTART"])
-def test_reject_va_restart_van_dung_ngoai(act: str) -> None:
-    """Hai act này có nhánh riêng ở `policy` (huỷ việc treo, làm lại từ đầu)."""
+def test_reject_van_dung_ngoai_cua_ep_choice() -> None:
+    """REJECT có nhánh riêng ở `policy` (huỷ việc đang treo) — không ép thành CHOICE."""
 
-    raw = RawUnderstanding(dialogue_act=act, intent="ADVISORY", confidence=0.9)
+    raw = RawUnderstanding(dialogue_act="REJECT", intent="ADVISORY", confidence=0.9)
     u = to_understanding(raw, state=CoreState(session_id="s"), vehicles=LP35, user_message="chọn VF 3")
     assert u.dialogue_act is not DialogueAct.CHOICE
+
+
+def test_restart_khong_co_chu_lam_lai_thi_bi_ha_xuong_request() -> None:
+    """[2026-09-23] RESTART xoá slot, bộ đề xuất, xe đã chốt VÀ bộ đếm hỏi lại —
+    hành động phá nhiều nhất của lõi, không được dựa vào nhãn LLM một mình.
+
+    Đo trên máy: "thôi quay lại với giá ban đầu đi" bị gán RESTART, cả phiên bị
+    xoá trắng, hai lượt sau khách chạm trần hỏi lại rồi bị đẩy sang tư vấn viên.
+    """
+
+    raw = RawUnderstanding(dialogue_act="RESTART", intent="ADVISORY", confidence=0.9)
+    quay_lai = to_understanding(
+        raw, state=CoreState(session_id="s"), vehicles=LP35, user_message="thôi quay lại với giá ban đầu đi"
+    )
+    assert quay_lai.dialogue_act is not DialogueAct.RESTART
+
+    that_su = to_understanding(
+        raw, state=CoreState(session_id="s"), vehicles=LP35, user_message="thôi mình làm lại từ đầu nhé"
+    )
+    assert that_su.dialogue_act is DialogueAct.RESTART
 
 
 def test_dong_tu_chon_phai_dung_truoc_ten_xe() -> None:

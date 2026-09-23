@@ -425,3 +425,44 @@ def test_cau_dan_va_loi_di_tiep_cua_bac_gia() -> None:
     # Hết mẫu thì nói thật, không mời khách hỏi thêm một thứ không còn.
     assert "cao nhất" in price_step_tail(pricier=True, more=False)
     assert "thấp nhất" in price_step_tail(pricier=False, more=False)
+
+
+# ---------------------------------------------------------------- 7. khách gọi TÊN XE đích danh
+
+
+def test_goi_ten_hai_xe_thi_so_sanh_chu_khong_hoi_ho_so() -> None:
+    """Đo trên máy 2026-09-23: "tư vấn lại cho tôi xe vf2 và vf 3" đọc ra ĐÚNG hai
+    xe nhưng lõi không có slot nào nên hỏi câu hồ sơ, chạm `MAX_ASKS` rồi chuyển
+    tư vấn viên. Khách nói rõ tên xe mà bị hỏi ngân sách là lượt hỏng nặng nhất."""
+
+    from src.agents.core.actions import Ask, Compare, Handoff
+
+    state = CoreState(session_id="s1", stage=Stage.COLLECTING, ask_counts={"profile": 2})
+    d = decide(state, _u(DialogueAct.REQUEST, intent=Intent.ADVISORY, vehicle_ids=(V1, V2)))
+    assert isinstance(d.action, Compare)
+    assert d.action.vehicle_ids == (V1, V2)
+    assert not isinstance(d.action, Handoff | Ask)
+    # Hai mẫu đó thành bộ ứng viên của phiên để lượt sau còn tra ra.
+    assert d.state_after.recommended_ids == (V1, V2)
+
+
+def test_goi_ten_mot_xe_thi_tra_cuu_xe_do() -> None:
+    from src.agents.core.actions import LOOKUP_LOOKUP, Lookup
+
+    state = CoreState(session_id="s1", stage=Stage.COLLECTING, ask_counts={"profile": 2})
+    d = decide(state, _u(DialogueAct.REQUEST, intent=Intent.ADVISORY, vehicle_ids=(V1,)))
+    assert isinstance(d.action, Lookup)
+    assert d.action.mode == LOOKUP_LOOKUP and d.action.vehicle_ids == (V1,)
+
+
+def test_co_slot_tu_van_thi_van_uu_tien_ban_de_xuat_theo_nhu_cau() -> None:
+    """Có slot thì `_advise` lọc được — bản đề xuất theo nhu cầu vẫn đúng hơn."""
+
+    from src.agents.core.actions import Recommend as RecommendAction
+
+    state = CoreState(
+        session_id="s1", stage=Stage.COLLECTING,
+        slots={N.VEHICLE_TYPE: "CAR", N.BUDGET_MAX_VND: 400_000_000, N.PURPOSE: "đi làm"},
+    )
+    d = decide(state, _u(DialogueAct.REQUEST, intent=Intent.ADVISORY, vehicle_ids=(V1, V2)))
+    assert isinstance(d.action, RecommendAction)

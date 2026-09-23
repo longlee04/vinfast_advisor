@@ -515,6 +515,33 @@ describe("ConsultationFlow with vehicle recommendations", () => {
     expect(screen.getByText(/Em đưa anh\/chị lên tầm giá cao hơn một bậc/)).toBeInTheDocument();
   });
 
+  // 2026-09-23: sau khi lượt chạm trần hỏi lại và bị chuyển tư vấn viên, mọi
+  // lượt sau trả `answer=""` + `terminal_reason=ADVISOR_ACTIVE`. Giao diện cũ
+  // nuốt trọn: tin nhắn khách hiện lên rồi KHÔNG có gì đáp lại, không ai nói vì
+  // sao. Bot vẫn im (đúng luật HITL) nhưng phải có một dòng hệ thống.
+  it("shows a system note instead of silence while an advisor holds the session", async () => {
+    const user = userEvent.setup();
+    sendTurn.mockResolvedValueOnce({
+      answer: "",
+      pending_question: null,
+      lookup_facts: [],
+      terminal_reason: "ADVISOR_ACTIVE",
+      awaiting_review: false,
+      recommendations: [],
+    });
+
+    render(
+      <AgentSessionProvider>
+        <ConsultationFlow />
+      </AgentSessionProvider>,
+    );
+    await user.type(screen.getByLabelText("Tin nhắn gửi trợ lý"), "thông tin xe vf2");
+    await user.click(screen.getByLabelText("Gửi"));
+
+    await waitFor(() => expect(screen.getByRole("status")).toBeInTheDocument());
+    expect(screen.getByText(/Tư vấn viên đang hỗ trợ trực tiếp/)).toBeInTheDocument();
+  });
+
   it("renders one card per recommended vehicle and hides the joined answer bubble", async () => {
     const user = userEvent.setup();
     sendTurn.mockResolvedValueOnce({
