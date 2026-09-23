@@ -898,7 +898,7 @@ def build_core_trace(
             #: [Agent] Năm khoá quan sát đường agent (plan agent-migration Bước 8).
             #: CHỈ thêm khoá vào `payload` JSON — 5 cột vô hướng của `turn_traces`
             #: không đổi, nên mọi SQL cũ chạy nguyên.
-            **_agent_trace_fields(action_name, tool_calls),
+            **_agent_trace_fields(tool_calls),
             #: `None` = có chạy understand. Chuỗi = lý do bỏ qua ("handed_off").
             #: Phân biệt được "hiểu ra UNCLEAR" với "không hỏi câu nào" là điều
             #: kiện để chỉ số hiểu ý của bước 4 không bị pha loãng bởi các lượt
@@ -920,14 +920,18 @@ def _pending_snapshot(pending: Pending | None) -> dict[str, object] | None:
     return {"kind": pending.kind.value, "key": pending.key, "asked_at_turn": pending.asked_at_turn}
 
 
-def _agent_trace_fields(action_name: str, tool_calls: tuple[Mapping[str, Any], ...]) -> dict[str, object]:
+def _agent_trace_fields(tool_calls: tuple[Mapping[str, Any], ...]) -> dict[str, object]:
     """Năm khoá `agent_*` cho một lượt. Lượt KHÔNG phải agent thì trả rỗng.
+
+    Nhận diện bằng DẤU `agent` mà `act._open_question` gắn vào bước cuối, không
+    bằng tên Action: móc 2 chạy trong `Recommend` và móc 3 chạy trong `Ask`, nên
+    khoá theo `OpenQuestion` là bỏ sót đúng hai móc đó (lỗi của bản Bước 8).
 
     `agent_steps` chép nguyên vệt của loop — vệt đó chỉ mang TÊN KHOÁ của args
     (`adapters/agent_loop_llm._step`), không bao giờ mang chữ khách.
     """
 
-    if action_name != "OpenQuestion" or not tool_calls:
+    if not any(step.get("agent") for step in tool_calls):
         return {}
     steps = [dict(step) for step in tool_calls]
     #: Bước CUỐI do `act._open_question` gắn thêm: nó mang `error` của loop và

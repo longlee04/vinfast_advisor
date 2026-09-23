@@ -13,7 +13,9 @@ STATE = CoreState(session_id="11111111-1111-1111-1111-111111111111", stage=Stage
 AGENT_STEPS = (
     {"tool": "tinh_chi_phi_xe", "args_keys": ["province", "vehicle_name"], "ok": True, "error": "", "ms": 820},
     {"tool": "tra_loi_khach", "args_keys": [], "ok": True, "error": "", "ms": 640},
-    {"tool": "", "args_keys": [], "ok": True, "error": "", "ms": 1600},
+    # Bước cuối do `act._open_question` gắn, mang DẤU `agent` — đó là thứ
+    # `_agent_trace_fields` nhận diện (móc 2/3 chạy trong Recommend/Ask).
+    {"tool": "", "args_keys": [], "ok": True, "error": "", "ms": 1600, "agent": True},
 )
 
 
@@ -42,8 +44,10 @@ def test_trace_co_agent_fields() -> None:
 
 
 def test_trace_ghi_ly_do_fallback() -> None:
-    steps = ({"tool": "so_sanh_xe", "args_keys": ["vehicle_names"], "ok": False, "error": "unknown_vehicle", "ms": 12},
-             {"tool": "", "args_keys": [], "ok": True, "error": "max_steps", "ms": 900})
+    steps = (
+        {"tool": "so_sanh_xe", "args_keys": ["vehicle_names"], "ok": False, "error": "unknown_vehicle", "ms": 12},
+        {"tool": "", "args_keys": [], "ok": True, "error": "max_steps", "ms": 900, "agent": True},
+    )
     payload = _trace("OpenQuestion", steps).payload
     assert payload["agent_error"] == "max_steps"
 
@@ -51,6 +55,19 @@ def test_trace_ghi_ly_do_fallback() -> None:
 def test_luot_khong_phai_agent_thi_khong_co_khoa_agent() -> None:
     payload = _trace("Recommend").payload
     assert not any(key.startswith("agent_") for key in payload)
+    # Vệt tool-calling CŨ (`tco_arg_resolver`…) không mang dấu `agent` nên không
+    # bị đếm nhầm thành lượt agent.
+    khac = _trace("Tco", ({"tool": "tinh_chi_phi", "known": {}, "returned": None, "used": {}},)).payload
+    assert not any(key.startswith("agent_") for key in khac)
+
+
+def test_moc_2_va_3_cung_duoc_ghi_du_action_khong_phai_OpenQuestion() -> None:  # noqa: N802
+    """Móc 2 chạy trong `Recommend`, móc 3 trong `Ask` — cả hai phải vào bảng đo."""
+
+    for action_name in ("Recommend", "Ask"):
+        payload = _trace(action_name, AGENT_STEPS).payload
+        assert payload["agent_used"] is True, action_name
+        assert payload["agent_llm_calls"] == 2
 
 
 def test_trace_khong_co_chu_khach_trong_agent_steps() -> None:
@@ -58,7 +75,7 @@ def test_trace_khong_co_chu_khach_trong_agent_steps() -> None:
     dumped = str(payload["agent_steps"])
     assert "anh muốn xe nào hợp nhất" not in dumped
     for step in payload["agent_steps"]:
-        assert set(step) <= {"tool", "args_keys", "ok", "error", "ms", "extra_calls_dropped"}
+        assert set(step) <= {"tool", "args_keys", "ok", "error", "ms", "extra_calls_dropped", "agent"}
         assert all(isinstance(key, str) for key in step["args_keys"])
 
 

@@ -93,6 +93,27 @@ _CHEAPER_CUES: Final[tuple[str, ...]] = (
     "kinh te",
 )
 
+#: Cụm xin xe ĐẮT hơn — chiều ngược của `_CHEAPER_CUES`, và cũng là chuyện TIỀN
+#: nên không quy về mã tính năng nào.
+#:
+#: Thiếu chiều này là lỗ thật, đo trên máy 2026-09-23: khách khai 300 triệu, xem
+#: VF 3/VF 2 rồi gõ "xe khác đắt hơn" hai lượt liên tiếp — bộ lọc vẫn giữ trần
+#: 300 triệu và loại đúng hai xe vừa xem, nên lượt nào cũng ra "em chưa có mẫu
+#: nào khác hợp hơn" kèm y nguyên hai thẻ cũ.
+#:
+#: "sang"/"cao cap"/"tien nghi" KHÔNG có ở đây: chúng đã nằm trong
+#: `_BARE_ADJECTIVE_CODES` (trang bị), gán thêm nghĩa tiền là đọc hai lần một từ.
+_PRICIER_CUES: Final[tuple[str, ...]] = (
+    "dat",
+    "gia cao",
+    "cao hon",
+    "nhieu tien",
+    "xin",
+    "xin hon",
+    "hang cao",
+    "phan khuc tren",
+)
+
 
 @dataclass(frozen=True, slots=True)
 class ComparativeRevision:
@@ -107,6 +128,8 @@ class ComparativeRevision:
     trait_codes: tuple[str, ...] = ()
     #: Khách muốn RẺ hơn. Không kèm mã nào — xem `_CHEAPER_CUES`.
     cheaper: bool = False
+    #: Khách muốn ĐẮT hơn (xin mẫu trên tầm vừa xem) — xem `_PRICIER_CUES`.
+    pricier: bool = False
 
     @property
     def attribute_known(self) -> bool:
@@ -116,7 +139,7 @@ class ComparativeRevision:
         chạy tiếp và loại những xe đã xem, chỉ là không có hướng để đẩy điểm.
         """
 
-        return bool(self.feature_codes or self.trait_codes or self.cheaper)
+        return bool(self.feature_codes or self.trait_codes or self.cheaper or self.pricier)
 
 
 def detect_comparative_revision(
@@ -142,6 +165,7 @@ def detect_comparative_revision(
     features: list[str] = []
     traits: list[str] = []
     cheaper = False
+    pricier = False
     for window in windows:
         window_features = sorted(feature_codes_mentioned(window))
         window_traits = sorted(trait_codes_mentioned(window))
@@ -160,11 +184,16 @@ def detect_comparative_revision(
             if trait not in traits:
                 traits.append(trait)
         cheaper = cheaper or any(_mentions(window, cue) for cue in _CHEAPER_CUES)
+        pricier = pricier or any(_mentions(window, cue) for cue in _PRICIER_CUES)
 
     return ComparativeRevision(
         feature_codes=tuple(features),
         trait_codes=tuple(traits),
-        cheaper=cheaper,
+        # Câu vừa có "rẻ" vừa có "đắt" ("đắt hơn cái rẻ nhất") không đọc được
+        # chiều nào chắc chắn — bỏ CẢ HAI, lượt vẫn là lời xin đổi và vẫn loại
+        # những mẫu khách đã xem.
+        cheaper=cheaper and not pricier,
+        pricier=pricier and not cheaper,
     )
 
 

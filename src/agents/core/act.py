@@ -1290,12 +1290,18 @@ async def _refined(
     """
 
     revision = detect_comparative_revision(build_canonical_text(refine))
-    if revision is None or not revision.cheaper:
+    if revision is None or not (revision.cheaper or revision.pricier):
         return criteria, revision
     prices = await catalog_prices(services, vehicle_type=str(criteria.vehicle_type))
     seen = [prices[value] for value in seen_ids if value in prices]
     if not seen:
         return criteria, revision
+    if revision.pricier:
+        # Khách XIN xe đắt hơn: sàn mới là trên giá mẫu đắt nhất vừa xem, và
+        # trần ngân sách cũ phải BỎ — chính khách vừa nới nó. Giữ trần cũ là
+        # bảo đảm không còn mẫu nào lọt, tức lượt nào cũng ra "chưa có mẫu nào
+        # khác hợp hơn" kèm y nguyên hai thẻ cũ (đo trên máy 2026-09-23).
+        return replace(criteria, budget_min_vnd=max(seen) + 1, budget_max_vnd=None), revision
     ceiling = min(seen) - 1
     if criteria.budget_max_vnd is not None and criteria.budget_max_vnd <= ceiling:
         return criteria, revision
@@ -1890,6 +1896,19 @@ async def _with_need_lead(services: AgentServices, state: CoreState, pitch: Any,
     return f"{lead}\n{pitch.pitch}" if lead else str(pitch.pitch)
 
 
+#: Giá trị ô bảng so sánh KHÔNG phải chữ khách đọc được: cờ máy (`YES`/`NO`/
+#: `UNKNOWN`) và mã hằng. Bảng so sánh dùng chúng đúng mục đích của nó (đánh dấu
+#: có/không), nhưng đường dự phòng in "{nhãn} {giá trị}" nên chúng ra tới khách
+#: thành "theo tài liệu, chưa xác minh UNKNOWN" — đo trên máy thật 2026-09-23.
+_MACHINE_CELL_VALUE: Final[re.Pattern[str]] = re.compile(r"^[A-Z][A-Z0-9_]*$")
+
+
+def _readable_fact(label: str, value: str) -> bool:
+    """Ô này có đọc thành chữ cho khách được không."""
+
+    return bool(label.strip()) and bool(value.strip()) and not _MACHINE_CELL_VALUE.match(value.strip())
+
+
 async def _fallback_vehicles(
     services: AgentServices, *, run_id: UUID, recommendations: Sequence[Recommendation]
 ) -> tuple[render.FallbackVehicle, ...]:
@@ -1902,7 +1921,7 @@ async def _fallback_vehicles(
             table = await service.compare(run_id=run_id, vehicle_ids=[item.vehicle_id for item in recommendations])
             for row in table.rows:
                 for cell in row.cells:
-                    if cell.value_text and cell.label:
+                    if cell.value_text and cell.label and _readable_fact(cell.label, cell.value_text):
                         facts.setdefault(str(cell.vehicle_id), []).append((cell.label, cell.value_text))
         except Exception:
             logger.warning("core.act: khong doc duoc bang so sanh cho duong du phong", exc_info=True)
@@ -3065,7 +3084,13 @@ async def _open_question(
 
     name = await _name_of(services, state, state.chosen_vehicle_id or (state.recommended_ids[0] if state.recommended_ids else None))
     closing = await _closing(services, state, vehicle_name=name)
-    steps = (*outcome.steps, {"tool": "", "args_keys": [], "ok": True, "error": outcome.error, "ms": elapsed_ms})
+    # Khoá `agent` là DẤU NHẬN BIẾT của vệt agent: `run_turn._agent_trace_fields`
+    # đọc nó thay vì đoán theo tên Action — móc 2 và móc 3 chạy bên trong
+    # `Recommend`/`Ask` nên khoá theo tên Action là bỏ sót đúng hai móc đó.
+    steps = (
+        *outcome.steps,
+        {"tool": "", "args_keys": [], "ok": True, "error": outcome.error, "ms": elapsed_ms, "agent": True},
+    )
     return ActResult(
         text=f"{text}\n\n{closing}" if closing else text,
         cards=await _kept_cards(state, services, state.recommended_ids),

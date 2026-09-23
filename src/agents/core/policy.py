@@ -29,6 +29,7 @@ from src.agents.core.actions import (
     TEMPLATE_CLARIFY,
     TEMPLATE_CONCERN,
     TEMPLATE_SOCIAL,
+    TEMPLATE_STOPPED,
     UNCLEAR_KEY,
     Action,
     Ask,
@@ -149,6 +150,18 @@ def decide(state: CoreState, u: Understanding) -> Decision:
             ),
             state,
         )
+
+    # 3a'. Khách nói THÔI ("t ko muốn tư vấn nữa", "thôi khỏi"): dừng hẳn việc
+    # đẩy đề xuất. Không có nhánh này thì REJECT ở `RECOMMENDED` rơi xuống
+    # `_advise` và khách nhận lại ĐÚNG hai thẻ xe vừa từ chối (đo trên máy
+    # 2026-09-23) — đọc như bot không nghe thấy gì.
+    #
+    # Chỉ bắt lượt REJECT KHÔNG còn câu treo: REJECT trả lời một `pending` là
+    # câu trả lời cho câu hỏi đó (huỷ lái thử, bỏ qua tính năng), đã có đường
+    # riêng ở nhánh pending bên dưới. Và không đổi chặng: khách quay lại là mạch
+    # cũ còn nguyên.
+    if u.dialogue_act is DialogueAct.REJECT and state.pending is None and not u.slots:
+        return Decision(Reply(template=TEMPLATE_STOPPED), state)
 
     # 3b. Câu LO NGẠI ("pin chai bán ai mua", "hầm chung cư chưa có trụ sạc"):
     # trả lời trấn an rồi giữ mạch — cùng khuôn SOCIAL. Log prod 2026-08-31:

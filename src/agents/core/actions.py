@@ -34,6 +34,8 @@ ASPECT_PRICE = "price"
 TEMPLATE_SOCIAL = "social"
 TEMPLATE_CONCERN = "concern"
 TEMPLATE_CANCELLED = "cancelled"
+#: Khách nói THÔI, không muốn tư vấn nữa — dừng, không hỏi thêm, không đẩy thẻ.
+TEMPLATE_STOPPED = "stopped"
 TEMPLATE_CLARIFY = "clarify"
 TEMPLATE_CHOSEN_SUMMARY = "chosen_summary"
 #: Đề xuất lại mà không có mẫu nào MỚI để nói → một câu ngắn xác nhận lựa chọn

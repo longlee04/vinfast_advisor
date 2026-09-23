@@ -21,6 +21,7 @@ from src.agents.core.actions import (
     TEMPLATE_CLARIFY,
     TEMPLATE_NO_BETTER,
     TEMPLATE_SAME_PICK,
+    TEMPLATE_STOPPED,
     TEMPLATE_CONCERN,
     TEMPLATE_SOCIAL,
     Ask,
@@ -292,6 +293,14 @@ def render_reply(action: Reply, *, vehicle_name: str | None = None, closing: str
         return assert_clean(f"{body} Anh/chị còn điểm nào lấn cấn nữa không, hay để em tư vấn tiếp ạ?")
     if action.template == TEMPLATE_CANCELLED:
         return assert_clean("Dạ, em đã huỷ việc đó. Anh/chị cần em hỗ trợ gì tiếp ạ?")
+    if action.template == TEMPLATE_STOPPED:
+        # Khách nói THÔI: dừng đẩy hàng, không hỏi thêm một câu nào, để ngỏ lối
+        # quay lại. Đo trên máy 2026-09-23: "t ko muốn tư vấn nữa" nhận lại đúng
+        # hai thẻ xe cũ kèm câu mời chọn mẫu — đọc như bot không nghe thấy gì.
+        return assert_clean(
+            "Dạ vâng, em dừng ở đây ạ. Khi nào anh/chị cần xem lại hay cần em hỗ trợ gì, "
+            "anh/chị nhắn em một câu là được ạ."
+        )
     if action.template == TEMPLATE_CLARIFY:
         return assert_clean(_CLARIFY.get(action.args.get("stage", ""), _CLARIFY["COLLECTING"]))
     if action.template == TEMPLATE_SAME_PICK:
