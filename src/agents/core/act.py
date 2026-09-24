@@ -48,6 +48,7 @@ from src.agents.core.actions import (
     TEMPLATE_CLARIFY,
     TEMPLATE_NO_BETTER,
     TEMPLATE_SAME_PICK,
+    TEMPLATE_TIMEFRAME_ACK,
     Action,
     Ask,
     Book,
@@ -107,6 +108,9 @@ from src.agents.domain.pricing_intent import (
     province_options,
     region_for_province_code,
 )
+from src.agents.domain.purchase_timeframe import ASK_KEY as TIMEFRAME_ASK_KEY
+from src.agents.domain.purchase_timeframe import FLAG_ASK_PURCHASE_TIMEFRAME
+from src.agents.domain.purchase_timeframe import QUICK_REPLIES as TIMEFRAME_QUICK_REPLIES
 from src.agents.domain.quote_risk import DeliveryAction, classify_draft_delivery
 from src.agents.domain.scoring import LONG_TRIP_MIN_RANGE_KM
 from src.agents.domain.spec_tool import SPEC_TOOL_NAME
@@ -281,7 +285,9 @@ async def act(
     elif isinstance(action, Tco):
         result = await _tco(action, state, services, user_message=user_message, run_id=run_id)
     elif isinstance(action, OnRoadPrice):
-        result = await _on_road_price(action, state, services, user_message=user_message, run_id=run_id)
+        result = await _on_road_price(
+            action, state, services, user_message=user_message, run_id=run_id, customer_id=customer_id
+        )
     elif isinstance(action, ShowroomOptions):
         result = await _showroom_options(action, state, services, user_message=user_message, customer_id=customer_id)
     elif isinstance(action, Book):
@@ -514,6 +520,9 @@ async def _ask(
 async def _reply(action: Reply, state: CoreState, services: AgentServices) -> ActResult:
     vehicle_id = action.args.get("vehicle_id") or state.chosen_vehicle_id
     name = await _name_of(services, state, vehicle_id)
+    if action.template == TEMPLATE_TIMEFRAME_ACK:
+        closing = await _closing(services, state, vehicle_name=name, has_tco=True, after_on_road=True)
+        return ActResult(text=render.render_reply(action, vehicle_name=name or None, closing=closing))
     cards: dict[str, Any] = {}
     if action.template == TEMPLATE_CHOSEN_SUMMARY and vehicle_id:
         # Khách VỪA chốt một mẫu → dẫn sang trang xe (contract đợt 9 mục 1).
@@ -2465,7 +2474,13 @@ async def _image_urls(services: AgentServices, vehicle_ids: Sequence[UUID]) -> d
 
 
 async def _on_road_price(
-    action: OnRoadPrice, state: CoreState, services: AgentServices, *, user_message: str, run_id: UUID | None
+    action: OnRoadPrice,
+    state: CoreState,
+    services: AgentServices,
+    *,
+    user_message: str,
+    run_id: UUID | None,
+    customer_id: str = "",
 ) -> ActResult:
     """Giá lăn bánh = THẺ chi phí dùng chung với TCO (Sếp 2026-08-31).
 
@@ -2517,8 +2532,42 @@ async def _on_road_price(
     # không được mời khách "xem chi phí 5 năm" — thứ đang hiện ngay trên màn
     # hình. `_closing` suy `has_tco` từ chặng, mà `_run_vehicle_intent` giữ
     # `stage=CHOSEN` khi khách chưa chốt trước đó, nên phải nói rõ ở đây.
+    if await _should_ask_timeframe(services, state, customer_id):
+        # 4G: câu hỏi thời điểm mua THAY câu kết ở lượt này (một lượt một câu hỏi).
+        # `ask_counts[...]` giữ SỐ LƯỢT lúc hỏi: phiên không hỏi lại, và lượt kế
+        # tiếp biết câu khách gõ là câu trả lời (`run_turn`).
+        counts = {**state.ask_counts, TIMEFRAME_ASK_KEY: state.turn_count}
+        return ActResult(
+            text=render.on_road_card_lead(vehicle_name=name, closing=render.purchase_timeframe_question()),
+            cards={
+                "tco_card": card,
+                "quick_replies": [QuickReplyView(label=item, value=item) for item in TIMEFRAME_QUICK_REPLIES],
+            },
+            state_patch={"ask_counts": counts},
+        )
     closing = await _closing(services, state, vehicle_name=name, has_tco=True, after_on_road=True)
     return ActResult(text=render.on_road_card_lead(vehicle_name=name, closing=closing), cards={"tco_card": card})
+
+
+async def _should_ask_timeframe(services: AgentServices, state: CoreState, customer_id: str) -> bool:
+    """Hỏi thời điểm mua ở lượt báo giá lăn bánh này không (Customer 360 4G).
+
+    Đủ cả bốn: có cổng đọc insight, phiên CHƯA hỏi, cờ bật cho khách này, và
+    khách CHƯA từng nói. Mọi nhánh đọc hỏng đều là KHÔNG hỏi — cờ tắt thì lượt
+    y nguyên như trước 4G.
+    """
+
+    port = services.purchase_timeframe_known
+    if port is None or services.agent_flag is None or not customer_id or TIMEFRAME_ASK_KEY in state.ask_counts:
+        return False
+    try:
+        flag = await services.agent_flag.load(FLAG_ASK_PURCHASE_TIMEFRAME)
+        if not is_enabled_for(flag, customer_id):
+            return False
+        return not await port.known(customer_id)
+    except Exception:
+        logger.warning("core.act: doc co/insight thoi diem mua loi, bo qua cau hoi", exc_info=True)
+        return False
 
 
 def _province_text(state: CoreState) -> str | None:

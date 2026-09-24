@@ -59,6 +59,7 @@ from src.agents.ports import (
     AgentLoopPort,
     OfferSuggestionPort,
     PolicySearchPort,
+    PurchaseTimeframeKnownPort,
     UnderstandingPort,
 )
 from src.agents.services.candidate_tuning import DelegatedFeatureChoice
@@ -672,6 +673,9 @@ class AgentServices:
     #: [Agent] Cờ động `agent_feature_flags` (plan agent-migration Bước 3). Field
     #: MỚI mặc định `None` — `None` = TẮT, không đường nào đọc tới khi chưa cắm.
     agent_flag: AgentFlagPort | None = None
+    #: [Customer 360 4G] Khách đã nói thời điểm mua chưa — chỉ đọc khi cờ
+    #: `agent_ask_purchase_timeframe` bật. `None` = không bao giờ hỏi.
+    purchase_timeframe_known: PurchaseTimeframeKnownPort | None = None
     #: [Agent] Vòng ReAct chỉ-đọc cho hai móc ngõ cụt. `None` = không móc nào
     #: chạy, lõi tất định y nguyên.
     agent_loop: AgentLoopPort | None = None

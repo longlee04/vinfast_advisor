@@ -602,6 +602,16 @@ class AgentFlagPort(Protocol):
     async def load(self, name: str) -> AgentFlagState | None: ...
 
 
+class PurchaseTimeframeKnownPort(Protocol):
+    """Khách đã nói thời điểm định mua chưa (insight `purchase_timeframe` hiện hành, plan Customer 360 4G).
+
+    KHÔNG raise: đọc hỏng → `True` (coi như đã biết, KHÔNG hỏi) — chiều an toàn
+    là bớt một câu hỏi, không phải hỏi lặp một điều khách đã nói.
+    """
+
+    async def known(self, customer_id: str) -> bool: ...
+
+
 @dataclass(frozen=True, slots=True)
 class AgentLoopOutcome:
     """Kết quả một vòng ReAct (plan agent-migration Bước 5, §2.2).

@@ -25,6 +25,7 @@ from src.agents.core.actions import (
     TEMPLATE_SAME_PICK,
     TEMPLATE_SOCIAL,
     TEMPLATE_STOPPED,
+    TEMPLATE_TIMEFRAME_ACK,
     Ask,
     Reply,
 )
@@ -32,6 +33,7 @@ from src.agents.core.state import CoreState, Pending, PendingKind
 from src.agents.domain.claim_policy import feature_claim_label, plan_claims
 from src.agents.domain.feature_question import asked_feature as asked_feature  # noqa: PLC0414
 from src.agents.domain.need_tags import need_tag_display
+from src.agents.domain.purchase_timeframe import TIMEFRAME_LABELS, UNDECIDED
 
 
 class RenderError(ValueError):
@@ -69,6 +71,19 @@ def assert_clean(text: str) -> str:
         if hit:
             raise RenderError(f"chữ cấm {hit.group(0)!r} trong: {text[:80]!r}")
     return text
+
+
+def purchase_timeframe_question() -> str:
+    """Câu hỏi lồng sau báo giá lăn bánh (plan Customer 360 4G) — THAY câu kết, không cộng thêm.
+
+    Một lượt chỉ MỘT câu hỏi: hỏi thời điểm mua thì không mời lái thử cùng lúc;
+    lượt khách trả lời sẽ ghi nhận rồi mới mời (`TEMPLATE_TIMEFRAME_ACK`).
+    """
+
+    return assert_clean(
+        "Để em tư vấn lịch lái thử và nhận xe cho khớp, anh/chị dự định nhận xe khoảng khi nào ạ — "
+        "trong tháng này, vài tháng tới hay chưa vội?"
+    )
 
 
 def closing_question(
@@ -345,6 +360,17 @@ def render_reply(action: Reply, *, vehicle_name: str | None = None, closing: str
             "Dạ vâng, em dừng ở đây ạ. Khi nào anh/chị cần xem lại hay cần em hỗ trợ gì, "
             "anh/chị nhắn em một câu là được ạ."
         )
+    if action.template == TEMPLATE_TIMEFRAME_ACK:
+        # Khách vừa đáp câu hỏi thời điểm mua (4G): ghi nhận ĐÚNG điều khách nói
+        # rồi quay về bước kế của checklist — câu hỏi lồng không được làm đứt mạch.
+        code = action.args.get("timeframe", "")
+        tail = closing or "Anh/chị cần em hỗ trợ gì tiếp ạ?"
+        if code == UNDECIDED:
+            return assert_clean(f"Dạ không sao ạ, anh/chị cứ tham khảo thong thả. {tail}")
+        label = TIMEFRAME_LABELS.get(code)
+        if not label:
+            return assert_clean(tail)
+        return assert_clean(f"Dạ em ghi nhận anh/chị dự định nhận xe {label}. {tail}")
     if action.template == TEMPLATE_CLARIFY:
         # Nhắc lại ý khách TRƯỚC câu hỏi lại: "em chưa rõ ý anh/chị" trơ không
         # cho khách biết bot nghe được gì, nên lượt nào cũng đọc như nhau.

@@ -71,6 +71,7 @@ from src.agents.adapters.opportunity_offer_repository import SqlAlchemyOpportuni
 from src.agents.adapters.policy_search import SqlAlchemyPolicySearchAdapter
 from src.agents.adapters.post_pitch_branch_classifier import OpenAIPostPitchBranchClassifier
 from src.agents.adapters.promotion_catalog_source import SqlAlchemyPromotionCatalog
+from src.agents.adapters.purchase_timeframe_source import SqlAlchemyPurchaseTimeframeSource
 from src.agents.adapters.quote_audit import BackgroundQuoteAuditSink
 from src.agents.adapters.rate_limiter import PostgresTurnRateLimiter
 from src.agents.adapters.recommendation_source import (
@@ -650,6 +651,8 @@ class AgentComposition:
             tco_arg_resolver=OpenAITcoArgResolver(model_name="gpt-4o"),
             location_arg_resolver=OpenAILocationArgResolver(model_name="gpt-4o"),
             spec_arg_resolver=OpenAISpecArgResolver(model_name="gpt-4o"),
+            # Customer 360 4G: chỉ đọc khi cờ `agent_ask_purchase_timeframe` bật cho khách.
+            purchase_timeframe_known=SqlAlchemyPurchaseTimeframeSource(session_factory),
             understanding=OpenAIUnderstander(),
             # Cờ động đường agent — chỉ ĐỌC bảng `agent_feature_flags`, TTL 60s.
             agent_flag=flag_adapter,

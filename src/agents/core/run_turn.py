@@ -50,6 +50,8 @@ from src.agents.domain.canonical_text import build_canonical_text
 from src.agents.domain.moderation_blocklist import CONTENT_BLOCKED_REASON, MODERATION_BLOCK_MESSAGE, is_system_probe
 from src.agents.domain.next_step import NextStepPanel, build_next_step_panel, build_single_action_panel
 from src.agents.domain.post_pitch import PostPitchStage
+from src.agents.domain.purchase_timeframe import ASK_KEY as TIMEFRAME_ASK_KEY
+from src.agents.domain.purchase_timeframe import parse_purchase_timeframe
 from src.agents.domain.turn_trace import TurnTrace
 from src.agents.domain.values import SlotName, SlotValue
 from src.agents.errors import CoreTurnTimeoutError, TurnPersistenceError
@@ -520,7 +522,22 @@ async def _understand(
         # (dựng danh bạ xe hỏng chẳng hạn) — một lượt vẫn không được chết.
         logger.warning("core.run_turn: understand hong", exc_info=True)
         return UNCLEAR_UNDERSTANDING, f"{type(error).__name__}: {error}"[:300]
-    return result.understanding, result.error
+    return _with_purchase_timeframe(result.understanding, state, user_message), result.error
+
+
+def _with_purchase_timeframe(understanding: Understanding, state: CoreState, user_message: str) -> Understanding:
+    """Gắn mã thời điểm mua khi lượt này đáp câu hỏi 4G của lượt NGAY TRƯỚC.
+
+    `ask_counts[purchase_timeframe]` là số lượt lúc hỏi; `state` ở đây là đầu lượt
+    (`decide` chưa tăng `turn_count`), nên "lượt ngay trước" = bằng nhau. Lượt khác
+    không đọc — "2 tháng trước tôi đi xem xe" giữa chừng không phải câu trả lời.
+    """
+
+    asked_at = state.ask_counts.get(TIMEFRAME_ASK_KEY)
+    if asked_at is None or asked_at != state.turn_count:
+        return understanding
+    code = parse_purchase_timeframe(user_message)
+    return replace(understanding, purchase_timeframe=code) if code else understanding
 
 
 async def _vehicle_directory(services: AgentServices) -> VehicleDirectory:

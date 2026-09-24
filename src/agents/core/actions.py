@@ -36,6 +36,8 @@ TEMPLATE_CONCERN = "concern"
 TEMPLATE_CANCELLED = "cancelled"
 #: Khách nói THÔI, không muốn tư vấn nữa — dừng, không hỏi thêm, không đẩy thẻ.
 TEMPLATE_STOPPED = "stopped"
+#: Khách vừa trả lời câu hỏi thời điểm mua (4G): ghi nhận rồi kết theo checklist.
+TEMPLATE_TIMEFRAME_ACK = "timeframe_ack"
 TEMPLATE_CLARIFY = "clarify"
 TEMPLATE_CHOSEN_SUMMARY = "chosen_summary"
 #: Đề xuất lại mà không có mẫu nào MỚI để nói → một câu ngắn xác nhận lựa chọn

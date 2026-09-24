@@ -31,6 +31,7 @@ from src.agents.core.actions import (
     TEMPLATE_CONCERN,
     TEMPLATE_SOCIAL,
     TEMPLATE_STOPPED,
+    TEMPLATE_TIMEFRAME_ACK,
     UNCLEAR_KEY,
     Action,
     Ask,
@@ -96,6 +97,10 @@ INTERRUPT_INTENTS = frozenset(
     {Intent.CATALOG_LOOKUP, Intent.COMPARE, Intent.NEARBY, Intent.POLICY_QA, Intent.VEHICLE_QA}
 )
 _LOOKUP_INTENTS = INTERRUPT_INTENTS | {Intent.CATALOG_BROWSE}
+#: Act mà câu trả lời "tháng sau ạ" hay mang — LLM không biết bot vừa hỏi thời điểm mua.
+_TIMEFRAME_ANSWER_ACTS = frozenset(
+    {DialogueAct.SLOT_ANSWER, DialogueAct.SOCIAL, DialogueAct.UNCLEAR, DialogueAct.CONFIRM}
+)
 _ANSWER_ACTS = frozenset({DialogueAct.SLOT_ANSWER, DialogueAct.CHOICE, DialogueAct.CONFIRM, DialogueAct.REJECT})
 #: Intent cần một chiếc xe cụ thể để chạy công cụ (không đoán giữa nhiều đề xuất).
 _VEHICLE_INTENTS = frozenset({Intent.COST, Intent.ON_ROAD_PRICE, Intent.TEST_DRIVE, Intent.OFFER})
@@ -135,6 +140,19 @@ def decide(state: CoreState, u: Understanding) -> Decision:
             ask_counts={},
         )
         return _ask(fresh, PENDING_PROFILE, PendingKind.SLOT)
+
+    # 2b. Khách trả lời câu hỏi thời điểm mua của lượt trước (Customer 360 4G):
+    # ghi nhận rồi quay lại mạch. Chỉ khi lượt không chở việc nào khác — câu có
+    # tên xe, câu treo, hay một yêu cầu nghiệp vụ thì đi đường thường (extractor
+    # vẫn đọc được thời điểm từ câu đó ở job nền).
+    if (
+        u.purchase_timeframe
+        and state.pending is None
+        and not u.vehicle_ids
+        and (u.intent is Intent.NONE or u.dialogue_act in _TIMEFRAME_ANSWER_ACTS)
+    ):
+        state = _merge_slots(_reset_unclear(state), dict(u.slots))
+        return Decision(Reply(template=TEMPLATE_TIMEFRAME_ACK, args={"timeframe": u.purchase_timeframe}), state)
 
     # Bất kỳ act nào không phải UNCLEAR đều reset đếm UNCLEAR — kể cả SOCIAL (finding 4),
     # nên luôn chạy TRƯỚC nhánh xã giao.

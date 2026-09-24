@@ -181,6 +181,9 @@ class Understanding:
     #: prod 2026-08-31: các câu này bị LLM gắn act lửng lơ và rơi vào câu mặc
     #: định "muốn xem kỹ mẫu nào ạ?" — nỗi lo của khách bị nuốt trong im lặng.
     concern_topic: str = ""
+    #: Mã thời điểm định mua (`domain.purchase_timeframe`) khi lượt này TRẢ LỜI câu
+    #: hỏi 4G của lượt ngay trước — `run_turn` chỉ gắn đúng lượt đó. Rỗng = không phải.
+    purchase_timeframe: str = ""
     #: KHÍA CẠNH khách hỏi về một mẫu ở lượt tra cứu — hiện chỉ có "price" (xem
     #: `actions.ASPECT_PRICE`). Đọc tất định ở `understand`: "giá con vf8 mới"
     #: về `CATALOG_LOOKUP` và `act` trả NGUYÊN bảng thông số (động cơ, ADAS…)
