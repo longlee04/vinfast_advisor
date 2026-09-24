@@ -23,6 +23,7 @@ from src.agents.domain.conversation_memory import (
     ConversationMessage as TranscriptMessage,
 )
 from src.agents.domain.feature_selection import UNKNOWN_QUESTION
+from src.agents.domain.staff_access import is_admin
 from src.agents.domain.turn_trace import TurnTrace
 from src.agents.domain.values import SlotName, SlotValue
 from src.agents.ports import UnitOfWorkPort
@@ -132,6 +133,12 @@ class ConversationServiceImpl:
     async def load_active_offers(self, session_id: str) -> list[dict]:
         async with self._unit_of_work.transaction() as transaction:
             offers = await transaction.session_offers.active_for_session(session_id)
+        # Customer 360 Phase 5: composition gắn `promotion_guard` — kiểm ưu đãi gốc còn
+        # ACTIVE/còn hạn NGAY LÚC trả lời. Không gắn (test, cờ tắt) → như cũ.
+        guard = getattr(self, "promotion_guard", None)
+        if guard is not None and offers:
+            allowed = await guard.allowed([offer.promotion_code for offer in offers])
+            offers = [offer for offer in offers if offer.promotion_code in allowed]
         return [
             {
                 "offer_id": str(offer.offer_id),
@@ -285,29 +292,37 @@ class ConversationServiceImpl:
             return await transaction.sessions.archive_session(UUID(session_id), customer_id)
 
     async def list_staff_conversations(
-        self, *, requester_id: str, role: str, customer_id: str | None = None
+        self,
+        *,
+        requester_id: str,
+        role: str,
+        customer_id: str | None = None,
+        requester_email: str | None = None,
     ) -> list[ConversationSummary]:
-        """List all admin conversations or only advisor-assigned conversations."""
+        """Admin thấy mọi phiên; TVV chỉ thấy phiên trong phạm vi của mình."""
 
         async with self._unit_of_work.transaction() as transaction:
             rows = await transaction.sessions.list_staff_sessions(
-                requester_id=requester_id, role=role, customer_id=customer_id
+                requester_id=requester_id, role=role, customer_id=customer_id, requester_email=requester_email
             )
-            return [await _enrich_summary(transaction, row) for row in rows]
+            batch = getattr(transaction.sessions, "load_staff_extras", None)
+            if batch is None:
+                # Repo cũ/fake không có nạp theo lô — giữ đường làm giàu từng dòng.
+                return [await _enrich_summary(transaction, row) for row in rows]
+            extras = await batch(rows)
+            return [_summary_with_extras(row, extras.get(row.session_id)) for row in rows]
 
     async def staff_conversation_detail(
-        self, session_id: str, *, requester_id: str, role: str
+        self, session_id: str, *, requester_id: str, role: str, requester_email: str | None = None
     ) -> tuple[ConversationSummary, list[ConversationMessage]] | None:
-        """Load full transcript for authenticated staff (admin or advisor)."""
+        """Transcript đầy đủ cho nhân sự; ngoài phạm vi thì trả `None` như phiên không tồn tại."""
 
         async with self._unit_of_work.transaction() as transaction:
             row = await transaction.sessions.get_session(UUID(session_id))
             if row is None:
                 return None
-            if (
-                role.lower() != "admin"
-                and row.assigned_advisor_id is not None
-                and row.assigned_advisor_id != requester_id
+            if not is_admin(role) and not await transaction.sessions.staff_can_view(
+                UUID(session_id), requester_id=requester_id, requester_email=requester_email
             ):
                 return None
             messages = await transaction.messages.list_for_session(UUID(session_id), 200)
@@ -506,6 +521,12 @@ class ConversationSummary:
     #: TVV mở danh sách chỉ thấy id và giờ, không biết khách đang cần gì.
     last_message_preview: str = ""
     slots: Mapping[str, Any] = field(default_factory=dict)
+    #: Tên hiển thị từ `customer_profiles` — trước Phase 3 schema API có trường này
+    #: nhưng không ai gán, nên màn TVV chỉ thấy UUID.
+    customer_display: str | None = None
+    #: Customer 360 (Phase 4) — chip độ nóng/rào cản ở bảng phiên.
+    heat_band: str | None = None
+    bottlenecks: tuple[str, ...] = ()
 
 
 #: Trần độ dài dòng xem trước — đủ đọc ý, không kéo cả bài đề xuất vào danh sách.
@@ -524,8 +545,7 @@ async def _enrich_summary(transaction: Any, row: object) -> ConversationSummary:
             content = await latest(summary.session_id)
         except Exception:  # noqa: BLE001 — danh sách TVV không được chết vì một dòng xem trước
             content = None
-        text = " ".join((content or "").split())
-        preview = text if len(text) <= PREVIEW_MAX_CHARS else text[: PREVIEW_MAX_CHARS - 1].rstrip() + "…"
+        preview = _preview(content)
     core_state = getattr(transaction, "core_state", None)
     if core_state is not None:
         try:
@@ -535,6 +555,25 @@ async def _enrich_summary(transaction: Any, row: object) -> ConversationSummary:
         if state is not None:
             slots = {getattr(key, "value", str(key)): value for key, value in state.slots.items()}
     return replace(summary, last_message_preview=preview, slots=slots)
+
+
+def _preview(content: str | None) -> str:
+    text = " ".join((content or "").split())
+    return text if len(text) <= PREVIEW_MAX_CHARS else text[: PREVIEW_MAX_CHARS - 1].rstrip() + "…"
+
+
+def _summary_with_extras(row: object, extras: Any) -> ConversationSummary:
+    summary = _summary_from_row(row)
+    if extras is None:
+        return summary
+    return replace(
+        summary,
+        last_message_preview=_preview(extras.last_message),
+        slots=dict(extras.slots or {}),
+        customer_display=extras.customer_display,
+        heat_band=getattr(extras, "heat_band", None),
+        bottlenecks=tuple(getattr(extras, "bottlenecks", ()) or ()),
+    )
 
 
 def _summary_from_row(row: object) -> ConversationSummary:

@@ -7,8 +7,8 @@ export default function AdminAssignmentsPage() {
     <OperationalShell role="admin">
       <PageHeading
         eyebrow="Admin / Điều hành Phân công"
-        title="Trung tâm Phân công Khách hàng"
-        description="Phân bổ và điều phối quan hệ chăm sóc giữa Khách hàng và Tư vấn viên (Customer Lead Allocation)."
+        title="Khách hàng & phân công"
+        description="Chọn khách theo độ nóng, giao cho tư vấn viên phụ trách và xem lịch sử phân công."
       />
       <AssignmentCenter />
     </OperationalShell>

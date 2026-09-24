@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass, replace
 from decimal import Decimal
 from typing import Any
@@ -87,8 +87,12 @@ class ConversationMemoryService:
         max_context_chars: int = 4_000,
         sleep: Callable[[float], Any] | None = None,
         jitter: Callable[[], float] | None = None,
+        after_core_turn: Callable[..., Awaitable[None]] | None = None,
     ) -> None:
         self._unit_of_work = unit_of_work
+        #: Customer 360 (plan Phase 4): gọi SAU khi lượt đã commit và đã tóm tắt, ngoài
+        #: transaction. Hỏng thì log — không bao giờ làm hỏng lượt khách. `None` = không làm gì.
+        self._after_core_turn = after_core_turn
         self._summarizer = summarizer
         self._recent_limit = recent_limit
         self._max_context_chars = max_context_chars
@@ -508,7 +512,16 @@ class ConversationMemoryService:
                 previous_summary=previous_summary,
                 recent=recent,
             )
+        await self._notify_after_core_turn(session_id, customer_id, core_state.turn_count)
         return replace(_turn_result(finalized), review_id=review_id, awaiting_review=review_id is not None)
+
+    async def _notify_after_core_turn(self, session_id: str, customer_id: str, turn_count: int) -> None:
+        if self._after_core_turn is None:
+            return
+        try:
+            await self._after_core_turn(session_id=session_id, customer_id=customer_id, turn_count=turn_count)
+        except Exception:  # noqa: BLE001 — việc nền của TVV không được chạm tới khách
+            logger.warning("commit_core_turn: hook customer360 that bai", exc_info=True)
 
     async def _update_summary_best_effort(
         self,

@@ -173,12 +173,32 @@ class SqlAlchemyCustomerAssignmentRepository:
             .all()
         )
 
+        # Nạp theo LÔ (plan Customer 360, Phase 3): trước đây 2 câu SQL cho MỖI khách.
+        customer_ids = {assign.customer_id for assign in assignments}
+        profiles = {
+            row.customer_id: row
+            for row in (
+                await self._session.execute(
+                    select(CustomerProfileRow).where(CustomerProfileRow.customer_id.in_(customer_ids))
+                )
+            ).scalars()
+        }
+        stats = {
+            row.customer_id: (row.sessions, row.last_activity_at)
+            for row in await self._session.execute(
+                select(
+                    ConversationSessionRow.customer_id,
+                    func.count(ConversationSessionRow.session_id).label("sessions"),
+                    func.max(ConversationSessionRow.last_activity_at).label("last_activity_at"),
+                )
+                .where(ConversationSessionRow.customer_id.in_(customer_ids))
+                .group_by(ConversationSessionRow.customer_id)
+            )
+        }
+
         results: list[AssignedCustomerSummaryDto] = []
         for assign in assignments:
-            # Fetch profile if exists
-            prof = await self._session.scalar(
-                select(CustomerProfileRow).where(CustomerProfileRow.customer_id == assign.customer_id)
-            )
+            prof = profiles.get(assign.customer_id)
             profile_dict: dict = {}
             if prof:
                 profile_dict = {
@@ -186,22 +206,7 @@ class SqlAlchemyCustomerAssignmentRepository:
                     "phone": prof.phone or "",
                     "email": prof.email or "",
                 }
-                if hasattr(prof, "profile_payload") and prof.profile_payload:
-                    profile_dict.update(prof.profile_payload)
-
-            # Count active conversations & last activity
-            conv_stats = (
-                await self._session.execute(
-                    select(
-                        func.count(ConversationSessionRow.session_id),
-                        func.max(ConversationSessionRow.last_activity_at),
-                    ).where(ConversationSessionRow.customer_id == assign.customer_id)
-                )
-            ).one_or_none()
-
-            conv_count = conv_stats[0] if conv_stats else 0
-            last_activity = conv_stats[1] if conv_stats else assign.assigned_at
-
+            conv_count, last_activity = stats.get(assign.customer_id, (0, None))
             results.append(
                 AssignedCustomerSummaryDto(
                     customer_id=assign.customer_id,
@@ -211,7 +216,7 @@ class SqlAlchemyCustomerAssignmentRepository:
                     status=assign.status,
                     profile_payload=profile_dict,
                     active_conversations_count=conv_count or 0,
-                    last_activity_at=last_activity,
+                    last_activity_at=last_activity or assign.assigned_at,
                 )
             )
         return results

@@ -12,6 +12,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from src.agents.api.analytics_routes import analytics_operations
 from src.agents.api.booking_routes import booking_operations
 from src.agents.api.bottleneck_signal_routes import bottleneck_signal_operations
+from src.agents.api.customer_360_routes import (
+    customer_360_operations,
+    customer_360_read_operations,
+    opportunity_offer_operations,
+)
 from src.agents.api.customer_routes import turn_event_broker
 from src.agents.api.dependencies import get_current_customer_id
 from src.agents.api.history_routes import history_operations
@@ -40,6 +45,7 @@ from src.images.presentation.dependencies import get_current_principal
 from src.locations.composition import LocationsComposition
 from src.locations.infrastructure.settings import LocationsSettings
 from src.products.composition import ProductComposition
+from src.products.presentation.promotion_admin_routes import router as promotion_admin_router
 from src.products.presentation.routes import router as product_router
 
 AUTH_EMAIL_SENDER_OVERRIDE = None
@@ -145,6 +151,11 @@ def _wire_agent_operations(app: FastAPI, agent: AgentComposition) -> None:
     app.dependency_overrides[analytics_operations] = lambda: operations.analytics
     app.dependency_overrides[turn_trace_operations] = lambda: operations.turn_traces
     app.dependency_overrides[sales_opportunity_service] = lambda: operations.sales_opportunity
+    if operations.customer360 is not None and operations.customer360_read is not None:
+        app.dependency_overrides[customer_360_operations] = lambda: operations.customer360
+        app.dependency_overrides[customer_360_read_operations] = lambda: operations.customer360_read
+    if operations.opportunity_offers is not None:
+        app.dependency_overrides[opportunity_offer_operations] = lambda: operations.opportunity_offers
     app.dependency_overrides[current_staff] = _staff_identity_from_auth
     app.dependency_overrides[get_current_principal] = _document_principal_from_auth
     app.dependency_overrides[get_document_current_principal] = _document_principal_from_auth
@@ -272,6 +283,7 @@ async def auth_database_error(request: Request, error: SQLAlchemyError) -> JSONR
 app.include_router(api_router)
 app.include_router(agents_ws_router)
 app.include_router(product_router, prefix="/api/v1")
+app.include_router(promotion_admin_router, prefix="/api/v1")
 
 
 @app.get("/health")

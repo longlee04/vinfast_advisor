@@ -1,9 +1,14 @@
 "use client";
 
 import { CheckCircle2, History, LogIn, RefreshCw, ShieldAlert, UserCheck, UserMinus, UserPlus, X } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
+import { CustomerPicker } from "@/components/customer360/customer-picker";
+import { HEAT_BAND_BADGES } from "@/components/customer360/customer360-labels";
+import { customerProfileHref } from "@/components/customer360/profile-links";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { type CustomerPickerItem, fetchCustomerPicker } from "@/lib/api/agent";
 import {
   type AssignmentHistoryItem,
   type CustomerAssignment,
@@ -17,7 +22,7 @@ import { listUsers, type UserSummary } from "@/lib/api/auth";
 import { useAuth } from "@/store/auth-store";
 
 export function AssignmentCenter() {
-  const { user, login } = useAuth();
+  const { user } = useAuth();
   const isAdmin = user?.role === "admin";
 
   const [assignments, setAssignments] = useState<CustomerAssignment[]>([]);
@@ -33,7 +38,8 @@ export function AssignmentCenter() {
 
   const [dialog, setDialog] = useState<"assign" | "history" | null>(null);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
-  const [customCustomerId, setCustomCustomerId] = useState<string>("");
+  /** Khách nóng chưa ai phụ trách — gợi ý phân công trước (plan §2.6). */
+  const [hotUnassigned, setHotUnassigned] = useState<readonly CustomerPickerItem[]>([]);
   const [selectedAdvisorId, setSelectedAdvisorId] = useState<string>("");
   const [targetAdvisorId, setTargetAdvisorId] = useState<string>("");
   const [reason, setReason] = useState<string>("");
@@ -73,6 +79,8 @@ export function AssignmentCenter() {
       ]);
       setAvailableCustomers(customersRes);
       setAdvisors(advisorsRes.items);
+      const picked = await fetchCustomerPicker("", 50).catch(() => [] as readonly CustomerPickerItem[]);
+      setHotUnassigned(picked.filter((item) => item.heat_band === "HOT" && !item.advisor_id).slice(0, 5));
     } catch {
       // Ignored if unauthenticated
     }
@@ -83,22 +91,19 @@ export function AssignmentCenter() {
     void loadDependencies();
   }, [reload, loadDependencies, user]);
 
-  async function handleQuickAdminLogin() {
-    setLoading(true);
-    try {
-      await login("admin@vinfast.vn", "Admin@123456");
-      await reload();
-      await loadDependencies();
-    } catch {
-      setLoadError("Đăng nhập Admin không thành công.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("customer");
+    if (!requested) return;
+    const current = assignments.find((item) => item.customer_id === requested && item.status === "ACTIVE");
+    setSelectedCustomerId(requested);
+    setSelectedAdvisorId(current?.advisor_id ?? "");
+    setDialog("assign");
+    // Chỉ một lần khi trang mở từ hồ sơ khách.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function openAssignModal(customerId: string, currentAdvisorId?: string) {
-    setSelectedCustomerId(customerId || (availableCustomers[0]?.customer_id ?? "custom"));
-    setCustomCustomerId("");
+    setSelectedCustomerId(customerId || "");
     setSelectedAdvisorId(currentAdvisorId || "");
     const initialTarget = currentAdvisorId || advisors[0]?.email || advisors[0]?.id || "";
     setTargetAdvisorId(initialTarget);
@@ -122,7 +127,7 @@ export function AssignmentCenter() {
   }
 
   async function handleAssignSubmit() {
-    const finalCustomerId = (selectedCustomerId === "custom" ? customCustomerId : selectedCustomerId).trim();
+    const finalCustomerId = selectedCustomerId.trim();
     const finalAdvisorId = targetAdvisorId.trim();
     if (!finalCustomerId || !finalAdvisorId) return;
 
@@ -191,13 +196,26 @@ export function AssignmentCenter() {
                 Bạn chưa đăng nhập quyền <strong>Quản trị viên (Admin)</strong>. Hãy đăng nhập để truy cập dữ liệu Database thực tế.
               </span>
             </div>
-            <button
-              className="primary-button text-xs py-1.5 px-3"
-              onClick={() => void handleQuickAdminLogin()}
-              type="button"
-            >
-              <LogIn size={14} /> Đăng nhập Admin (admin@vinfast.vn)
-            </button>
+            <Link className="primary-button text-xs py-1.5 px-3" href="/staff-login">
+              <LogIn size={14} /> Đăng nhập nhân sự
+            </Link>
+          </div>
+        ) : null}
+
+        {hotUnassigned.length ? (
+          <div className="hot-unassigned" role="region" aria-label="Khách nóng chưa phân công">
+            <strong>Khách nóng chưa có tư vấn viên</strong>
+            <ul>
+              {hotUnassigned.map((item) => (
+                <li key={item.customer_id}>
+                  <Link href={customerProfileHref(item.customer_id, "admin")}>{item.display_name || item.customer_id}</Link>
+                  <StatusBadge tone={HEAT_BAND_BADGES.HOT.tone}>{`Nóng · ${item.heat_score ?? 0}`}</StatusBadge>
+                  <button className="text-button" disabled={!isAdmin} onClick={() => void openAssignModal(item.customer_id)} type="button">
+                    Phân công
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         ) : null}
 
@@ -254,7 +272,9 @@ export function AssignmentCenter() {
               {assignments.map((item) => (
                 <tr key={item.assignment_id}>
                   <td>
-                    <strong>{item.customer_id}</strong>
+                    <Link href={customerProfileHref(item.customer_id, "admin")}>
+                      <strong>{item.customer_id}</strong>
+                    </Link>
                     <small>Gán bởi: {item.assigned_by}</small>
                   </td>
                   <td>
@@ -333,31 +353,17 @@ export function AssignmentCenter() {
               </button>
             </div>
 
-            <label className="field-label">
-              Chọn Khách hàng trong Database
-              <select
-                onChange={(e) => setSelectedCustomerId(e.target.value)}
+            <div className="field-label">
+              Chọn khách hàng
+              <CustomerPicker
+                onChange={(customerId, item) => {
+                  setSelectedCustomerId(customerId);
+                  setSelectedAdvisorId(item?.advisor_id ?? "");
+                }}
                 value={selectedCustomerId}
-              >
-                {availableCustomers.map((c) => (
-                  <option key={c.customer_id} value={c.customer_id}>
-                    {c.display_name} ({c.customer_id}) {c.phone ? `· ${c.phone}` : ""}
-                  </option>
-                ))}
-                <option value="custom">+ Nhập Customer ID tùy chỉnh...</option>
-              </select>
-            </label>
-
-            {selectedCustomerId === "custom" ? (
-              <label className="field-label">
-                Mã Khách hàng (Customer ID)
-                <input
-                  onChange={(e) => setCustomCustomerId(e.target.value)}
-                  placeholder="VD: customer-uuid hoặc customer-001..."
-                  value={customCustomerId}
-                />
-              </label>
-            ) : null}
+              />
+              {selectedCustomerId ? <small>Đã chọn: {selectedCustomerId}</small> : null}
+            </div>
 
             {selectedAdvisorId ? (
               <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm mb-3">
@@ -394,7 +400,7 @@ export function AssignmentCenter() {
                 className="primary-button"
                 disabled={
                   saving ||
-                  (selectedCustomerId === "custom" ? !customCustomerId.trim() : !selectedCustomerId.trim()) ||
+                  !selectedCustomerId.trim() ||
                   !targetAdvisorId.trim()
                 }
                 onClick={() => void handleAssignSubmit()}

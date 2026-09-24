@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from src.agents.domain.customer_profile import Bottleneck
+from src.products.domain.eligibility_rules import Eligibility, evaluate
 from src.products.domain.entities import Promotion
 from src.products.domain.values import PromotionType
 
@@ -65,11 +66,25 @@ def _eligibility_matches(promotion: Promotion, customer_context: Mapping[str, ob
     return customer_context.get("province") == expected_province
 
 
+def _rules_engine_matches(promotion: Promotion, customer_context: Mapping[str, object]) -> bool:
+    """Bộ đánh giá DSL (plan Customer 360 §5.5): luật sai cú pháp/metadata crawler → LOẠI.
+
+    Thiếu thông tin (NEED_INFO) vẫn giữ: TVV thấy ưu đãi và biết phải hỏi thêm.
+    """
+
+    return evaluate(promotion.eligibility_rules, customer_context).status not in {
+        Eligibility.INELIGIBLE,
+        Eligibility.INVALID_RULE,
+    }
+
+
 def match_bottlenecks_to_promotions(
     bottlenecks: Sequence[Bottleneck],
     promotions: Sequence[Promotion],
     at: datetime,
     customer_context: Mapping[str, object] | None = None,
+    *,
+    rules_engine: bool = False,
 ) -> list[MatchedPromotion]:
     """Trả promotions khớp từng bottleneck theo rule-map.
 
@@ -81,7 +96,9 @@ def match_bottlenecks_to_promotions(
 
     context = customer_context or {}
     matched: list[MatchedPromotion] = []
-    active = [p for p in promotions if _is_active(p, at) and _eligibility_matches(p, context)]
+    # Cờ `offer_rules_engine` TẮT → đúng hành vi cũ (chỉ đọc khoá `province`).
+    matches = _rules_engine_matches if rules_engine else _eligibility_matches
+    active = [p for p in promotions if _is_active(p, at) and matches(p, context)]
     for bottleneck in bottlenecks:
         allowed_types = _PROMOTION_TYPES_BY_BOTTLENECK[bottleneck]
         for promotion in active:

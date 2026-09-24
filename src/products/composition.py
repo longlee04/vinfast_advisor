@@ -8,6 +8,7 @@ can resolve services via the request object.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import UTC, datetime
 
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -19,8 +20,10 @@ from sqlalchemy.ext.asyncio import (
 from src.products.application import FeatureFlagRepository, VehicleRepository
 from src.products.application.feature_flag_service import FeatureFlagService
 from src.products.application.offer_policy_service import OfferPolicyService
+from src.products.application.promotion_admin_service import PromotionAdminService
 from src.products.application.tco_service import TcoService
 from src.products.application.vehicle_service import VehicleCatalogService
+from src.products.infrastructure.promotion_admin_repository import SqlAlchemyPromotionAdminRepository
 from src.products.infrastructure.repositories import (
     SqlAlchemyFeatureFlagRepository,
     SqlAlchemyOfferPolicyRepository,
@@ -37,6 +40,8 @@ class ProductResources:
     feature_flag_service: FeatureFlagService
     tco_service: TcoService | None = None
     offer_policy_service: OfferPolicyService | None = None
+    #: Plan Customer 360 Phase 5C — quản trị ưu đãi cho Admin.
+    promotion_admin_service: PromotionAdminService | None = None
     engine: AsyncEngine | None = None
 
 
@@ -64,6 +69,9 @@ class ProductComposition:
             feature_flag_service=FeatureFlagService(flag_repo),
             tco_service=TcoService(SqlAlchemyTcoRepository(session_factory)),
             offer_policy_service=OfferPolicyService(offer_policy_repo),
+            promotion_admin_service=PromotionAdminService(
+                SqlAlchemyPromotionAdminRepository(session_factory), clock=lambda: datetime.now(UTC)
+            ),
             engine=engine,
         )
 

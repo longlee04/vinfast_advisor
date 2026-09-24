@@ -4,6 +4,7 @@ import { AlertTriangle, Bot, ChevronDown, ChevronLeft, Clock3, Database, GitBran
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { customerProfileHref } from "@/components/customer360/profile-links";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { chatSessionStatusLabels, chatSessionStatusTones } from "@/lib/chat-session-labels";
 import type { AITrace, ChatMessage, ChatSession, ObservationKind, TraceObservation } from "@/types/chat-observability";
@@ -233,7 +234,7 @@ export function ChatSessionDetail({ session }: Readonly<{ session: ChatSession }
       <ChevronLeft size={16} /> Quay lại danh sách Phiên chat
     </Link>
     <div className="chat-detail-header"><div><span className="eyebrow">Session / {session.id}</span><h1>Phiên chat <span className="mono-text">#{session.id}</span></h1><p>Theo dõi transcript và cách AI xử lý từng lượt.</p></div><StatusBadge tone={chatSessionStatusTones[session.status]}>{chatSessionStatusLabels[session.status]}</StatusBadge></div>
-    <div className="session-overview"><div><span>Customer</span><strong>{session.customer.name}</strong><small>{session.customer.email}</small></div><div><span>Advisor</span><strong>{session.advisor?.name ?? "Chưa phân công"}</strong><small>{session.advisor?.email ?? "N/A"}</small></div><div><span>Bắt đầu</span><strong>{session.startedAt.split(" · ")[0]}</strong><small>{session.startedAt.split(" · ")[1]}</small></div><div><span>Hoạt động cuối</span><strong>{session.lastActivityAt}</strong><small>{session.messageCount} tin nhắn · {session.aiTurnCount} lượt AI</small></div></div>
+    <div className="session-overview"><div><span>Customer</span><strong>{session.customer.name}</strong><small>{session.customer.email}</small>{session.customer.id !== "live-customer" ? <Link className="table-action" href={customerProfileHref(session.customer.id, "admin")}>Xem hồ sơ khách</Link> : null}</div><div><span>Advisor</span><strong>{session.advisor?.name ?? "Chưa phân công"}</strong><small>{session.advisor?.email ?? "N/A"}</small></div><div><span>Bắt đầu</span><strong>{session.startedAt.split(" · ")[0]}</strong><small>{session.startedAt.split(" · ")[1]}</small></div><div><span>Hoạt động cuối</span><strong>{session.lastActivityAt}</strong><small>{session.messageCount} tin nhắn · {session.aiTurnCount} lượt AI</small></div></div>
     <div className="chat-detail-metrics"><span><strong>{session.aiTurnCount}</strong> lượt AI</span><span><strong>{session.traces.length || session.traceCount}</strong> trace</span><span><strong>{session.duration ?? "Trực tiếp"}</strong> thời lượng</span><span><strong>{formattedCost}</strong> chi phí ước tính</span></div>
     <div className="chat-detail-tabs" role="tablist"><button type="button" className={mobileTab === "conversation" ? "is-active" : ""} onClick={() => setMobileTab("conversation")}><MessageSquare size={15} /> Conversation</button><button type="button" className={mobileTab === "trace" ? "is-active" : ""} onClick={() => setMobileTab("trace")}><GitBranch size={15} /> AI Trace</button></div>
     <div className="chat-detail-layout">

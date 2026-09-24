@@ -59,7 +59,10 @@ async def advisor_conversation_ws(websocket: WebSocket, conversation_id: UUID, t
     if identity.role != Role.ADMIN:
         try:
             detail = await agent.services.conversation.staff_conversation_detail(
-                str(conversation_id), requester_id=identity.staff_id, role=identity.role.value
+                str(conversation_id),
+                requester_id=identity.staff_id,
+                role=identity.role.value,
+                requester_email=identity.email,
             )
             if detail is None:
                 log_websocket_auth_denied(

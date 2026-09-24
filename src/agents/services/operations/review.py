@@ -468,6 +468,7 @@ class ReviewOperations:
         transaction: ClaimTransaction,
         session_id: UUID,
         offer: Mapping[str, object] | None,
+        approved_by: str = "SYSTEM",
     ) -> str | None:
         """Báo khách vừa được ưu đãi gì, ghi ưu đãi vào phiên, rồi chờ khách đáp.
 
@@ -504,7 +505,10 @@ class ReviewOperations:
                     source_signal_id=None,
                     promotion_code=str(offer.get("promotion_code") or ""),
                     value_snapshot=dict(offer),
-                    approved_by=None,
+                    # Cột NOT NULL: trước đây truyền None nên insert luôn hỏng và bị
+                    # `except` bên dưới nuốt — ưu đãi đã báo khách mà không ghi vào phiên
+                    # (plan Customer 360 §2.2). Giờ ghi đúng TVV đã duyệt.
+                    approved_by=approved_by,
                 )
             except Exception:
                 # Ghi hỏng KHÔNG chặn thông báo: khách vẫn phải biết mình được
@@ -673,7 +677,9 @@ class ReviewOperations:
                 offer_suggestion_ignored=offer_suggestion_ignored,
             )
             if adjustment is not None and resolved_status in DELIVERABLE_STATUSES:
-                announcement = await self._announce_offer(transaction, item.session_id, offer_adjustment)
+                announcement = await self._announce_offer(
+                    transaction, item.session_id, offer_adjustment, approved_by=advisor_id
+                )
             elif resolved_status == "REJECTED" or (adjustment is None and resolved_status in DELIVERABLE_STATUSES):
                 # Tư vấn viên xem xong mà CHƯA cấp ưu đãi (từ chối, hoặc duyệt
                 # nguyên trạng). Sếp 2026-08-27: vẫn phải báo khách việc đang

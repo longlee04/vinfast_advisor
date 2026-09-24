@@ -10,6 +10,9 @@ from src.agents.api.analytics_routes import router as agents_analytics_router
 from src.agents.api.booking_routes import router as agents_booking_router
 from src.agents.api.bottleneck_signal_routes import router as agents_bottleneck_signal_router
 from src.agents.api.conversation_routes import router as agents_conversation_router
+from src.agents.api.customer_360_routes import admin_router as agents_customer_360_admin_router
+from src.agents.api.customer_360_routes import advisor_router as agents_customer_360_advisor_router
+from src.agents.api.customer_360_routes import meta_router as agents_customer_360_meta_router
 from src.agents.api.customer_routes import router as agents_customer_router
 from src.agents.api.history_routes import router as agents_history_router
 from src.agents.api.memory_routes import router as agents_memory_router
@@ -45,6 +48,9 @@ api_router.include_router(agents_conversation_router)
 api_router.include_router(agents_review_router)
 api_router.include_router(agents_reviews_router)
 api_router.include_router(agents_sales_opportunity_router)
+api_router.include_router(agents_customer_360_advisor_router)
+api_router.include_router(agents_customer_360_admin_router)
+api_router.include_router(agents_customer_360_meta_router)
 api_router.include_router(agents_customer_router)
 api_router.include_router(agents_memory_router)
 api_router.include_router(agents_booking_router)

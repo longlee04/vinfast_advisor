@@ -14,6 +14,7 @@ from src.agents.api.security import StaffIdentity, current_staff
 from src.agents.composition import AgentComposition
 from src.agents.models import (
     ConversationSessionRow,
+    ConversationTurnOutcomeRow,
     CustomerProfileRow,
     ReviewQueueRow,
     TestDriveBookingRow,
@@ -316,19 +317,31 @@ async def admin_dashboard_metrics(
             )
         ) or 0
 
-        approved_pct = round(approved_orig / total_reviews * 100) if total_reviews else 74
-        edited_pct = round(edited_count / total_reviews * 100) if total_reviews else 21
-        rejected_pct = round(rejected_count / total_reviews * 100) if total_reviews else 5
+        # Plan Customer 360 (Phase 4): trước đây rỗng dữ liệu thì trả số BỊA (74/83/1814…) và
+        # "Có đề xuất" = 73% số hội thoại. Giờ không có dữ liệu thì là 0, và "Có đề xuất" đếm
+        # thật từ các lượt có danh sách đề xuất.
+        rec_count = (
+            await session.scalar(
+                select(func.count(func.distinct(ConversationTurnOutcomeRow.session_id))).where(
+                    func.jsonb_array_length(ConversationTurnOutcomeRow.recommendations) > 0
+                )
+            )
+        ) or 0
 
-        conv_percent = 100
-        prof_percent = round(total_profiles / total_conv * 100) if total_conv else 83
-        rec_count = round(total_conv * 0.73) if total_conv else 1814
-        rec_percent = 73
-        appr_percent = round(approved_reviews / total_conv * 100) if total_conv else 54
-        book_percent = round(total_bookings / total_conv * 100) if total_conv else 13
+        def _pct(part: int, whole: int) -> int:
+            return round(part / whole * 100) if whole else 0
+
+        approved_pct = _pct(approved_orig, total_reviews)
+        edited_pct = _pct(edited_count, total_reviews)
+        rejected_pct = _pct(rejected_count, total_reviews)
+        conv_percent = 100 if total_conv else 0
+        prof_percent = _pct(total_profiles, total_conv)
+        rec_percent = _pct(rec_count, total_conv)
+        appr_percent = _pct(approved_reviews, total_conv)
+        book_percent = _pct(total_bookings, total_conv)
 
         funnel_data = [
-            {"label": "Bắt đầu hội thoại", "value": max(total_conv, 1), "percent": conv_percent},
+            {"label": "Bắt đầu hội thoại", "value": total_conv, "percent": conv_percent},
             {"label": "Hoàn tất hồ sơ", "value": total_profiles, "percent": prof_percent},
             {"label": "Có đề xuất", "value": rec_count, "percent": rec_percent},
             {"label": "Được duyệt", "value": approved_reviews, "percent": appr_percent},

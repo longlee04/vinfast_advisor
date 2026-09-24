@@ -148,6 +148,14 @@ class Promotion:
     # Fold #5 (review đợt 5): phân loại quà tặng cho GIFT — CHARGING / WARRANTY /
     # OTHER. T3 migration thêm cột `gift_group` trên bảng promotions.
     gift_group: str | None = None
+    # Plan Customer 360 Phase 5A — rào chắn ưu đãi.
+    stackable: bool = False
+    priority: int = 100
+    max_uses: int | None = None
+    used_count: int = 0
+    requires_advisor_approval: bool = True
+    advisor_max_discount_vnd: int | None = None
+    source_meta: dict[str, object] | None = None
 
 
 @dataclass(frozen=True, slots=True)

@@ -25,6 +25,7 @@ from sqlalchemy.ext.asyncio import (
 
 from src.agents.adapters.agent_flag_repository import SqlAlchemyAgentFlagAdapter
 from src.agents.adapters.agent_loop_llm import OpenAIAgentLoop
+from src.agents.adapters.background_runner import BackgroundRunner
 from src.agents.adapters.bottleneck_detector import OpenAIBottleneckDetector
 from src.agents.adapters.bottleneck_signal_repository import (
     SqlAlchemyBottleneckSignalRepository,
@@ -46,6 +47,10 @@ from src.agents.adapters.conversation_repository import (
     SqlAlchemyPendingFeatureMentionRepository,
     SqlAlchemySessionRepository,
 )
+from src.agents.adapters.customer_360_llm import OpenAIInsightExtractor, OpenAIOpportunityClassifier
+from src.agents.adapters.customer_360_query import SqlAlchemyCustomer360Query
+from src.agents.adapters.customer_identity_source import AuthProfileIdentitySource
+from src.agents.adapters.customer_opportunity_repository import SqlAlchemyCustomer360Repository
 from src.agents.adapters.embedding import OpenAIEmbeddingAdapter
 from src.agents.adapters.feature_fit_source import SqlAlchemyFeatureFitSource
 from src.agents.adapters.feature_vocabulary import SqlAlchemyFeatureVocabularyAdapter
@@ -62,8 +67,10 @@ from src.agents.adapters.offer_policy_source import (
     OfferPolicyDataSource,
 )
 from src.agents.adapters.offer_suggestion_source import OfferSuggestionDataSource
+from src.agents.adapters.opportunity_offer_repository import SqlAlchemyOpportunityOfferRepository
 from src.agents.adapters.policy_search import SqlAlchemyPolicySearchAdapter
 from src.agents.adapters.post_pitch_branch_classifier import OpenAIPostPitchBranchClassifier
+from src.agents.adapters.promotion_catalog_source import SqlAlchemyPromotionCatalog
 from src.agents.adapters.quote_audit import BackgroundQuoteAuditSink
 from src.agents.adapters.rate_limiter import PostgresTurnRateLimiter
 from src.agents.adapters.recommendation_source import (
@@ -172,8 +179,14 @@ from src.agents.services.operations.comparison_image import (
     ComparisonImageStore,
     default_comparison_image_dir,
 )
+from src.agents.services.operations.customer_360 import Customer360Operations, Customer360TurnHook
+from src.agents.services.operations.customer_360_read import Customer360ReadOperations
 from src.agents.services.operations.history import HistoryOperations
 from src.agents.services.operations.notices import NoticeOperations
+from src.agents.services.operations.opportunity_offers import (
+    ActivePromotionGuard,
+    OpportunityOfferOperations,
+)
 from src.agents.services.operations.review import ReviewOperations
 from src.agents.services.operations.turn_events import InMemoryTurnEventBroker
 from src.agents.services.operations.turn_trace import TurnTraceOperations
@@ -222,6 +235,11 @@ class AgentOperations:
     assignments: AssignmentOperations
     sales_opportunity: SalesOpportunityService
     turn_traces: TurnTraceOperations
+    #: Customer 360 (plan Phase 4) — job nền và đọc hồ sơ. `None` ở bó test cũ.
+    customer360: Customer360Operations | None = None
+    customer360_read: Customer360ReadOperations | None = None
+    #: Customer 360 Phase 5 — ưu đãi theo cơ hội.
+    opportunity_offers: OpportunityOfferOperations | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -330,6 +348,8 @@ class AgentComposition:
         self._operations: AgentOperations | None = None
         self._broker: InMemoryTurnEventBroker | None = None
         self._audit_sink: BackgroundQuoteAuditSink | None = None
+        #: Việc nền Customer 360 sau lượt khách — drain ở `shutdown`.
+        self._background: BackgroundRunner | None = None
         #: [T7a] Chống lạm dụng ở cửa API. KHÔNG đặt trong `AgentServices`: đó là
         #: nơi của use case tư vấn, còn đây là hạ tầng của endpoint — biên ấy do
         #: `test_graph_boundary` cưỡng chế.
@@ -432,7 +452,29 @@ class AgentComposition:
         )
         offer_policy = OfferPolicyDataSource(session_factory)
         offer_adjustment_log = OfferAdjustmentLogDataSource(session_factory)
-        offer_suggestion = OfferSuggestionDataSource(session_factory)
+        # Customer 360: một adapter cờ dùng chung (TTL cache), repo + LLM nền, đọc hồ sơ.
+        flag_adapter = SqlAlchemyAgentFlagAdapter(session_factory)
+        # Cờ `offer_rules_engine` bật → gợi ý ưu đãi dùng bộ đánh giá DSL.
+        offer_suggestion = OfferSuggestionDataSource(session_factory, flags=flag_adapter)
+        promotion_catalog = SqlAlchemyPromotionCatalog(session_factory)
+        opportunity_offers = OpportunityOfferOperations(
+            SqlAlchemyOpportunityOfferRepository(session_factory),
+            promotion_catalog,
+            clock=clock.now,
+            flags=flag_adapter,
+        )
+        self._background = BackgroundRunner()
+        customer360 = Customer360Operations(
+            SqlAlchemyCustomer360Repository(session_factory),
+            clock=clock.now,
+            flags=flag_adapter,
+            classifier=OpenAIOpportunityClassifier(),
+            extractor=OpenAIInsightExtractor(),
+            identity=AuthProfileIdentitySource(session_factory),
+        )
+        customer360_read = Customer360ReadOperations(
+            SqlAlchemyCustomer360Query(session_factory), flag_adapter, clock.now
+        )
         self._operations = AgentOperations(
             review=ReviewOperations(
                 operations_unit_of_work,
@@ -464,9 +506,14 @@ class AgentComposition:
             sales_opportunity=SalesOpportunityService(
                 repository=SalesOpportunityDataSource(session_factory, clock),
             ),
+            customer360=customer360,
+            customer360_read=customer360_read,
+            opportunity_offers=opportunity_offers,
         )
         conversation_service = ConversationServiceImpl(typed_unit_of_work)
         setattr(conversation_service, "post_pitch_branch_classifier", OpenAIPostPitchBranchClassifier())
+        # Phase 5: agent chỉ nhắc ưu đãi còn ACTIVE/còn hạn ngay lúc trả lời (cờ `offer_lifecycle`).
+        setattr(conversation_service, "promotion_guard", ActivePromotionGuard(promotion_catalog, flag_adapter, clock.now))
         self._services = AgentServices(
             conversation=conversation_service,
             bottleneck_detector=BudgetedBottleneckDetector(OpenAIBottleneckDetector()),
@@ -479,6 +526,8 @@ class AgentComposition:
                 # thay vì chờ. Luật đã chốt: chờ tới 5 giây rồi mới báo bận.
                 sleep=asyncio.sleep,
                 jitter=lambda: random.uniform(0.0, 0.25),
+                # Customer 360: gắn phiên/tính điểm NỀN mỗi 4 lượt; cờ tắt → không làm gì.
+                after_core_turn=Customer360TurnHook(customer360, flag_adapter, self._background),
             ),
             slot_extraction=SlotExtractionServiceImpl(
                 llm=llm,
@@ -540,9 +589,7 @@ class AgentComposition:
             ),
             verification=DefaultVerificationService(source=SqlAlchemyVerificationDataSource(session_factory)),
             policy_search=(
-                SqlAlchemyPolicySearchAdapter(session_factory, embedding)
-                if get_settings().policy_rag_enabled
-                else None
+                SqlAlchemyPolicySearchAdapter(session_factory, embedding) if get_settings().policy_rag_enabled else None
             ),
             moderation=OpenAIModerationAdapter(),
             injection_judge=OpenAIInjectionJudge(),
@@ -605,7 +652,7 @@ class AgentComposition:
             spec_arg_resolver=OpenAISpecArgResolver(model_name="gpt-4o"),
             understanding=OpenAIUnderstander(),
             # Cờ động đường agent — chỉ ĐỌC bảng `agent_feature_flags`, TTL 60s.
-            agent_flag=SqlAlchemyAgentFlagAdapter(session_factory),
+            agent_flag=flag_adapter,
             # Vòng ReAct chỉ chạy khi cờ `agent_fallback` bật (mặc định TẮT).
             agent_loop=OpenAIAgentLoop(),
         )
@@ -618,6 +665,8 @@ class AgentComposition:
             # Đóng engine trước khi task nền chạy xong thì dòng audit cuối cùng
             # mất, và đó thường là dòng của lượt vừa gây sự cố.
             await self._audit_sink.drain()
+        if self._background is not None:
+            await self._background.drain()
         if self._engine is not None:
             await self._engine.dispose()
             self._engine = None

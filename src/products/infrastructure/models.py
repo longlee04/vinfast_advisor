@@ -297,6 +297,16 @@ class PromotionRow(ProductBase):
     approved_by: Mapped[str | None] = mapped_column(String(64), nullable=True)
     approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     gift_group: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    # Plan Customer 360 Phase 5A (migration c3d4e5f6a7b8).
+    stackable: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
+    priority: Mapped[int] = mapped_column(SmallInteger, nullable=False, server_default=text("100"))
+    max_uses: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    used_count: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    requires_advisor_approval: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("true"))
+    advisor_max_discount_vnd: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    source_meta: Mapped[dict] = mapped_column(
+        JSON().with_variant(JSONB(), "postgresql"), nullable=False, server_default=text("'{}'::jsonb")
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
@@ -312,13 +322,21 @@ class PromotionRow(ProductBase):
             name="ck_promotions_type",
         ),
         CheckConstraint(
-            "status IN ('DRAFT', 'ACTIVE', 'EXPIRED', 'CANCELLED')",
+            "status IN ('DRAFT', 'UNVERIFIED', 'ACTIVE', 'EXPIRED', 'CANCELLED')",
             name="ck_promotions_status",
         ),
         CheckConstraint("valid_to IS NULL OR valid_to > valid_from", name="ck_promotions_period"),
         CheckConstraint(
             "discount_amount_vnd IS NULL OR discount_amount_vnd >= 0",
             name="ck_promotions_discount",
+        ),
+        CheckConstraint("max_uses IS NULL OR max_uses > 0", name="ck_promotions_max_uses"),
+        CheckConstraint(
+            "used_count >= 0 AND (max_uses IS NULL OR used_count <= max_uses)", name="ck_promotions_used_count"
+        ),
+        CheckConstraint(
+            "advisor_max_discount_vnd IS NULL OR advisor_max_discount_vnd >= 0",
+            name="ck_promotions_advisor_max_discount",
         ),
         Index(
             "ix_promotions_active_period",

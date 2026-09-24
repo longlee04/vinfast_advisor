@@ -647,7 +647,7 @@ class SessionOfferRow(AgentBase):
     __table_args__ = (
         CheckConstraint("status IN ('ACTIVE', 'EXPIRED')", name="ck_session_offers_status"),
         CheckConstraint(
-            "source_kind IN ('CONTENT_REVIEW', 'BOTTLENECK_SIGNAL')",
+            "source_kind IN ('CONTENT_REVIEW', 'BOTTLENECK_SIGNAL', 'OPPORTUNITY_OFFER')",
             name="ck_session_offers_source_kind",
         ),
         Index("ix_session_offers_session_status", "session_id", "status"),
@@ -668,6 +668,8 @@ class SessionOfferRow(AgentBase):
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    #: agent_0039: ưu đãi gửi từ vòng đời cơ hội (Customer 360) — truy ngược `opportunity_offers`.
+    opportunity_offer_id: Mapped[UUID | None] = mapped_column(PG_UUID(as_uuid=True), nullable=True)
 
 
 class AgentRateLimitCounterRow(AgentBase):
@@ -768,3 +770,256 @@ class AgentFeatureFlagRow(AgentBase):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
     )
+
+
+class CustomerOpportunityRow(AgentBase):
+    """Một nhu cầu mua của một khách — tầng Cơ hội (agent_0037, plan Customer 360 §2.1).
+
+    Giai đoạn và độ nóng tính SẴN ở job nền (`services/operations/customer_360.py`);
+    đường đọc không tính lại.
+    """
+
+    __tablename__ = "customer_opportunities"
+    __table_args__ = (
+        CheckConstraint(
+            "vehicle_type IS NULL OR vehicle_type IN ('CAR', 'ELECTRIC_MOTORBIKE')",
+            name="ck_customer_opportunities_vehicle_type",
+        ),
+        CheckConstraint(
+            "buyer_for IN ('SELF', 'FAMILY', 'COMPANY', 'OTHER')", name="ck_customer_opportunities_buyer_for"
+        ),
+        CheckConstraint(
+            "status IN ('OPEN', 'DORMANT', 'WON', 'LOST', 'REPLACED')", name="ck_customer_opportunities_status"
+        ),
+        CheckConstraint(
+            "stage IN ('DISCOVER', 'COMPARE', 'QUOTE', 'TEST_DRIVE', 'CLOSE')", name="ck_customer_opportunities_stage"
+        ),
+        CheckConstraint("heat_score BETWEEN 0 AND 100", name="ck_customer_opportunities_heat_score"),
+        CheckConstraint("heat_band IN ('HOT', 'WARM', 'COLD')", name="ck_customer_opportunities_heat_band"),
+        CheckConstraint(
+            "(status = 'REPLACED') = (replaced_by IS NOT NULL)", name="ck_customer_opportunities_replaced_pair"
+        ),
+        Index("ix_customer_opportunities_customer_status", "customer_id", "status"),
+        Index("ix_customer_opportunities_heat", "status", text("heat_score DESC")),
+        Index("ix_customer_opportunities_last_seen", "last_seen_at"),
+    )
+
+    opportunity_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True)
+    customer_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    vehicle_type: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    buyer_for: Mapped[str] = mapped_column(String(16), nullable=False, server_default=text("'SELF'"))
+    status: Mapped[str] = mapped_column(String(16), nullable=False, server_default=text("'OPEN'"))
+    replaced_by: Mapped[UUID | None] = mapped_column(
+        ForeignKey(
+            "customer_opportunities.opportunity_id",
+            ondelete="SET NULL",
+            name="fk_customer_opportunities_replaced_by",
+        ),
+        nullable=True,
+    )
+    slots_snapshot: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    slot_history: Mapped[list] = mapped_column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
+    stage: Mapped[str] = mapped_column(String(16), nullable=False, server_default=text("'DISCOVER'"))
+    heat_score: Mapped[int] = mapped_column(SmallInteger, nullable=False, server_default=text("0"))
+    heat_band: Mapped[str] = mapped_column(String(8), nullable=False, server_default=text("'COLD'"))
+    heat_breakdown: Mapped[list] = mapped_column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
+    heat_version: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    first_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    computed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
+    )
+
+
+class SessionOpportunityRow(AgentBase):
+    """Phiên gắn vào cơ hội nào, ai quyết (agent_0037). `kind=SUPPORT` = phiên chỉ hỗ trợ."""
+
+    __tablename__ = "session_opportunity"
+    __table_args__ = (
+        CheckConstraint("kind IN ('SALES', 'SUPPORT')", name="ck_session_opportunity_kind"),
+        CheckConstraint("decided_by IN ('RULE', 'LLM', 'ADVISOR')", name="ck_session_opportunity_decided_by"),
+        CheckConstraint("confidence IS NULL OR confidence BETWEEN 0 AND 1", name="ck_session_opportunity_confidence"),
+        CheckConstraint("kind = 'SALES' OR opportunity_id IS NULL", name="ck_session_opportunity_support_unattached"),
+        Index("ix_session_opportunity_opportunity", "opportunity_id"),
+        Index("ix_session_opportunity_review", "needs_review", postgresql_where=text("needs_review")),
+    )
+
+    session_id: Mapped[UUID] = mapped_column(
+        ForeignKey("conversation_sessions.session_id", ondelete="CASCADE", name="fk_session_opportunity_session"),
+        primary_key=True,
+    )
+    opportunity_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey(
+            "customer_opportunities.opportunity_id",
+            ondelete="SET NULL",
+            name="fk_session_opportunity_opportunity",
+        ),
+        nullable=True,
+    )
+    kind: Mapped[str] = mapped_column(String(8), nullable=False)
+    decided_by: Mapped[str] = mapped_column(String(8), nullable=False)
+    decided_by_actor: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    rule_code: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    needs_review: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
+    evaluated_through_turn: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    extracted_through_turn: Mapped[int] = mapped_column(BIGINT, nullable=False, server_default=text("0"))
+    extraction_count: Mapped[int] = mapped_column(SmallInteger, nullable=False, server_default=text("0"))
+    decided_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class Customer360FeedbackRow(AgentBase):
+    """TVV sửa máy: Tách/Gộp phiên, báo insight sai/đúng (agent_0037)."""
+
+    __tablename__ = "customer360_feedback"
+    __table_args__ = (
+        CheckConstraint(
+            "kind IN ('INSIGHT_WRONG', 'INSIGHT_OK', 'SESSION_MOVED', 'SESSION_SPLIT')",
+            name="ck_customer360_feedback_kind",
+        ),
+        Index("ix_customer360_feedback_kind_created", "kind", text("created_at DESC")),
+    )
+
+    feedback_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(24), nullable=False)
+    customer_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    session_id: Mapped[UUID | None] = mapped_column(PG_UUID(as_uuid=True), nullable=True)
+    insight_id: Mapped[UUID | None] = mapped_column(PG_UUID(as_uuid=True), nullable=True)
+    from_opportunity_id: Mapped[UUID | None] = mapped_column(PG_UUID(as_uuid=True), nullable=True)
+    to_opportunity_id: Mapped[UUID | None] = mapped_column(PG_UUID(as_uuid=True), nullable=True)
+    previous_decided_by: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    field: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    actor: Mapped[str] = mapped_column(String(64), nullable=False)
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class CustomerInsightRow(AgentBase):
+    """Một điều khách NÓI RA, kèm bằng chứng nguyên văn (agent_0038, plan §5.4)."""
+
+    __tablename__ = "customer_insights"
+    __table_args__ = (
+        CheckConstraint(
+            "field IN ('purchase_timeframe', 'payment_method', 'current_vehicle', 'trade_in', 'decision_maker', "
+            "'competitor_brand', 'other_concern', 'buyer_for', 'customer_group', 'registration_province', "
+            "'home_charging')",
+            name="ck_customer_insights_field",
+        ),
+        CheckConstraint("source IN ('SLOT', 'LLM', 'ADVISOR')", name="ck_customer_insights_source"),
+        CheckConstraint("confidence BETWEEN 0 AND 1", name="ck_customer_insights_confidence"),
+        CheckConstraint(
+            "source <> 'LLM' OR (length(evidence_quote) > 0 AND turn_index IS NOT NULL)",
+            name="ck_customer_insights_llm_evidence",
+        ),
+        UniqueConstraint("session_id", "turn_index", "field", "value", name="uq_customer_insights_turn_field_value"),
+        Index(
+            "ix_customer_insights_customer_current",
+            "customer_id",
+            "field",
+            postgresql_where=text("superseded_by IS NULL"),
+        ),
+        Index("ix_customer_insights_opportunity", "opportunity_id"),
+    )
+
+    insight_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True)
+    customer_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    opportunity_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey(
+            "customer_opportunities.opportunity_id",
+            ondelete="SET NULL",
+            name="fk_customer_insights_opportunity",
+        ),
+        nullable=True,
+    )
+    session_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("conversation_sessions.session_id", ondelete="CASCADE", name="fk_customer_insights_session"),
+        nullable=True,
+    )
+    field: Mapped[str] = mapped_column(String(32), nullable=False)
+    value: Mapped[str] = mapped_column(String(120), nullable=False)
+    value_code: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    evidence_quote: Mapped[str] = mapped_column(Text, nullable=False, server_default=text("''"))
+    turn_index: Mapped[int | None] = mapped_column(BIGINT, nullable=True)
+    confidence: Mapped[float] = mapped_column(Float, nullable=False, server_default=text("1"))
+    source: Mapped[str] = mapped_column(String(8), nullable=False)
+    model_name: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    prompt_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    superseded_by: Mapped[UUID | None] = mapped_column(
+        ForeignKey("customer_insights.insight_id", ondelete="SET NULL", name="fk_customer_insights_superseded_by"),
+        nullable=True,
+    )
+    extracted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class OpportunityOfferRow(AgentBase):
+    """Ưu đãi gắn MỘT cơ hội, có vòng đời (agent_0039, plan Customer 360 Phase 5B)."""
+
+    __tablename__ = "opportunity_offers"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('SUGGESTED', 'APPROVED', 'SENT', 'ENGAGED', 'CONVERTED', 'EXPIRED', 'DISMISSED')",
+            name="ck_opportunity_offers_status",
+        ),
+        CheckConstraint("eligibility IN ('ELIGIBLE', 'NEED_INFO')", name="ck_opportunity_offers_eligibility"),
+        CheckConstraint("discount_vnd IS NULL OR discount_vnd >= 0", name="ck_opportunity_offers_discount"),
+        CheckConstraint(
+            "(status IN ('SUGGESTED', 'DISMISSED')) OR approved_by IS NOT NULL",
+            name="ck_opportunity_offers_approved_before_send",
+        ),
+        Index(
+            "uq_opportunity_offers_live",
+            "opportunity_id",
+            "promotion_code",
+            unique=True,
+            postgresql_where=text("status NOT IN ('EXPIRED', 'DISMISSED')"),
+        ),
+        Index("ix_opportunity_offers_customer", "customer_id", "status"),
+    )
+
+    offer_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True)
+    opportunity_id: Mapped[UUID] = mapped_column(
+        ForeignKey(
+            "customer_opportunities.opportunity_id", ondelete="CASCADE", name="fk_opportunity_offers_opportunity"
+        ),
+        nullable=False,
+    )
+    customer_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    promotion_code: Mapped[str] = mapped_column(String(100), nullable=False)
+    eligibility: Mapped[str] = mapped_column(String(12), nullable=False)
+    eligibility_reasons: Mapped[list] = mapped_column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
+    status: Mapped[str] = mapped_column(String(12), nullable=False)
+    proposed_value: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    discount_vnd: Mapped[int | None] = mapped_column(BIGINT, nullable=True)
+    needs_manager_approval: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
+    suggested_by: Mapped[str] = mapped_column(String(64), nullable=False)
+    approved_by: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    session_offer_id: Mapped[UUID | None] = mapped_column(PG_UUID(as_uuid=True), nullable=True)
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class OpportunityOfferEventRow(AgentBase):
+    """Một lần đổi trạng thái ưu đãi — nguồn đo hiệu quả (agent_0039)."""
+
+    __tablename__ = "opportunity_offer_events"
+    __table_args__ = (
+        Index("ix_opportunity_offer_events_status", "to_status", "created_at"),
+        Index("ix_opportunity_offer_events_promotion", "promotion_code", "to_status"),
+    )
+
+    event_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True)
+    offer_id: Mapped[UUID] = mapped_column(
+        ForeignKey("opportunity_offers.offer_id", ondelete="CASCADE", name="fk_opportunity_offer_events_offer"),
+        nullable=False,
+    )
+    promotion_code: Mapped[str] = mapped_column(String(100), nullable=False)
+    from_status: Mapped[str | None] = mapped_column(String(12), nullable=True)
+    to_status: Mapped[str] = mapped_column(String(12), nullable=False)
+    actor: Mapped[str] = mapped_column(String(64), nullable=False)
+    meta: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

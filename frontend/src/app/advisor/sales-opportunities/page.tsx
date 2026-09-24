@@ -1,4 +1,4 @@
-import { SalesOpportunityList } from "@/components/advisor/sales-opportunity-list";
+import { SalesOpportunitiesView } from "@/components/advisor/sales-opportunities-view";
 import { OperationalShell } from "@/components/shared/operational-shell";
 import { PageHeading } from "@/components/shared/page-heading";
 
@@ -8,9 +8,9 @@ export default function AdvisorSalesOpportunitiesPage() {
       <PageHeading
         eyebrow="Advisor / Chủ động"
         title="Cơ hội bán hàng"
-        description="Phiên trò chuyện đang chạy đã bộc lộ nút thắt, kèm nguyên văn câu khách nói. Tách khỏi hàng đợi duyệt nội dung — ở đây không duyệt gì, chỉ chọn khách để liên hệ trước."
+        description="Khách đang có nhu cầu mua, nóng nhất xếp trước. Bấm vào để mở hồ sơ khách và chọn người liên hệ trước."
       />
-      <SalesOpportunityList />
+      <SalesOpportunitiesView />
     </OperationalShell>
   );
 }

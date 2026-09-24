@@ -9,6 +9,7 @@ import {
   ContactRound,
   Edit3,
   FileText,
+  Gift,
   Loader2,
   Megaphone,
   Menu,
@@ -37,8 +38,9 @@ const advisorNavigation = [
 
 const adminNavigation = [
   { href: "/admin", label: "Dashboard", icon: ChartNoAxesCombined },
-  { href: "/admin/assignments", label: "Phân công khách", icon: ContactRound },
+  { href: "/admin/assignments", label: "Khách hàng & phân công", icon: ContactRound },
   { href: "/admin/vehicles", label: "Catalog xe", icon: CarFront },
+  { href: "/admin/promotions", label: "Ưu đãi", icon: Gift },
   { href: "/admin/documents", label: "Chính sách AI", icon: FileText },
   { href: "/admin/chat-sessions", label: "Phiên chat", icon: MessageSquareText },
   { href: "/admin/notices", label: "Thông báo", icon: Megaphone },

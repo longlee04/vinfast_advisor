@@ -32,7 +32,7 @@ class FakeConversationService:
         return []
 
     async def staff_conversation_detail(
-        self, session_id: str, *, requester_id: str, role: str
+        self, session_id: str, *, requester_id: str, role: str, requester_email: str | None = None
     ) -> tuple[ConversationSummary, list] | None:
         if role.lower() != "admin" and self.assigned_advisor_id != requester_id:
             return None

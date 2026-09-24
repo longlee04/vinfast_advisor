@@ -40,6 +40,13 @@ def _to_promotion(row: PromotionRow) -> Promotion:
         approved_by=row.approved_by,
         approved_at=_utc(row.approved_at),
         gift_group=row.gift_group,
+        stackable=bool(row.stackable),
+        priority=int(row.priority),
+        max_uses=row.max_uses,
+        used_count=int(row.used_count or 0),
+        requires_advisor_approval=bool(row.requires_advisor_approval),
+        advisor_max_discount_vnd=row.advisor_max_discount_vnd,
+        source_meta=dict(row.source_meta or {}),
     )
 
 

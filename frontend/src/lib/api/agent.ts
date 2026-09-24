@@ -5,6 +5,7 @@
  * cross-origin.
  */
 
+import type { BuyerFor, CustomerOverview, HeatBand, OpportunityStatus, SalesStage, ViewerRole } from "@/types/customer360";
 import type {
   BottleneckSignal,
   BottleneckSignalDetail,
@@ -392,6 +393,12 @@ export interface AdvisorConversationDetail {
   last_message_preview: string;
   last_activity_at: string;
   assigned_advisor_id?: string | null;
+  /** AI | PENDING_HANDOFF | HUMAN (Phase 3). */
+  ownership?: string;
+  /** Độ nóng của khách — chỉ có khi cờ `customer360_ui` bật (Phase 4). */
+  heat_band?: "HOT" | "WARM" | "COLD" | null;
+  /** Nhãn rào cản đã ghi nhận trong phiên (Phase 4). */
+  bottlenecks?: readonly string[];
   messages: Array<{
     message_id?: string;
     sender_type: "CUSTOMER" | "AGENT" | "ADVISOR" | "SYSTEM";
@@ -475,4 +482,134 @@ export function fetchTurnTraces(
   if (options.limit) query.set("limit", String(options.limit));
   if (options.tier) query.set("tier", options.tier);
   return request<{ items: readonly TurnTrace[] }>(`/agent/turn-traces?${query.toString()}`);
+}
+
+// ---------------------------------------------------------------- Customer 360 (plan Phase 4)
+
+export type Customer360Meta = {
+  readonly enabled: {
+    readonly ui: boolean;
+    readonly attach: boolean;
+    readonly extractor: boolean;
+    readonly offer_rules?: boolean;
+    readonly offer_lifecycle?: boolean;
+  };
+  readonly stages?: readonly SalesStage[];
+  readonly heat_thresholds?: { readonly hot: number; readonly warm: number };
+  readonly heat_version?: string;
+};
+
+/** Cờ + enum của backend. Lỗi (chưa đăng nhập, backend cũ) → coi như TẮT, dùng màn dự phòng. */
+export async function fetchCustomer360Meta(): Promise<Customer360Meta> {
+  try {
+    return await request<Customer360Meta>("/agent/customer-360/meta");
+  } catch {
+    return { enabled: { ui: false, attach: false, extractor: false } };
+  }
+}
+
+export function fetchCustomerOverview(customerId: string, role: ViewerRole): Promise<CustomerOverview> {
+  const base = role === "admin" ? "/admin" : "/advisor";
+  return request<CustomerOverview>(`${base}/customers/${encodeURIComponent(customerId)}/overview`);
+}
+
+export function moveSessionOpportunity(
+  sessionId: string,
+  body: { readonly action: "SPLIT" } | { readonly action: "MOVE"; readonly opportunity_id: string },
+): Promise<{ session_id: string; opportunity_id: string; decided_by: "ADVISOR" }> {
+  return request(`/advisor/sessions/${sessionId}/opportunity`, { method: "POST", body: JSON.stringify(body) });
+}
+
+export async function sendInsightFeedback(insightId: string, verdict: "WRONG" | "OK", note?: string): Promise<void> {
+  await request(`/advisor/insights/${insightId}/feedback`, {
+    method: "POST",
+    body: JSON.stringify({ verdict, note: note ?? null }),
+  });
+}
+
+export type OpportunityListItem = {
+  readonly opportunity_id: string;
+  readonly customer_id: string;
+  readonly display_name: string | null;
+  readonly assigned_advisor_id: string | null;
+  readonly vehicle_type: string | null;
+  readonly buyer_for: BuyerFor;
+  readonly status: OpportunityStatus;
+  readonly stage: SalesStage;
+  readonly heat_score: number;
+  readonly heat_band: HeatBand;
+  readonly slots: Record<string, unknown>;
+  readonly barriers: readonly string[];
+  readonly needs_review: boolean;
+  readonly last_seen_at: string;
+};
+
+export function fetchOpportunities(options: { readonly band?: HeatBand; readonly limit?: number } = {}): Promise<readonly OpportunityListItem[]> {
+  const query = new URLSearchParams();
+  if (options.band) query.set("band", options.band);
+  if (options.limit) query.set("limit", String(options.limit));
+  const qs = query.toString();
+  return request<readonly OpportunityListItem[]>(`/advisor/opportunities${qs ? `?${qs}` : ""}`);
+}
+
+export type Customer360Metrics = {
+  readonly stages: Partial<Record<SalesStage, number>>;
+  readonly heat: Partial<Record<HeatBand, number>>;
+  readonly barriers: readonly { readonly code: string; readonly count: number }[];
+  readonly workload: readonly {
+    readonly advisor_id: string;
+    readonly customers: number;
+    readonly hot_customers: number;
+    readonly waiting_sessions: number;
+  }[];
+  readonly totals: {
+    readonly conversations: number;
+    readonly customers: number;
+    readonly open_opportunities: number;
+    readonly test_drives: number;
+    readonly needs_review: number;
+  };
+  readonly offers?: readonly { readonly status: string; readonly count: number }[];
+};
+
+export function fetchCustomer360Metrics(windowDays = 30): Promise<Customer360Metrics> {
+  return request<Customer360Metrics>(`/admin/customer-360/metrics?window=${windowDays}`);
+}
+
+export type CustomerPickerItem = {
+  readonly customer_id: string;
+  readonly display_name: string | null;
+  readonly phone: string | null;
+  readonly advisor_id: string | null;
+  readonly last_seen_at: string | null;
+  readonly sessions_count: number;
+  readonly heat_band: HeatBand | null;
+  readonly heat_score: number | null;
+};
+
+export function fetchCustomerPicker(query: string, limit = 20): Promise<readonly CustomerPickerItem[]> {
+  const qs = new URLSearchParams({ limit: String(limit) });
+  if (query.trim()) qs.set("q", query.trim());
+  return request<readonly CustomerPickerItem[]>(`/admin/customers/picker?${qs.toString()}`);
+}
+
+export type ExtractionQuality = {
+  readonly insights_total: number;
+  readonly insights_reported_wrong: number;
+  readonly by_field: readonly { readonly field: string; readonly total: number; readonly wrong: number }[];
+  readonly attach_total: number;
+  readonly attach_by_decider: Record<string, number>;
+  readonly corrected_by_decider: Record<string, number>;
+  readonly samples: readonly {
+    readonly insight_id: string;
+    readonly field: string;
+    readonly value: string;
+    readonly evidence_quote: string;
+    readonly note: string | null;
+    readonly created_at: string;
+  }[];
+};
+
+export function fetchExtractionQuality(windowDays = 30): Promise<ExtractionQuality> {
+  return request<ExtractionQuality>(`/admin/customer-360/extraction-quality?window=${windowDays}`);
 }

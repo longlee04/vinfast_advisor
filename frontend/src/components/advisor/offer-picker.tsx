@@ -46,11 +46,16 @@ function violates(raw: string, bound: Bound): boolean {
   return !Number.isFinite(value) || (bound.min !== null && value < bound.min) || (bound.max !== null && value > bound.max);
 }
 
-export function OfferPicker({ promotions, policies, busy, onSubmit }: Readonly<{
+/**
+ * `readOnly` (Admin xem hồ sơ, plan Customer 360 §2.7): chỉ liệt kê chương trình phù hợp,
+ * không có ô nhập hay nút gửi — Admin không cấp ưu đãi thay TVV.
+ */
+export function OfferPicker({ promotions, policies, busy, onSubmit, readOnly = false }: Readonly<{
   promotions: readonly MatchedPromotion[];
   policies: readonly OfferAdjustmentPolicy[];
   busy: boolean;
-  onSubmit: (adjustment: OfferAdjustment) => void;
+  onSubmit?: (adjustment: OfferAdjustment) => void;
+  readOnly?: boolean;
 }>) {
   const [code, setCode] = useState("");
   const [values, setValues] = useState<Record<FieldKey, string>>({ amount_vnd: "", percent: "", months: "", gift_code: "" });
@@ -64,7 +69,7 @@ export function OfferPicker({ promotions, policies, busy, onSubmit }: Readonly<{
   const blocked = selected === null || policy === null || invalid || busy;
 
   function submit(): void {
-    if (selected === null || blocked) return;
+    if (selected === null || blocked || onSubmit === undefined) return;
     onSubmit({
       promotion_code: selected.promotion_code,
       promotion_type: selected.promotion_type,
@@ -75,6 +80,10 @@ export function OfferPicker({ promotions, policies, busy, onSubmit }: Readonly<{
       gift_code: values.gift_code === "" ? null : values.gift_code,
       new_value: values.percent || values.months || values.gift_code || values.amount_vnd,
     });
+  }
+
+  if (readOnly) {
+    return <section className="signal-offer-picker" aria-label="Ưu đãi phù hợp"><h2>Ưu đãi phù hợp</h2>{promotions.length ? <ul>{promotions.map((promotion) => <li key={promotion.promotion_code}>{promotion.promotion_code} · {PROMOTION_TYPE_LABELS[promotion.promotion_type]}</li>)}</ul> : <p className="customer360-empty">Chưa có chương trình phù hợp.</p>}</section>;
   }
 
   return <section className="signal-offer-picker" aria-label="Cấp ưu đãi"><h2>Cấp ưu đãi</h2><label className="field-label">Chương trình ưu đãi<select value={code} onChange={(event) => setCode(event.target.value)}><option value="">Chọn chương trình</option>{promotions.map((promotion) => <option key={promotion.promotion_code} value={promotion.promotion_code}>{promotion.promotion_code} · {PROMOTION_TYPE_LABELS[promotion.promotion_type]}</option>)}</select></label>{policy === null && selected !== null ? <p className="inline-warning">Chưa có biên độ ADMIN cấu hình cho loại ưu đãi này.</p> : null}{fields.map((field) => { const bound = policy === null || selected === null ? null : offerBound(field, policy, selected.promotion_type); return <label className="field-label" key={field}>{LABELS[field]}<input disabled={policy === null} max={bound?.max ?? undefined} min={bound?.min ?? undefined} onChange={(event) => setValues((current) => ({ ...current, [field]: event.target.value }))} type={field === "gift_code" ? "text" : "number"} value={values[field]} /></label>; })}{invalid ? <p className="inline-warning">Giá trị vượt biên độ cho phép. Kiểm tra lại trước khi gửi.</p> : null}<button className="primary-button" disabled={blocked} onClick={submit} type="button">Gửi ưu đãi</button></section>;

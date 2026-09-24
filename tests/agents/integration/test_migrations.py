@@ -39,6 +39,13 @@ EXPECTED_AGENT_TABLES = {
     "session_offers",
     # Wave 3 (T7a) — bộ đếm chống spam `/agent/turn`, riêng của module agents.
     "agent_feature_flags",
+    # Customer 360 (agent_0037/0038) — cơ hội, gắn phiên, phản hồi TVV, insight.
+    "customer_opportunities",
+    "session_opportunity",
+    "customer360_feedback",
+    "customer_insights",
+    "opportunity_offers",
+    "opportunity_offer_events",
     "agent_rate_limit_counters",
     "pending_feature_mentions",
     "customer_profiles",

@@ -106,14 +106,17 @@ describe("AdvisorConversationList Component", () => {
     expect(screen.getByText("Trần Thị B")).toBeInTheDocument();
     expect(screen.getByText("Lê Văn C")).toBeInTheDocument();
 
+    // Phase 3 (plan Customer 360 §2.5): bộ KPI "việc cần làm" thay ba thẻ đếm trùng.
+    // Phiên chờ có hoạt động cuối từ 2026-08-24 → đã chờ quá 5 phút.
     const kpiGrid = document.querySelector(".chat-kpi-grid") as HTMLElement;
-    const totalCard = within(kpiGrid).getByText("Tổng phiên").closest("article")!;
-    const activeCard = within(kpiGrid).getByText("Đang hoạt động").closest("article")!;
     const waitingCard = within(kpiGrid).getByText("Cần bạn xử lý").closest("article")!;
+    const staleCard = within(kpiGrid).getByText("Khách chờ > 5 phút").closest("article")!;
+    const totalCard = within(kpiGrid).getByText("Tổng phiên").closest("article")!;
 
-    expect(within(totalCard).getByText("3")).toBeInTheDocument();
-    expect(within(activeCard).getByText("2")).toBeInTheDocument();
     expect(within(waitingCard).getByText("1")).toBeInTheDocument();
+    expect(within(staleCard).getByText("1")).toBeInTheDocument();
+    expect(within(totalCard).getByText("3")).toBeInTheDocument();
+    expect(within(kpiGrid).queryByText("Đang hoạt động")).not.toBeInTheDocument();
   });
 
   it("3. Click KPI card để lọc nhanh trạng thái và tìm kiếm", async () => {

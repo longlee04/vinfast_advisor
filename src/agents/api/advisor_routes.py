@@ -11,6 +11,8 @@ from pydantic import BaseModel, Field
 from src.agents.api.dependencies import AgentDependency
 from src.agents.api.security import StaffIdentity, require_staff
 from src.agents.api.ws_manager import ws_manager
+from src.agents.domain.pii import mask_phone
+from src.agents.domain.staff_access import can_list_other_advisor, staff_identifiers
 from src.auth.domain.audit import log_authorization_denied
 from src.auth.domain.authorization import Permission, Role, Scope
 
@@ -27,6 +29,11 @@ class AdvisorConversationListItem(BaseModel):
     last_message_preview: str = ""
     last_activity_at: datetime
     assigned_advisor_id: str | None = None
+    #: AI | PENDING_HANDOFF | HUMAN — để màn TVV đếm "khách chờ > 5 phút" (Phase 3).
+    ownership: str = "AI"
+    #: Customer 360 (Phase 4): chip độ nóng + rào cản trên bảng phiên.
+    heat_band: str | None = None
+    bottlenecks: list[str] = Field(default_factory=list)
     # Đợt 9: slot lõi v2 đã hiểu (ngân sách, loại xe, mục đích…) — có ngay ở
     # danh sách để TVV lọc phiên đáng gọi mà không phải mở từng cái.
     slots: dict = Field(default_factory=dict)
@@ -142,7 +149,10 @@ async def list_advisor_conversations(
 
     service = _service(agent)
     items = await service.list_staff_conversations(
-        requester_id=identity.staff_id, role=_role(identity), customer_id=customer_id
+        requester_id=identity.staff_id,
+        role=_role(identity),
+        customer_id=customer_id,
+        requester_email=identity.email,
     )
     return AdvisorConversationListResponse(
         items=[
@@ -155,6 +165,10 @@ async def list_advisor_conversations(
                 last_activity_at=item.last_activity_at,
                 last_message_preview=item.last_message_preview,
                 slots=dict(item.slots),
+                customer_display=item.customer_display,
+                ownership=item.ownership,
+                heat_band=item.heat_band,
+                bottlenecks=list(item.bottlenecks),
             )
             for item in items
         ]
@@ -171,7 +185,7 @@ async def advisor_conversation_detail(
 
     service = _service(agent)
     result = await service.staff_conversation_detail(
-        str(conversation_id), requester_id=identity.staff_id, role=_role(identity)
+        str(conversation_id), requester_id=identity.staff_id, role=_role(identity), requester_email=identity.email
     )
     if result is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="conversation not found")
@@ -185,6 +199,8 @@ async def advisor_conversation_detail(
         last_activity_at=summary.last_activity_at,
         last_message_preview=summary.last_message_preview,
         slots=dict(summary.slots),
+        customer_display=summary.customer_display,
+        ownership=summary.ownership,
         messages=[
             {
                 "message_id": message.message_id,
@@ -214,7 +230,7 @@ async def join_conversation(
     if not joined:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="conversation already assigned or closed")
     detail = await service.staff_conversation_detail(
-        str(conversation_id), requester_id=identity.staff_id, role=_role(identity)
+        str(conversation_id), requester_id=identity.staff_id, role=_role(identity), requester_email=identity.email
     )
     customer_id = detail[0].customer_id if detail else None
     await ws_manager.broadcast(
@@ -349,6 +365,15 @@ class AdvisorCustomerListResponse(BaseModel):
     items: list[AdvisorCustomerItem]
 
 
+def _masked_profile(payload: dict) -> dict:
+    """Màn danh sách luôn che SĐT (plan Customer 360 §2.7) — số đầy đủ chỉ ở hồ sơ, cho TVV phụ trách."""
+
+    masked = dict(payload or {})
+    if masked.get("phone"):
+        masked["phone"] = mask_phone(str(masked["phone"]))
+    return masked
+
+
 @router.get("/customers", response_model=AdvisorCustomerListResponse)
 async def list_assigned_customers(
     advisor_id: str | None = None,
@@ -365,6 +390,22 @@ async def list_assigned_customers(
     target_id = identity.staff_id
     target_email = identity.email
     if advisor_id:
+        if not can_list_other_advisor(
+            _role(identity), staff_identifiers(identity.staff_id, identity.email), advisor_id
+        ):
+            log_authorization_denied(
+                actor_id=identity.staff_id,
+                role=identity.role,
+                permission=Permission.CONVERSATION_VIEW_ASSIGNED,
+                resource_type="advisor_customers",
+                resource_id=advisor_id,
+                scope=Scope.ASSIGNED,
+                reason="ADMIN_ROLE_REQUIRED",
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Chỉ Admin được xem khách của tư vấn viên khác",
+            )
         target_id = advisor_id
         target_email = advisor_id
 
@@ -379,7 +420,7 @@ async def list_assigned_customers(
                 assigned_at=c.assigned_at,
                 reason=c.reason,
                 status=c.status,
-                profile_payload=c.profile_payload,
+                profile_payload=_masked_profile(c.profile_payload),
                 active_conversations_count=c.active_conversations_count,
                 last_activity_at=c.last_activity_at,
             )

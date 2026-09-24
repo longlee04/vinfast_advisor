@@ -10,20 +10,79 @@ from decimal import Decimal
 from typing import assert_never
 from uuid import UUID, uuid4
 
-from sqlalchemy import delete, func, select, update
+from sqlalchemy import ColumnElement, and_, delete, func, or_, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.agents.domain.staff_access import staff_identifiers
 from src.agents.domain.values import SlotName, SlotValue, VehicleType, is_declined
 from src.agents.errors import ConversationArchivedError, SessionOwnershipError
 from src.agents.models import (
+    ConversationCoreStateRow,
     ConversationMessageRow,
     ConversationSessionRow,
     ConversationSlotRow,
+    ConversationTurnBottleneckRow,
+    CustomerAdvisorAssignmentRow,
+    CustomerOpportunityRow,
+    CustomerProfileRow,
     PendingFeatureMentionRow,
+    ReviewQueueRow,
+    SessionOpportunityRow,
     SlotAskAttemptRow,
 )
 from src.agents.ports import ClockPort
+
+#: Trần số phiên một lần liệt kê cho màn nhân sự — trước đây không có LIMIT.
+STAFF_SESSION_LIMIT = 200
+
+_SLOT_KEYS = frozenset(slot.value for slot in SlotName)
+
+
+@dataclass(frozen=True, slots=True)
+class StaffSessionExtras:
+    """Phần làm giàu một dòng phiên cho màn nhân sự, nạp theo LÔ (plan Customer 360, Phase 3)."""
+
+    last_message: str | None = None
+    slots: dict[str, object] | None = None
+    customer_display: str | None = None
+    #: Customer 360 (Phase 4): độ nóng của cơ hội phiên đang gắn, nhãn rào cản của phiên.
+    heat_band: str | None = None
+    bottlenecks: tuple[str, ...] = ()
+
+
+def _advisor_scope(advisor_ids: tuple[str, ...]) -> ColumnElement[bool]:
+    """Vị từ SQL: phiên một TVV được xem (plan Customer 360, Phase 0, G1).
+
+    1. Phiên đang giao cho chính TVV.
+    2. Phiên của khách đang được phân công (ACTIVE) cho TVV.
+    3. Phiên chưa ai nhận mà đang chờ người: bot đã bàn giao (`PENDING_HANDOFF`)
+       hoặc có bản nháp `PENDING` trong hàng đợi duyệt — hàng đợi duyệt là chung,
+       TVV duyệt bản nháp cần mở được hội thoại gốc.
+
+    `advisor_ids` gồm cả id lẫn email: bảng phân công lưu một trong hai.
+    """
+
+    assigned_customers = select(CustomerAdvisorAssignmentRow.customer_id).where(
+        CustomerAdvisorAssignmentRow.advisor_id.in_(advisor_ids),
+        CustomerAdvisorAssignmentRow.status == "ACTIVE",
+    )
+    pending_review = (
+        select(ReviewQueueRow.review_id)
+        .where(
+            ReviewQueueRow.session_id == ConversationSessionRow.session_id,
+            ReviewQueueRow.status == "PENDING",
+        )
+        .exists()
+    )
+    return or_(
+        ConversationSessionRow.assigned_advisor_id.in_(advisor_ids),
+        ConversationSessionRow.customer_id.in_(assigned_customers),
+        and_(
+            ConversationSessionRow.assigned_advisor_id.is_(None),
+            or_(ConversationSessionRow.ownership == "PENDING_HANDOFF", pending_review),
+        ),
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -295,17 +354,114 @@ class SqlAlchemySessionRepository:
         return result.rowcount == 1
 
     async def list_staff_sessions(
-        self, *, requester_id: str, role: str, customer_id: str | None = None
+        self,
+        *,
+        requester_id: str,
+        role: str,
+        customer_id: str | None = None,
+        requester_email: str | None = None,
+        limit: int = STAFF_SESSION_LIMIT,
     ) -> list[ConversationSessionRow]:
-        """List all sessions for staff (admin or advisor)."""
+        """Admin thấy mọi phiên; nhân sự khác chỉ thấy phiên trong phạm vi `_advisor_scope`."""
 
         statement = select(ConversationSessionRow)
         if customer_id is not None:
             statement = statement.where(ConversationSessionRow.customer_id == customer_id)
-        if role.lower() not in {"admin", "advisor"}:
-            statement = statement.where(ConversationSessionRow.assigned_advisor_id == requester_id)
-        result = await self.session.execute(statement.order_by(ConversationSessionRow.last_activity_at.desc()))
+        if role.lower() != "admin":
+            statement = statement.where(_advisor_scope(staff_identifiers(requester_id, requester_email)))
+        result = await self.session.execute(
+            statement.order_by(ConversationSessionRow.last_activity_at.desc()).limit(limit)
+        )
         return list(result.scalars())
+
+    async def load_staff_extras(self, rows: list[ConversationSessionRow]) -> dict[UUID, StaffSessionExtras]:
+        """Tin cuối + slot lõi v2 + tên khách + độ nóng/rào cản cho cả trang, đúng 4 câu SQL.
+
+        Thay cho `_enrich_summary` từng dòng (2 câu/phiên, 400 câu cho 200 phiên).
+        """
+
+        session_ids = [row.session_id for row in rows]
+        if not session_ids:
+            return {}
+        latest = (
+            select(ConversationMessageRow.session_id, ConversationMessageRow.content)
+            .where(ConversationMessageRow.session_id.in_(session_ids))
+            .distinct(ConversationMessageRow.session_id)
+            .order_by(
+                ConversationMessageRow.session_id,
+                ConversationMessageRow.turn_index.desc(),
+                ConversationMessageRow.created_at.desc(),
+            )
+        )
+        messages = {row.session_id: row.content for row in await self.session.execute(latest)}
+        states = {
+            row.session_id: {key: value for key, value in (row.slots or {}).items() if key in _SLOT_KEYS}
+            for row in await self.session.execute(
+                select(ConversationCoreStateRow.session_id, ConversationCoreStateRow.slots).where(
+                    ConversationCoreStateRow.session_id.in_(session_ids)
+                )
+            )
+        }
+        customer_ids = {row.customer_id for row in rows}
+        names = {
+            row.customer_id: row.display_name
+            for row in await self.session.execute(
+                select(CustomerProfileRow.customer_id, CustomerProfileRow.display_name).where(
+                    CustomerProfileRow.customer_id.in_(customer_ids)
+                )
+            )
+        }
+        heat: dict[UUID, str] = {}
+        labels: dict[UUID, set[str]] = {}
+        signals = await self.session.execute(
+            select(
+                ConversationSessionRow.session_id,
+                CustomerOpportunityRow.heat_band,
+                ConversationTurnBottleneckRow.label,
+            )
+            .select_from(ConversationSessionRow)
+            .outerjoin(SessionOpportunityRow, SessionOpportunityRow.session_id == ConversationSessionRow.session_id)
+            .outerjoin(
+                CustomerOpportunityRow, CustomerOpportunityRow.opportunity_id == SessionOpportunityRow.opportunity_id
+            )
+            .outerjoin(
+                ConversationTurnBottleneckRow,
+                (ConversationTurnBottleneckRow.session_id == ConversationSessionRow.session_id)
+                & (ConversationTurnBottleneckRow.status != "INCORRECT"),
+            )
+            .where(ConversationSessionRow.session_id.in_(session_ids))
+        )
+        for session_id, band, label in signals:
+            if band:
+                heat[session_id] = band
+            if label:
+                labels.setdefault(session_id, set()).add(label)
+        return {
+            row.session_id: StaffSessionExtras(
+                last_message=messages.get(row.session_id),
+                slots=states.get(row.session_id),
+                customer_display=names.get(row.customer_id),
+                heat_band=heat.get(row.session_id),
+                bottlenecks=tuple(sorted(labels.get(row.session_id, ()))),
+            )
+            for row in rows
+        }
+
+    async def staff_can_view(self, session_id: UUID, *, requester_id: str, requester_email: str | None = None) -> bool:
+        """Phiên có nằm trong phạm vi xem của một nhân sự không phải admin không."""
+
+        return bool(
+            await self.session.scalar(
+                select(
+                    select(ConversationSessionRow.session_id)
+                    .where(
+                        ConversationSessionRow.session_id == session_id,
+                        _advisor_scope(staff_identifiers(requester_id, requester_email)),
+                    )
+                    .exists()
+                )
+            )
+        )
 
     async def claim_session(self, session_id: UUID, advisor_id: str) -> bool:
         """Atomically claim an unassigned conversation for live chat."""

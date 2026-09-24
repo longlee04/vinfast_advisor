@@ -13,6 +13,7 @@ from uuid import UUID
 from sqlalchemy import select
 
 from src.agents.domain.bottleneck_signal import BottleneckSignal
+from src.agents.domain.customer360_flags import FLAG_OFFER_RULES
 from src.agents.domain.customer_profile import (
     BottleneckEvidence,
     OfferState,
@@ -27,13 +28,21 @@ from src.products.infrastructure.repositories import SqlAlchemyOfferPolicyReposi
 class OfferSuggestionDataSource:
     """Adapter từ OfferSuggestionService (products) qua OfferSuggestionPort."""
 
-    def __init__(self, session_factory) -> None:
+    def __init__(self, session_factory, flags=None) -> None:  # noqa: ANN001
         self._factory = session_factory
+        #: Cờ `offer_rules_engine` (Customer 360 Phase 5): bật → bộ đánh giá DSL thay luật `province`.
+        self._flags = flags
         self._service = OfferSuggestionService(SqlAlchemyPromotionRepository(session_factory))
         self._policies = SqlAlchemyOfferPolicyRepository(session_factory)
 
+    async def _rules_engine(self) -> bool:
+        if self._flags is None:
+            return False
+        state = await self._flags.load(FLAG_OFFER_RULES)
+        return bool(state is not None and state.enabled)
+
     async def suggest(self, snapshot: ProfileSnapshot, at: datetime):
-        return await self._service.suggest(snapshot, at)
+        return await self._service.suggest(snapshot, at, rules_engine=await self._rules_engine())
 
     async def suggest_for_signal(self, signal: BottleneckSignal, at: datetime):
         snapshot = ProfileSnapshot(
@@ -45,7 +54,7 @@ class OfferSuggestionDataSource:
                 )
             ],
         )
-        return await self._service.suggest(snapshot, at)
+        return await self._service.suggest(snapshot, at, rules_engine=await self._rules_engine())
 
     async def adjustment_policies(self) -> tuple[dict, ...]:
         policies = await self._policies.list()

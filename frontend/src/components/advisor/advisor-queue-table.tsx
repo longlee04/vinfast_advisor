@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { AdvisorQueuePollToast, useAdvisorQueuePoll } from "@/components/advisor/advisor-queue-poll";
+import { customerProfileFromSessionHref } from "@/components/customer360/profile-links";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { AgentApiError, fetchBottleneckSignals, fetchReviews } from "@/lib/api/agent";
 import type { BottleneckSignal, QueueEntry, ReviewQueueStatus } from "@/types/agent";
@@ -218,7 +219,7 @@ function QueueBody({
               <td data-label="Người giữ">{signal.claimed_by ?? "—"}</td>
               <td data-label="Cờ">{signal.lease_expires_at === null ? "—" : `Lease ${formatMoment(signal.lease_expires_at)}`}</td>
               <td data-label="Trạng thái"><StatusBadge tone={signal.status === "CORRECT" ? "success" : signal.status === "INCORRECT" ? "danger" : "warning"}>{signal.status === "CORRECT" ? "Đúng" : signal.status === "INCORRECT" ? "Sai" : "Chờ xác nhận"}</StatusBadge></td>
-              <td><Link className="table-action" href={`/advisor/bottleneck-signals/${signal.signal_id}`}>Xác nhận →</Link></td>
+              <td><div className="chat-row-actions"><Link className="table-action" href={customerProfileFromSessionHref(signal.session_id)}>Xem hồ sơ khách</Link><Link className="table-action" href={`/advisor/bottleneck-signals/${signal.signal_id}`}>Xác nhận →</Link></div></td>
             </tr>
           ))}
           {items.map((item) => {
@@ -251,12 +252,17 @@ function QueueBody({
                   <StatusBadge tone={queueStatus.tone}>{queueStatus.label}</StatusBadge>
                 </td>
                 <td>
-                  <Link
-                    className="table-action"
-                    href={`/advisor/recommendations/${item.review_id}`}
-                  >
-                    Xem &amp; duyệt →
-                  </Link>
+                  <div className="chat-row-actions">
+                    <Link className="table-action" href={customerProfileFromSessionHref(item.session_id)}>
+                      Xem hồ sơ khách
+                    </Link>
+                    <Link
+                      className="table-action"
+                      href={`/advisor/recommendations/${item.review_id}`}
+                    >
+                      Xem &amp; duyệt →
+                    </Link>
+                  </div>
                 </td>
               </tr>
             );

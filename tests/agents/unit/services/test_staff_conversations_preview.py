@@ -28,11 +28,19 @@ def _row(session_id: UUID) -> SimpleNamespace:
 
 
 class FakeSessions:
-    def __init__(self, rows: list[SimpleNamespace]) -> None:
+    def __init__(self, rows: list[SimpleNamespace], *, visible: bool = True) -> None:
         self.rows = rows
+        self.visible = visible
+        self.scope_checks: list[tuple[UUID, str, str | None]] = []
 
-    async def list_staff_sessions(self, *, requester_id: str, role: str, customer_id: str | None = None):
+    async def list_staff_sessions(
+        self, *, requester_id: str, role: str, customer_id: str | None = None, requester_email: str | None = None
+    ):
         return self.rows
+
+    async def staff_can_view(self, session_id: UUID, *, requester_id: str, requester_email: str | None = None):
+        self.scope_checks.append((session_id, requester_id, requester_email))
+        return self.visible
 
     async def get_session(self, session_id: UUID):
         return next((row for row in self.rows if row.session_id == session_id), None)
@@ -105,3 +113,24 @@ async def test_tin_cuoi_cat_ngan_va_thieu_cua_thi_rong_khong_chet() -> None:
     bare = ConversationServiceImpl(FakeUnitOfWork(sessions=FakeSessions([_row(SESSION)])))
     items = await bare.list_staff_conversations(requester_id="a1", role="admin")
     assert items[0].last_message_preview == "" and items[0].slots == {}
+
+
+@pytest.mark.asyncio
+async def test_tvv_ngoai_pham_vi_khong_doc_duoc_chi_tiet() -> None:
+    """Phase 0 Customer 360: trước đây TVV đọc được MỌI phiên chưa gán."""
+
+    sessions = FakeSessions([_row(SESSION)], visible=False)
+    service = ConversationServiceImpl(FakeUnitOfWork(sessions=sessions, messages=FakeMessages("x")))
+    result = await service.staff_conversation_detail(
+        str(SESSION), requester_id="adv-2", role="advisor", requester_email="b@x.vn"
+    )
+    assert result is None
+    assert sessions.scope_checks == [(SESSION, "adv-2", "b@x.vn")]
+
+
+@pytest.mark.asyncio
+async def test_admin_doc_chi_tiet_khong_can_kiem_pham_vi() -> None:
+    sessions = FakeSessions([_row(SESSION)], visible=False)
+    service = ConversationServiceImpl(FakeUnitOfWork(sessions=sessions, messages=FakeMessages("x")))
+    assert await service.staff_conversation_detail(str(SESSION), requester_id="a1", role="admin") is not None
+    assert sessions.scope_checks == []

@@ -41,13 +41,14 @@ class OfferSuggestionService:
     def __init__(self, repo: PromotionRepository) -> None:
         self._repo = repo
 
-    async def suggest(self, snapshot: ProfileSnapshot, at: datetime) -> OfferSuggestion:
+    async def suggest(self, snapshot: ProfileSnapshot, at: datetime, *, rules_engine: bool = False) -> OfferSuggestion:
         promotions = await self._repo.list_active(at)
         matched = match_bottlenecks_to_promotions(
             [b.bottleneck for b in snapshot.bottlenecks],
             promotions,
             at,
             customer_context={},
+            rules_engine=rules_engine,
         )
         offer_state = classify_offer_state(snapshot.bottlenecks, matched)
         unmet_demand_flag = offer_state is OfferState.BOTTLENECK_NO_OFFER

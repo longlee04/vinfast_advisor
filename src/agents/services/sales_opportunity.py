@@ -15,6 +15,7 @@ from src.agents.domain.customer_profile import (
     OfferState,
     ProfileSnapshot,
 )
+from src.agents.domain.pii import redact_pii
 
 
 class SalesOpportunityRepository(Protocol):
@@ -76,7 +77,7 @@ def _snapshot(
     evidence = [
         BottleneckEvidence(
             bottleneck=item.label,
-            verbatim_quote=item.evidence_quote,
+            verbatim_quote=redact_pii(item.evidence_quote),
         )
         for item in signal.evidence
     ]

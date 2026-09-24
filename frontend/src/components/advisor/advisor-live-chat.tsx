@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Check, CheckCheck, ChevronLeft, Ellipsis, Loader2, Paperclip, Send, ShieldCheck, Trash2, X } from "lucide-react";
+import { Bot, Check, CheckCheck, ChevronLeft, Ellipsis, Loader2, Paperclip, Send, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -13,6 +13,8 @@ import {
   handoffAdvisorConversation,
   sendAdvisorMessage,
 } from "@/lib/api/agent";
+
+import { CustomerProfilePanel } from "../customer360/customer-profile-panel";
 
 type MessageStatus = "sending" | "sent" | "received" | "seen";
 type ChatMessage = {
@@ -66,7 +68,9 @@ function MessageMeta({ message, advisor }: Readonly<{ message: ChatMessage; advi
   return <span><time dateTime={message.time}>{message.time}</time> · {statusLabel(message.status)}</span>;
 }
 
-export function AdvisorLiveChat({ conversationId }: Readonly<{ conversationId: string }>) {
+/** `viewerRole="admin"`: panel hồ sơ bên phải ở chế độ chỉ xem (plan Customer 360 §2.6). */
+export function AdvisorLiveChat({ conversationId, viewerRole = "advisor" }: Readonly<{ conversationId: string; viewerRole?: "advisor" | "admin" }>) {
+  const readOnly = viewerRole === "admin";
   const router = useRouter();
   const [detail, setDetail] = useState<AdvisorConversationDetail | null>(null);
   const [messages, setMessages] = useState<readonly ChatMessage[]>([]);
@@ -165,10 +169,6 @@ export function AdvisorLiveChat({ conversationId }: Readonly<{ conversationId: s
   const customerAvatar = initials(customerLabel, "KH");
   const advisorAvatar = initials(detail?.assigned_advisor_id || "Advisor", "AD");
   const groupedMessages = useMemo(() => groupMessages(messages), [messages]);
-  const budget = detail?.slots?.budget_vnd ?? detail?.slots?.budget_max_vnd;
-  const budgetStr = typeof budget === "number" ? `${Math.round(budget / 1_000_000)} triệu` : "Chưa rõ";
-  const vehicle = detail?.slots?.vehicle_models ? String(detail.slots.vehicle_models) : detail?.slots?.vehicle_type ? String(detail.slots.vehicle_type) : "Chưa xác định";
-  const priority = detail?.hitl_priority ?? "HIGH";
   const statusText = closed ? "Đã kết thúc" : loading ? "Đang tải hội thoại" : connectionState === "connected" ? "Đang kết nối" : connectionState === "reconnecting" ? "Đang kết nối lại..." : "Mất kết nối";
 
   function handleScroll(): void {
@@ -309,11 +309,15 @@ export function AdvisorLiveChat({ conversationId }: Readonly<{ conversationId: s
         {closed ? <div className="advisor-chat-ended"><span>Phiên chat đã kết thúc.</span><Link href="/advisor">Quay lại hàng đợi</Link></div> : null}
       </section>
 
-      <aside className="advisor-chat-context-panel">
-        <div className="context-heading"><span className="eyebrow">Thông tin khách hàng</span><strong>{customerLabel}</strong><span className="context-session">#{conversationId.slice(0, 8)}</span></div>
-        <dl><div><dt>Ngân sách</dt><dd>{budgetStr}</dd></div><div><dt>Xe quan tâm</dt><dd>{vehicle}</dd></div><div><dt>Lý do cần hỗ trợ</dt><dd>{detail?.hitl_reasons?.join(", ") || "Khách yêu cầu tư vấn viên"}</dd></div><div><dt>Mức độ</dt><dd className={priority === "URGENT" ? "context-danger" : "context-high"}>{priority}</dd></div></dl>
-        <div className="context-checks"><strong>Thông tin đã được kiểm chứng</strong><span><Check size={15} /> Dữ liệu đã xác thực</span><span><ShieldCheck size={15} /> Không có cảnh báo</span></div>
-      </aside>
+      <CustomerProfilePanel
+        conversationId={conversationId}
+        customerId={detail?.customer_id ?? null}
+        customerLabel={customerLabel}
+        hitlReasons={detail?.hitl_reasons ?? []}
+        readOnly={readOnly}
+        role={viewerRole}
+        slots={detail?.slots}
+      />
 
       {confirmClose ? <div className="chat-confirm-backdrop" role="presentation"><section className="chat-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="end-chat-title"><button className="chat-confirm-close" onClick={() => setConfirmClose(false)} type="button" aria-label="Đóng"><X size={18} /></button><span className="eyebrow">Kết thúc phiên</span><h2 id="end-chat-title">Bạn có chắc muốn kết thúc phiên tư vấn?</h2><p>Khách hàng sẽ không thể tiếp tục gửi tin nhắn trong phiên này và yêu cầu sẽ được đánh dấu hoàn tất.</p><div><button className="secondary-button" onClick={() => setConfirmClose(false)} type="button">Huỷ</button><button className="danger-button" onClick={() => void handleClose()} type="button">Kết thúc phiên</button></div></section></div> : null}
 

@@ -203,7 +203,8 @@ async def clean_agent_database(migrated_engine: AsyncEngine) -> AsyncIterator[No
         "agent_runs, out_of_scope_log, conversation_turn_bottlenecks, conversation_turn_outcomes, "
         "conversation_messages, conversation_core_state, turn_traces, "
         "conversation_summaries, pending_feature_mentions, conversation_slots, customer_profiles, "
-        "conversation_sessions"
+        "conversation_sessions, opportunity_offer_events, opportunity_offers, customer_insights, customer360_feedback, customer_opportunities, "
+        "customer_advisor_assignments"
     )
     async with migrated_engine.begin() as connection:
         await connection.execute(text(f"TRUNCATE TABLE {tables} CASCADE"))

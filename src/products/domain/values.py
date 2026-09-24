@@ -52,6 +52,9 @@ class RecordLifecycleStatus(StrEnum):
     battery_policies, tco_assumptions (``ck_*_status``)."""
 
     DRAFT = "DRAFT"
+    #: Chỉ `promotions` dùng (CHECK của bảng khác không cho phép): dữ liệu chưa kiểm, KHÔNG
+    #: bao giờ đến tay khách (plan Customer 360 §2.4).
+    UNVERIFIED = "UNVERIFIED"
     ACTIVE = "ACTIVE"
     EXPIRED = "EXPIRED"
     CANCELLED = "CANCELLED"

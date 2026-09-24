@@ -1,17 +1,17 @@
 "use client";
 
-import { CalendarCheck2, ExternalLink, Eye, Loader2, LogIn, MessageSquareText, RefreshCw, Search, ShieldAlert, UserCheck, X } from "lucide-react";
+import { Eye, LogIn, RefreshCw, Search, ShieldAlert, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { customerProfileHref } from "@/components/customer360/profile-links";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { type AdvisorConversationDetail, listAdvisorConversations } from "@/lib/api/agent";
 import { type AssignedCustomerItem, fetchAdvisorCustomers } from "@/lib/api/assignments";
 import { listUsers, type UserSummary } from "@/lib/api/auth";
 import { useAuth } from "@/store/auth-store";
 
 export function AdvisorCustomers() {
-  const { user, login } = useAuth();
+  const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   const isAdvisor = user?.role === "advisor";
   const isStaff = isAdmin || isAdvisor;
@@ -20,23 +20,8 @@ export function AdvisorCustomers() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<AssignedCustomerItem | null>(null);
-  const [customerSessions, setCustomerSessions] = useState<readonly AdvisorConversationDetail[]>([]);
-  const [loadingSessions, setLoadingSessions] = useState(false);
   const [advisors, setAdvisors] = useState<readonly UserSummary[]>([]);
   const [selectedAdvisorFilter, setSelectedAdvisorFilter] = useState<string>("");
-
-  useEffect(() => {
-    if (!selected) {
-      setCustomerSessions([]);
-      return;
-    }
-    setLoadingSessions(true);
-    listAdvisorConversations(selected.customer_id)
-      .then((res) => setCustomerSessions(res.items || []))
-      .catch(() => setCustomerSessions([]))
-      .finally(() => setLoadingSessions(false));
-  }, [selected]);
 
   const reload = useCallback(async (targetAdvisor?: string) => {
     setLoading(true);
@@ -64,18 +49,6 @@ export function AdvisorCustomers() {
       .then((res) => setAdvisors(res.items || []))
       .catch(() => setAdvisors([]));
   }, [reload, user]);
-
-  async function handleQuickAdvisorLogin(email: string) {
-    setLoading(true);
-    try {
-      await login(email, "Admin@123456");
-      await reload();
-    } catch {
-      setLoadError("Đăng nhập TVV thất bại.");
-    } finally {
-      setLoading(false);
-    }
-  }
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim();
@@ -106,15 +79,10 @@ export function AdvisorCustomers() {
     return name.slice(0, 2).toUpperCase();
   }
 
+  // Danh sách khách chưa kèm slot (backend chỉ trả tên/SĐT đã che/email) — nhu cầu đầy đủ
+  // nằm ở trang hồ sơ; ở đây chỉ hiện ghi chú phân công.
   function getNeedSummary(item: AssignedCustomerItem): string {
-    const budget = item.profile_payload?.budget_vnd;
-    const model = item.profile_payload?.model_name || item.profile_payload?.vehicle_type;
-    const usage = item.profile_payload?.usage_purpose;
-    const parts = [];
-    if (model) parts.push(`Mẫu quan tâm: ${model}`);
-    if (budget) parts.push(`Ngân sách: ${Number(budget).toLocaleString("vi-VN")} đ`);
-    if (usage) parts.push(`Mục đích: ${usage}`);
-    return parts.length > 0 ? parts.join(" · ") : (item.reason || "Khách hàng phân công từ Admin Assignment Center");
+    return item.reason || "Mở hồ sơ để xem nhu cầu";
   }
 
   return (
@@ -173,15 +141,9 @@ export function AdvisorCustomers() {
                 Bạn chưa đăng nhập quyền <strong>Tư vấn viên (Advisor)</strong>. Hãy đăng nhập để xem khách hàng được phân công.
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                className="primary-button text-xs py-1.5 px-3"
-                onClick={() => void handleQuickAdvisorLogin("advisor@gmail.com")}
-                type="button"
-              >
-                <LogIn size={14} /> Đăng nhập TVV (advisor@gmail.com)
-              </button>
-            </div>
+            <Link className="primary-button text-xs py-1.5 px-3" href="/staff-login">
+              <LogIn size={14} /> Đăng nhập nhân sự
+            </Link>
           </div>
         ) : null}
 
@@ -213,124 +175,17 @@ export function AdvisorCustomers() {
                   <dd>{formatDate(customer.assigned_at)}</dd>
                 </div>
               </dl>
-              <button
+              <Link
                 className="secondary-button full-button"
-                onClick={() => setSelected(customer)}
-                type="button"
+                href={customerProfileHref(customer.customer_id, isAdmin ? "admin" : "advisor")}
               >
                 <Eye size={16} /> Xem hồ sơ & lịch sử
-              </button>
+              </Link>
             </article>
           ))}
         </div>
       </section>
 
-      {selected ? (
-        <div className="dialog-layer" role="dialog" aria-modal="true" aria-labelledby="customer-detail-title">
-          <button className="dialog-backdrop" aria-label="Đóng hồ sơ" onClick={() => setSelected(null)} type="button" />
-          <section className="mock-dialog">
-            <div className="dialog-heading">
-              <div>
-                <span className="eyebrow">Hồ sơ được phân công</span>
-                <h2 id="customer-detail-title">{getDisplayName(selected)}</h2>
-              </div>
-              <button className="icon-button" onClick={() => setSelected(null)} aria-label="Đóng" type="button">
-                <X size={19} />
-              </button>
-            </div>
-            <div className="customer-contact-summary">
-              <span className="ops-avatar large">{getAvatar(selected)}</span>
-              <div>
-                <strong>{getDisplayName(selected)}</strong>
-                <span>ID: {selected.customer_id} · Phụ trách: {selected.advisor_id}</span>
-              </div>
-            </div>
-            <div className="need-summary-grid">
-              <div>
-                <span>Nhu cầu</span>
-                <strong>{getNeedSummary(selected)}</strong>
-              </div>
-              <div>
-                <span>Số phiên</span>
-                <strong>{selected.active_conversations_count} phiên</strong>
-              </div>
-              <div>
-                <span>Phân công lúc</span>
-                <strong>{formatDate(selected.assigned_at)}</strong>
-              </div>
-            </div>
-            {selected.reason ? (
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700">
-                Ghi chú điều chuyển: <strong>{selected.reason}</strong>
-              </div>
-            ) : null}
-            <div className="mini-activity-list">
-              <article>
-                <MessageSquareText size={17} />
-                <div>
-                  <strong>Tổng số phiên tư vấn</strong>
-                  <small>{selected.active_conversations_count} cuộc hội thoại đã thực hiện</small>
-                </div>
-              </article>
-              <article>
-                <CalendarCheck2 size={17} />
-                <div>
-                  <strong>Hoạt động gần nhất</strong>
-                  <small>{formatDate(selected.last_activity_at)}</small>
-                </div>
-              </article>
-            </div>
-
-            <div className="customer-conversations-section mt-4 pt-4 border-t border-slate-200">
-              <h4 className="text-xs font-semibold uppercase text-slate-500 mb-2 tracking-wider flex items-center justify-between">
-                <span>Danh sách phiên chat ({customerSessions.length})</span>
-                {loadingSessions ? <Loader2 size={13} className="animate-spin text-slate-400" /> : null}
-              </h4>
-              {customerSessions.length === 0 && !loadingSessions ? (
-                <p className="text-xs text-slate-500 italic py-2">Chưa có phiên chat nào từ khách hàng này.</p>
-              ) : null}
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {customerSessions.map((conv) => {
-                  const isClosed = conv.status === "COMPLETED" || conv.status === "CLOSED";
-                  const isWaiting = conv.status === "WAITING_ADVISOR";
-                  return (
-                    <div
-                      key={conv.conversation_id}
-                      className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between text-xs"
-                    >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono font-semibold text-slate-800">
-                            #{conv.conversation_id.slice(0, 8)}
-                          </span>
-                          <StatusBadge tone={isClosed ? "neutral" : isWaiting ? "warning" : "success"}>
-                            {isClosed ? "Đã đóng" : isWaiting ? "Chờ Advisor" : "Đang hoạt động"}
-                          </StatusBadge>
-                        </div>
-                        <p className="text-[11px] text-slate-500 truncate max-w-[240px] mt-0.5" title={conv.last_message_preview}>
-                          {conv.last_message_preview || "Phiên hội thoại"}
-                        </p>
-                      </div>
-                      <Link
-                        href={`/advisor/conversations/${conv.conversation_id}`}
-                        className="secondary-button text-xs py-1 px-2.5 shrink-0 inline-flex items-center gap-1"
-                      >
-                        <ExternalLink size={12} /> {isClosed ? "Xem lại" : "Mở chat"}
-                      </Link>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="dialog-actions">
-              <button className="secondary-button" onClick={() => setSelected(null)} type="button">
-                Đóng
-              </button>
-            </div>
-          </section>
-        </div>
-      ) : null}
     </>
   );
 }

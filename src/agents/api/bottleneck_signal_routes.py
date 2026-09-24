@@ -20,6 +20,7 @@ from src.agents.domain.bottleneck_signal import (
     SignalNotFoundError,
     SignalVerdict,
 )
+from src.agents.domain.pii import redact_pii
 from src.agents.services.operations.bottleneck_signal import (
     BottleneckSignalOperations,
     SignalOfferConflictError,
@@ -47,7 +48,8 @@ def _response(signal: BottleneckSignal) -> BottleneckSignalResponse:
         client_turn_id=signal.client_turn_id,
         anchor_client_turn_id=signal.anchor_client_turn_id,
         label=signal.label.value,
-        evidence_quote=signal.evidence_quote,
+        # Màn nội bộ ghi "đã lược danh tính" — phải che thật SĐT/email khách gõ vào.
+        evidence_quote=redact_pii(signal.evidence_quote),
         status=signal.status.value,
         claimed_by=signal.claimed_by,
         claimed_at=signal.claimed_at,
