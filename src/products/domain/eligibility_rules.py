@@ -9,7 +9,7 @@ Cú pháp: node = {"all": [node…]} | {"any": [node…]} | lá {"field": F, OP:
 - `any`: có TRUE → TRUE; không thì có UNKNOWN → UNKNOWN; không thì FALSE.
 
 Luật không đúng DSL (vd. metadata crawler `{"source_url": …}`) → `INVALID_RULE`: ưu đãi bị
-loại khỏi gợi ý và hiện ở /admin/promotions là "Cần dựng luật" — không bao giờ "khớp mọi khách".
+loại khỏi gợi ý và hiện ở /advisor/promotions là "Cần dựng luật" — không bao giờ "khớp mọi khách".
 
 THUẦN Python.
 """

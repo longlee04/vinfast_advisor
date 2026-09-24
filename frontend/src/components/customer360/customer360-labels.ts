@@ -1,6 +1,14 @@
-import type { BuyerFor, HeatBand, OpportunityStatus, SalesStage, SessionKind } from "@/types/customer360";
+import type {
+  BuyerFor,
+  HeatBand,
+  OpeningBasis,
+  OpportunityStatus,
+  SalesStage,
+  SessionKind,
+  VehicleInterestRole,
+} from "@/types/customer360";
 
-import type { BadgeTone } from "../advisor/offer-state-labels";
+import { type BadgeTone, bottleneckLabel } from "../advisor/offer-state-labels";
 
 /**
  * Nhãn hiển thị cho hồ sơ khách 360 — cùng khuôn `offer-state-labels.ts`: `Record<Code, …>`
@@ -127,3 +135,159 @@ export const INSIGHT_FIELD_LABELS: Record<string, string> = {
   registration_province: "Tỉnh đăng ký",
   home_charging: "Sạc tại nhà",
 };
+
+// ---------------------------------------------------------------- Màn theo mockup (plan §13)
+
+/** Nhãn rào cản — mã nút thắt dùng nhãn có sẵn; "OTHER" là băn khoăn khách tự nói (insight). */
+export function barrierLabel(code: string): string {
+  return code === "OTHER" ? "Băn khoăn khác" : bottleneckLabel(code);
+}
+
+/** Câu "Việc nên làm" — nhãn backend giữ mã rào cản thô, nên dịch mã ở đây. */
+export function nextActionLabel(action: { readonly code: string; readonly label: string }): string {
+  if (action.code.startsWith("RESOLVE_")) return `Xử lý băn khoăn: ${barrierLabel(action.code.slice("RESOLVE_".length)).toLowerCase()}`;
+  return action.label;
+}
+
+const STAGE_BASIS_TEXT: Record<Exclude<OpeningBasis["kind"], "BARRIER" | "MISSING">, string> = {
+  TEST_DRIVE: "Dựa trên lịch lái thử đã đặt.",
+  QUOTE: "Dựa trên báo giá lăn bánh khách đã xem.",
+  COMPARE: "Dựa trên các mẫu khách đang so sánh.",
+  DEFAULT: "Dựa trên nhu cầu đã trao đổi.",
+};
+
+/** Dòng phụ "Dựa trên …" dưới gợi ý mở lời. */
+export function openingBasisText(basis: OpeningBasis | undefined): string | null {
+  if (!basis) return null;
+  if (basis.kind === "BARRIER") return `Dựa trên rào cản chính (${barrierLabel(basis.code ?? "")}).`;
+  if (basis.kind === "MISSING") return `Dựa trên thông tin còn thiếu (${(SLOT_LABELS[basis.code ?? ""] ?? basis.code ?? "").toLowerCase()}).`;
+  return STAGE_BASIS_TEXT[basis.kind];
+}
+
+export function vehicleRoleLabel(role: VehicleInterestRole, rank: number | null): string {
+  if (role === "CHOSEN") return "Khách đã chọn";
+  if (role === "COMPARED") return "Khách đem ra so sánh";
+  if (role === "MENTIONED") return "Khách có nhắc";
+  return rank ? `AI đề xuất số ${rank}` : "AI đề xuất";
+}
+
+/** Ghi chú mốc Lái thử theo trạng thái lịch. */
+export const BOOKING_NOTE_LABELS: Record<string, string> = {
+  REQUESTED: "chưa xác nhận",
+  CONFIRMED: "đã xác nhận",
+};
+
+/** Ai đang trả lời phiên đang mở (ownership của phiên). */
+export const OWNERSHIP_LABELS: Record<string, string> = {
+  AI: "AI đang trả lời",
+  PENDING_HANDOFF: "Khách đang chờ tư vấn viên",
+  ADVISOR: "Tư vấn viên đang trả lời",
+};
+
+/** Bộ lọc trong tab "Đã nhận". Khách chưa ai nhận là một TAB riêng, không phải bộ lọc (plan §20). */
+export type QueueFilter = "ALL" | "HOT" | "WAITING" | "TEST_DRIVE";
+
+export const QUEUE_FILTER_LABELS: Record<QueueFilter, string> = {
+  ALL: "Tất cả",
+  HOT: "Chỉ khách nóng",
+  WAITING: "Chờ người thật",
+  TEST_DRIVE: "Có lịch lái thử",
+};
+
+/** Hồ sơ khách được lưu KHI NÀO — hiện ngay trên trang Khách hàng để tư vấn viên khỏi đoán. */
+export const PROFILE_SAVE_EXPLAINER =
+  "Hồ sơ khách tự lưu: ngay khi khách đăng nhập (email), khi khách khai tên/SĐT/địa chỉ, và sau mỗi lượt chat (nhu cầu, độ nóng, rào cản). Khách mới nằm ở tab “Chưa nhận” — bấm Nhận khách thì chuyển sang “Đã nhận”.";
+
+/** Khách đã nhận nhưng chưa có nhu cầu nào (chưa chat). */
+export const QUEUE_NO_NEED = "Chưa có nhu cầu — nhắn/gọi hỏi khách cần xe gì";
+
+export const POOL_TEXT = {
+  hint: "Khách chưa có tư vấn viên phụ trách — gồm cả khách mới đăng ký chưa chat. Nhận khách thì khách thuộc về bạn; tiếp quản hội thoại cũng tự nhận khách.",
+  empty: "Không có khách nào đang chờ người nhận.",
+  claim: "Nhận khách",
+  taken: "Khách vừa được tư vấn viên khác nhận.",
+  release: "Trả khách về hàng chờ",
+} as const;
+
+export const QUEUE_KPI_LABELS = {
+  hot: { title: "Khách nóng", hint: "Nên gọi trong hôm nay", filter: "HOT" },
+  waiting: { title: "Đang chờ người thật", hint: "Khách chủ động yêu cầu", filter: "WAITING" },
+  test_drives_48h: { title: "Lái thử trong 48 giờ", hint: "Cần xác nhận lịch", filter: "TEST_DRIVE" },
+  unanswered: { title: "Câu AI chưa trả lời được", hint: "7 ngày gần nhất", filter: null },
+} as const satisfies Record<string, { title: string; hint: string; filter: QueueFilter | null }>;
+
+/** Dòng không có việc nào cần làm ngay. */
+export const QUEUE_NO_ACTION = "Theo dõi, chưa cần gọi";
+
+export const QUEUE_FOOTNOTE =
+  "Độ nóng tính từ tín hiệu hội thoại: để lại SĐT, đã nhận báo giá, đặt lái thử, thời điểm định mua, số lần quay lại.";
+
+/** Ngân sách khách nói: con số khách NÓI RA thắng, rồi mới tới khoảng min–max. */
+export function budgetText(slots: Record<string, unknown> | undefined | null): string | null {
+  if (!slots) return null;
+  const stated = formatSlotValue("budget_stated_vnd", slots.budget_stated_vnd);
+  if (stated) return stated;
+  const min = formatSlotValue("budget_min_vnd", slots.budget_min_vnd);
+  const max = formatSlotValue("budget_max_vnd", slots.budget_max_vnd);
+  if (min && max) return `${min} – ${max}`;
+  if (max) return `Tối đa ${max}`;
+  if (min) return `Từ ${min}`;
+  return null;
+}
+
+const MINUTE = 60_000;
+const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
+
+/** Tuổi ngắn của một mốc ("12 phút", "2 giờ", "Hôm qua", "3 ngày"); `now = 0` (lúc render server) → rỗng. */
+export function relativeAge(iso: string | null | undefined, now: number): string {
+  if (!iso || !now) return "";
+  const at = Date.parse(iso);
+  if (Number.isNaN(at)) return "";
+  const elapsed = Math.max(0, now - at);
+  if (elapsed < MINUTE) return "Vừa xong";
+  if (elapsed < HOUR) return `${Math.floor(elapsed / MINUTE)} phút`;
+  if (elapsed < DAY) return `${Math.floor(elapsed / HOUR)} giờ`;
+  const days = Math.floor(elapsed / DAY);
+  return days === 1 ? "Hôm qua" : `${days} ngày`;
+}
+
+/** "dd/mm" theo giờ Việt Nam — mốc giai đoạn, lượt rào cản. */
+export function shortDate(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return "";
+  // Ghép từ phần ngày/tháng: dấu phân cách của "vi-VN" khác nhau giữa các bản ICU ("18/09" vs "18-09").
+  const parts = new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", timeZone: "Asia/Ho_Chi_Minh" }).formatToParts(at);
+  const part = (type: "day" | "month") => parts.find((item) => item.type === type)?.value ?? "";
+  return `${part("day")}/${part("month")}`;
+}
+
+/** Trang "Tổng quan" của tư vấn viên (plan §15). */
+export const DASHBOARD_TEXT = {
+  failed: "Không tải được danh sách khách của bạn.",
+  todoTitle: "Việc cần làm hôm nay",
+  todoHint: "Gấp trước, khách nóng trước",
+  todoEmpty: "Chưa có việc nào cần làm ngay.",
+  poolTitle: "Hàng chờ",
+  poolUnit: "khách chưa ai nhận",
+  poolLink: "Mở tab \"Chưa ai nhận\" để nhận khách",
+  funnelTitle: "Khách của tôi theo giai đoạn",
+  barrierTitle: "Khách của tôi hay lo gì",
+  chartEmpty: "Chưa có khách nào.",
+  barrierEmpty: "Chưa ghi nhận rào cản nào.",
+} as const;
+
+/** Độ gấp của "việc nên làm" — khách đang chờ người > lịch lái thử > gọi khách nóng > còn lại. */
+const ACTION_PRIORITY: Record<string, number> = {
+  TAKE_OVER: 0,
+  CONFIRM_TEST_DRIVE: 1,
+  CALL_BACK: 2,
+  REVIEW_ATTACH: 3,
+  ASK_MISSING: 5,
+};
+
+export function actionPriority(code: string): number {
+  if (code in ACTION_PRIORITY) return ACTION_PRIORITY[code];
+  return code.startsWith("RESOLVE_") ? 4 : 9;
+}

@@ -163,8 +163,22 @@ export function fetchAdminDashboardMetrics(): Promise<DashboardMetrics> {
   return request<DashboardMetrics>("/admin/analytics/dashboard");
 }
 
-export function fetchNoticeList(): Promise<Array<{ id: string; title: string; priority: string; created_at: string; read?: boolean }>> {
-  return request("/agent/notices");
+/** Thông báo nội bộ cho tư vấn viên — khớp `NoticeResponse` (`src/agents/api/schemas.py`). */
+export type NoticeItem = {
+  readonly notice_id: string;
+  readonly title: string;
+  readonly content: string;
+  readonly priority: string;
+  readonly created_at: string;
+  readonly read: boolean;
+};
+
+export function fetchNoticeList(): Promise<readonly NoticeItem[]> {
+  return request<readonly NoticeItem[]>("/agent/notices");
+}
+
+export async function markNoticeRead(noticeId: string): Promise<void> {
+  await request(`/agent/notices/${encodeURIComponent(noticeId)}/read`, { method: "POST" });
 }
 
 export interface BookingVehicleOption {

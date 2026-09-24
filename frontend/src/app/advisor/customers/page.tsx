@@ -1,7 +1,15 @@
-import { AdvisorCustomers } from "@/components/advisor/advisor-customers";
+import { AdvisorPageHeading } from "@/components/advisor/advisor-features";
+import { SalesOpportunitiesView } from "@/components/advisor/sales-opportunities-view";
+import { WaitingCustomers } from "@/components/advisor/waiting-customers";
 import { OperationalShell } from "@/components/shared/operational-shell";
-import { PageHeading } from "@/components/shared/page-heading";
 
+/** "Khách hàng" = gộp "Cơ hội bán hàng" + "Khách hàng được phân công" + "Hội thoại" (plan §17, §18). */
 export default function AdvisorCustomersPage() {
-  return <OperationalShell role="advisor"><PageHeading eyebrow="Advisor / CRM preview" title="Khách hàng được phân công" description="Xem hồ sơ nhu cầu, lịch sử tư vấn và trạng thái chuyển đổi của các khách hàng thuộc phạm vi phụ trách." /><AdvisorCustomers /></OperationalShell>;
+  return (
+    <OperationalShell role="advisor">
+      <AdvisorPageHeading feature="customers" />
+      <WaitingCustomers />
+      <SalesOpportunitiesView />
+    </OperationalShell>
+  );
 }

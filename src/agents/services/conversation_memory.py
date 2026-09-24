@@ -515,6 +515,16 @@ class ConversationMemoryService:
         await self._notify_after_core_turn(session_id, customer_id, core_state.turn_count)
         return replace(_turn_result(finalized), review_id=review_id, awaiting_review=review_id is not None)
 
+    async def notify_turn_committed(self, *, session_id: str, customer_id: str, turn_count: int) -> None:
+        """Báo việc nền (Customer 360) rằng một lượt đã lưu xong — cho CẢ đường lưu cũ.
+
+        Route `/agent/turn` mà frontend gọi đi đường `finalize_turn` (không lease), không qua
+        `commit_core_turn`; trước đây móc chỉ nằm trong `commit_core_turn` nên khách chat thật
+        KHÔNG bao giờ được gắn cơ hội/lưu hồ sơ (lượt dev 2026-09-24, plan §21).
+        """
+
+        await self._notify_after_core_turn(session_id, customer_id, turn_count)
+
     async def _notify_after_core_turn(self, session_id: str, customer_id: str, turn_count: int) -> None:
         if self._after_core_turn is None:
             return

@@ -1,7 +1,9 @@
-"""HTTP `/admin/promotions` — quản trị ưu đãi cho Admin (plan Customer 360 Phase 5C).
+"""HTTP `/advisor/promotions` — tư vấn viên quản lý chương trình ưu đãi (plan Customer 360 §16).
 
-Chỉ ADMIN (`routes._is_admin`, cùng cơ chế các route `/admin/vehicles`). Hiệu quả ưu đãi
-(đề xuất → gửi → chốt) nằm ở `/admin/promotion-stats` của module agents, nơi có vòng đời.
+Admin chỉ lo kỹ thuật; tư vấn viên chịu trách nhiệm với khách nên toàn quyền tạo/sửa/bật tắt
+chương trình, dựng luật đối tượng, đặt hạn mức tự cấp. Ưu đãi vượt hạn mức do một tư vấn viên
+KHÁC duyệt (`/advisor/opportunity-offers/{id}/approve` của module agents). Hiệu quả ưu đãi
+(đề xuất → gửi → chốt) nằm ở `/advisor/promotion-stats`.
 """
 
 from __future__ import annotations
@@ -12,11 +14,12 @@ from typing import Any, Literal
 from fastapi import APIRouter, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
+from src.auth.domain.authorization import Role
 from src.products.application.promotion_admin_service import PromotionAdminError, PromotionAdminService
 from src.products.domain.eligibility_rules import FIELD_QUESTION_HINTS, FIELD_TYPES, validate_rules
-from src.products.presentation.routes import _current_user, _is_admin
+from src.products.presentation.routes import _current_user
 
-router = APIRouter(prefix="/admin/promotions", tags=["admin-promotions"])
+router = APIRouter(prefix="/advisor/promotions", tags=["advisor-promotions"])
 
 PromotionTypeLiteral = Literal[
     "FIXED_DISCOUNT", "PERCENT_DISCOUNT", "GIFT", "FINANCING", "REGISTRATION_SUPPORT", "OTHER"
@@ -54,11 +57,13 @@ def _service(request: Request) -> PromotionAdminService:
     return service
 
 
-async def _admin(request: Request) -> str:
-    if not await _is_admin(request):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Chỉ Admin được quản trị ưu đãi")
+async def _advisor(request: Request) -> str:
+    """Chỉ tư vấn viên đang hoạt động — Admin (kỹ thuật) không quản lý ưu đãi nữa."""
+
     user = await _current_user(request)
-    return str(getattr(user, "id", "admin"))
+    if user is None or user.role is not Role.ADVISOR:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Chỉ tư vấn viên được quản lý ưu đãi")
+    return str(getattr(user, "id", "advisor"))
 
 
 def _error(error: PromotionAdminError) -> HTTPException:
@@ -71,14 +76,14 @@ def _error(error: PromotionAdminError) -> HTTPException:
 
 @router.get("")
 async def list_promotions(request: Request, status_filter: str | None = None) -> list[dict[str, Any]]:
-    await _admin(request)
+    await _advisor(request)
     return await _service(request).list(status_filter)
 
 
 @router.get("/rule-schema")
 async def rule_schema(request: Request) -> dict[str, Any]:
     """Field + toán tử hợp lệ cho bộ dựng luật — một nguồn với bộ đánh giá."""
-    await _admin(request)
+    await _advisor(request)
     return {
         "fields": FIELD_TYPES,
         "operators": ["eq", "in", "gte", "lte", "exists"],
@@ -88,7 +93,7 @@ async def rule_schema(request: Request) -> dict[str, Any]:
 
 @router.post("/validate-rules")
 async def validate(payload: RulesIn, request: Request) -> dict[str, Any]:
-    await _admin(request)
+    await _advisor(request)
     errors = validate_rules(payload.rules)
     return {"ok": not errors, "errors": errors}
 
@@ -96,7 +101,7 @@ async def validate(payload: RulesIn, request: Request) -> dict[str, Any]:
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_promotion(payload: PromotionIn, request: Request) -> dict[str, Any]:
     """Ưu đãi mới luôn ở trạng thái UNVERIFIED cho tới khi Admin kích hoạt."""
-    actor = await _admin(request)
+    actor = await _advisor(request)
     try:
         return await _service(request).create(payload.model_dump(exclude_none=True), actor)
     except PromotionAdminError as error:
@@ -105,7 +110,7 @@ async def create_promotion(payload: PromotionIn, request: Request) -> dict[str, 
 
 @router.patch("/{promotion_id}")
 async def update_promotion(promotion_id: str, payload: PromotionIn, request: Request) -> dict[str, Any]:
-    actor = await _admin(request)
+    actor = await _advisor(request)
     try:
         return await _service(request).update(promotion_id, payload.model_dump(exclude_unset=True), actor)
     except PromotionAdminError as error:
@@ -115,7 +120,7 @@ async def update_promotion(promotion_id: str, payload: PromotionIn, request: Req
 @router.post("/{promotion_id}/activate")
 async def activate_promotion(promotion_id: str, request: Request) -> dict[str, Any]:
     """UNVERIFIED/DRAFT → ACTIVE — chỉ khi luật hợp lệ và còn hạn."""
-    actor = await _admin(request)
+    actor = await _advisor(request)
     try:
         return await _service(request).activate(promotion_id, actor)
     except PromotionAdminError as error:
@@ -124,7 +129,7 @@ async def activate_promotion(promotion_id: str, request: Request) -> dict[str, A
 
 @router.delete("/{promotion_id}")
 async def cancel_promotion(promotion_id: str, request: Request) -> dict[str, Any]:
-    actor = await _admin(request)
+    actor = await _advisor(request)
     try:
         return await _service(request).cancel(promotion_id, actor)
     except PromotionAdminError as error:

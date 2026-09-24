@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { HorizontalBarChart } from "@/components/admin/customer360-charts";
+import { HorizontalBarChart } from "@/components/shared/horizontal-bar-chart";
 import { TurnTracePanel } from "@/components/admin/turn-trace-panel";
 import { INSIGHT_FIELD_LABELS } from "@/components/customer360/customer360-labels";
 import { type ExtractionQuality, fetchExtractionQuality } from "@/lib/api/agent";

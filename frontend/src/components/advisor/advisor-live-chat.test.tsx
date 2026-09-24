@@ -40,6 +40,8 @@ vi.mock("@/lib/api/agent", () => ({
   closeAdvisorConversation,
   deleteAdvisorConversation,
   handoffAdvisorConversation,
+  // Panel hồ sơ khách bên phải cũng đọc nút thắt của phiên — trả rỗng để không có lời hứa treo.
+  fetchBottleneckSignals: vi.fn().mockResolvedValue([]),
 }));
 
 describe("AdvisorLiveChat", () => {

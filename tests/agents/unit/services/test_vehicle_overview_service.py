@@ -201,7 +201,10 @@ async def test_builder_fans_out_details_and_rag_before_rendering_evidence() -> N
     assert "2. **Nội thất & Tiện nghi**:" in result.answer
     assert "**Tiện nghi**: Màn hình trung tâm" in result.answer
     assert "evidence_id" not in result.answer
-    assert result.answer.endswith(SHEET_INVITATION)
+    # Không câu mời/câu hỏi nào trong bảng tổng quan: `act._vehicle_qa` nối ĐÚNG
+    # MỘT câu kết — bảng tự kết thêm lời mời là khách nhận hai lời mời liền nhau.
+    assert SHEET_INVITATION not in result.answer
+    assert "?" not in result.answer
     # Mỗi nhóm đúng MỘT dòng bullet, không phải một đoạn văn trong bullet.
     bullets = [line for line in result.answer.splitlines() if line.startswith("* ")]
     assert bullets == sorted(set(bullets), key=bullets.index)  # không lặp nội dung
@@ -251,24 +254,24 @@ def test_renderer_omits_empty_safety_without_a_missing_data_placeholder() -> Non
 
     answer = render_overview_response(overview_without_safety)
 
-    assert "An toàn:" not in answer
-    assert "chưa có" not in answer.casefold()
+    assert "An toàn" not in answer
+    # Chỉ mục GIÁ được nói thẳng là chưa có số liệu (spec: không bịa số); các mục
+    # khác thiếu dữ liệu thì bỏ hẳn, không chèn placeholder.
+    assert all("chưa có" not in line.casefold() for line in answer.splitlines() if "Giá bán" not in line)
 
 
 def test_renderer_names_the_vehicle_in_its_opening_copy() -> None:
     """Dùng lại y nguyên một đoạn mở đầu cho hai mẫu xe là lỗi lặp nội dung.
 
-    Đoạn KẾT thì ngược lại: câu mời và disclaimer cố ý giống hệt nhau ở mọi mẫu
-    xe và mọi nhánh trả lời. Đó là câu chữ pháp lý và câu chuyển bước tư vấn —
-    biến thể hoá chúng chỉ tạo ra nhiều bản cần rà soát mà không nói thêm gì.
+    Bảng tổng quan KHÔNG tự kết bằng câu mời: câu kết duy nhất do `act` nối vào.
     """
 
     vf7_answer = render_overview_response(VehicleOverview(vehicle_name="VF 7"))
     vf9_answer = render_overview_response(VehicleOverview(vehicle_name="VF 9"))
 
     assert vf7_answer.splitlines()[0] != vf9_answer.splitlines()[0]
-    assert vf7_answer.endswith(SHEET_INVITATION)
-    assert vf9_answer.endswith(SHEET_INVITATION)
+    assert SHEET_INVITATION not in vf7_answer
+    assert SHEET_INVITATION not in vf9_answer
 
 
 @pytest.mark.asyncio

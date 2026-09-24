@@ -763,3 +763,341 @@ Mọi phần mới nằm sau cờ trong `agent_feature_flags`, **gieo TẮT**: `
 `alembic -c alembic-agent.ini upgrade head`; chạy `python -m scripts.customer360_backfill`; đặt
 cron `python -m scripts.customer360_sweep` mỗi 15 phút; dựng luật cho 6 ưu đãi crawler ở
 `/admin/promotions` (đang hiện "Cần dựng luật") rồi mới bật `offer_rules_engine`.
+
+
+---
+
+## 13. UI THEO MOCKUP (2026-09-24)
+
+Dựng lại hai màn Customer 360 của tư vấn viên theo `docs/design/customer360/mockup-01-danh-sach-khach.png` và `mockup-02-ho-so-khach.png`, dữ liệu thật từ API. Chỉ áp dụng khi cờ `customer360_ui` BẬT. Khi cờ tắt, `SalesOpportunityList` cũ và tiêu đề cũ giữ nguyên. Menu và sidebar không đổi (vẫn 6 mục advisor). Không đụng live chat panel, logic agent, hay các trang admin khác.
+
+Ký hiệu: ✅ đã làm · ⚠️ làm một phần · ⏭️ hoãn.
+
+### 13.1 Bảng đối chiếu — màn "Khách cần xử lý" (`/advisor/sales-opportunities`)
+
+| Phần tử mockup | Nguồn dữ liệu | Trạng thái |
+|---|---|---|
+| Ngày hôm nay + tiêu đề "Khách cần xử lý" | Tính ở FE; tiêu đề nằm trong `OpportunityQueue` khi cờ bật | ✅ |
+| 4 nút lọc: Tất cả · Chỉ khách nóng · Chờ người thật · Có lịch lái thử | `GET /advisor/opportunities?band=HOT` · `?waiting=true` · `?has_test_drive=true` (**mới**). Nút có `aria-pressed` | ✅ |
+| 4 thẻ số | `GET /advisor/opportunities/summary` (**mới**): `hot`, `waiting`, `test_drives_48h`, `unanswered`. Bấm thẻ thì áp bộ lọc tương ứng; riêng thẻ "Câu AI chưa trả lời được" không có bộ lọc | ✅ |
+| Cột Độ nóng (viên thuốc 3 màu) | `heat_band`, `heat_score` → `HeatPill` | ✅ |
+| Cột Khách + dòng phụ | `display_name` + **mới** `sessions_count`, `has_phone`, `waiting` ("Yêu cầu gặp người thật" được ưu tiên) | ✅ |
+| Cột Xe quan tâm | **mới** `top_vehicle_name`: xe hạng 1 của thẻ đề xuất gần nhất (`conversation_turn_outcomes.recommendations`) | ✅ |
+| Cột Ngân sách | `slots`: `budget_stated_vnd` trước, sau đó min–max. Không có thì "Chưa nói" màu xám | ✅ |
+| Cột Rào cản chính | `barriers[0]` + "+N" | ⚠️ `barriers` hiện sắp theo nhãn (alphabet), chưa theo tần suất |
+| Cột Giai đoạn (5 vạch 18×6) | `stage` → `StageBar variant="compact"` | ✅ |
+| Cột Lần cuối | `last_seen_at` → `relativeAge` ("12 phút", "Hôm qua", "3 ngày") | ✅ |
+| Cột Việc nên làm + "Mở hồ sơ" | **mới** `next_action`: việc đầu tiên của cùng hàm domain `actions_from_signals` mà hồ sơ dùng | ✅ |
+| Chú thích cuối bảng | Chuỗi tĩnh, đã bỏ "Dữ liệu mẫu minh hoạ" | ✅ |
+| < 1024px: bảng thành thẻ | Cùng một `<table>`; CSS đổi `tr` thành thẻ, nhãn cột lấy từ `data-label` | ✅ (chưa kiểm bằng mắt) |
+
+### 13.2 Bảng đối chiếu — Hồ sơ khách (`/advisor/customers/[id]`, `/admin/customers/[id]`)
+
+| Phần tử mockup | Nguồn dữ liệu | Trạng thái |
+|---|---|---|
+| Avatar, tên, độ nóng | `customer.display_name` (nếu chưa có tên thì dùng `customer_id` rút gọn), `heat_band/score` | ✅ |
+| Dòng meta: SĐT che · N phiên · M lượt · Hoạt động X trước · AI/người | `phone_masked`, `sessions_count`, tổng `sessions[].turn_count` (tính ở FE), `last_seen_at`, `ownership` của phiên đang mở | ✅ |
+| Nút Xem hội thoại | Phiên chờ TVV, nếu không có thì phiên mới nhất chưa đóng | ✅ |
+| Nút Gọi khách | `tel:` + `customer.phone` (chỉ TVV phụ trách nhận được). Không có SĐT thì ẩn nút | ✅ |
+| Nút Tiếp quản hội thoại | `POST /advisor/conversations/{id}/join` (endpoint có sẵn; thêm hàm FE `joinAdvisorConversation`), thành công thì chuyển sang live chat | ✅ |
+| Thanh 5 giai đoạn có ngày | **mới** `stage_history[]` | ⚠️ chỉ có mốc khi dữ liệu chứng minh được (xem 13.3). Chưa có ghi chú kiểu "hỏi xe gia đình" |
+| Gợi ý mở lời (nền tối) + "Dựa trên …" | `opening_hint` + **mới** `opening_hint_basis {kind, code?}` | ✅ Câu gợi ý vẫn là mẫu câu tất định của backend, không cá nhân hoá như mockup |
+| Rào cản khách đã nói ra | `barriers[]` + **mới** `at` → "Lượt N · dd/mm", link `…/conversations/{session}#turn-{N}` | ⚠️ Live chat chưa có anchor `#turn-N`, nên link chỉ mở đúng phiên |
+| Nhu cầu (lưới 3 cột, x/y) | `needs.known/missing` + **mới** `needs.evaded_detail[{slot, ask_count}]` + ô Tỉnh/Sạc/Thanh toán/Xe đang đi lấy từ `customer.fields` | ✅ |
+| Chip nhu cầu thêm | slot `habit_need_tags` | ⚠️ Hiện mã thô vì chưa có bảng nhãn tag ở FE |
+| Khách tự kể trong hội thoại | `insights[]` + `customer.fields` (`decision_maker`, `trade_in`), giữ nút "Báo sai" | ✅ |
+| Việc cần làm (checkbox) | `next_actions` | ⚠️ Checkbox chỉ đánh dấu phía trình duyệt, **chưa lưu**. Chưa có dòng phụ chi tiết |
+| Xe quan tâm | **mới** `vehicles_of_interest[]`: `CHOSEN` (xe khách chốt) + `RECOMMENDED` (thẻ đề xuất gần nhất, hạng 1 viền xanh), `quote_sent_at`, `asked_features` | ⚠️ Chưa có `COMPARED` (hệ thống không lưu xe nào khách đem ra so sánh). Không có số tiền báo giá vì dữ liệu không lưu theo xe |
+| Ưu đãi (thẻ cột phải) | `EligibleOfferList` (cờ `offer_rules_engine`). Cờ tắt thì ẩn thẻ | ⚠️ Hiện "Ưu đãi phù hợp"; "Ưu đãi đang giữ" (đã cấp) vẫn ở tab riêng |
+| Tóm tắt của AI | **mới** `customer.latest_summary` (bản đầy đủ, đã che liên hệ) + link "Mở toàn bộ hội thoại" | ✅ |
+| Nhiều cơ hội | Hàng nút chọn cơ hội dưới thẻ đầu trang, mặc định chọn cơ hội nóng nhất. Mọi khối đổi theo | ✅ |
+| Tab Phiên chat · Lái thử · Ưu đãi đã cấp | Giữ chức năng; tab nằm dưới thẻ đầu trang | ✅ |
+| Admin `readOnly` | Ẩn Gọi khách, Tiếp quản, checkbox, Báo sai, Tách/Gộp, cấp ưu đãi. Giữ "Phân công lại" và "Xem hội thoại" | ✅ |
+| Nguồn dự phòng (cờ tắt) | Khối thiếu dữ liệu bị ẩn. Chỉ còn thẻ đầu, lưới nhu cầu và các tab | ✅ |
+| < 1024px: 1 cột; 360px không cuộn ngang | CSS `@media (max-width: 1023px / 640px)` | ✅ (chưa kiểm bằng mắt) |
+
+### 13.3 Trường API đã thêm (chỉ thêm, không đổi/xoá trường cũ, không migration)
+
+- `GET /advisor/opportunities`:
+  - Tham số mới `waiting`, `has_test_drive`.
+  - Mỗi dòng thêm `sessions_count`, `has_phone`, `waiting`, `has_test_drive`, `booking_requested`, `top_vehicle_name`, `next_action`.
+  - Vẫn **1 câu SQL**, các giá trị lấy bằng subquery trong câu, không N+1.
+- `GET /advisor/opportunities/summary` (**mới**):
+  - Trả `{hot, waiting, test_drives_48h, unanswered}` trong **1 câu SQL**.
+  - Cùng phạm vi TVV với danh sách (khách có phân công ACTIVE cho TVV; Admin xem tất cả).
+  - Cờ tắt thì trả 503.
+- `GET /advisor|admin/customers/{id}/overview`, vẫn **3 câu SQL** (test đếm query đã có vẫn đạt):
+  - Thêm vào `customer`: `latest_summary`.
+  - Thêm vào mỗi rào cản: `at`.
+  - Thêm vào `needs`: `evaded_detail`.
+  - Thêm vào mỗi cơ hội: `opening_hint_basis`, `stage_history`, `vehicles_of_interest`.
+- Domain thuần (`src/agents/domain/customer_overview.py`):
+  - `ActionSignals` + `actions_from_signals`: hồ sơ và danh sách dùng chung; `next_actions` cũ gọi qua hàm này.
+  - `opening_basis` (cùng nhánh ưu tiên với `opening_hint`).
+  - `stage_history`, `vehicles_of_interest`.
+- Mốc `stage_history`:
+  - Tìm hiểu: phiên đầu của cơ hội bắt đầu.
+  - So sánh: lượt đầu tiên có thẻ đề xuất.
+  - Báo giá: `last_quote_sent_at`.
+  - Lái thử: lịch sớm nhất chưa huỷ (ghi chú = trạng thái lịch).
+  - Chốt: cơ hội `WON`.
+
+### 13.4 File đã sửa / tạo
+
+- **Backend:**
+  - Sửa `src/agents/domain/customer_overview.py`, `src/agents/adapters/customer_360_query.py`, `src/agents/services/operations/customer_360_read.py`, `src/agents/api/customer_360_routes.py`.
+  - Test: `tests/agents/integration/test_customer_360.py` (+1 test), `tests/agents/unit/api/test_customer_360_routes.py` (+1), `tests/agents/unit/domain/test_customer360_domain.py` (+2).
+- **Frontend, tạo mới:** `components/customer360/{heat-pill,stage-bar,kpi-tile,need-grid,vehicle-interest-card,barrier-rows}.tsx`, `use-clock.ts`.
+- **Frontend, viết lại:** `opportunity-queue.tsx`, `customer-profile-page.tsx`, `customer-summary.tsx` (thành thẻ đầu hồ sơ), `opportunity-card.tsx` (component đổi tên thành `OpportunityOverview`, giữ kiểu `OpportunityCardData`).
+- **Frontend, sửa:**
+  - `customer360-labels.ts`: nhãn/hàm mới — `barrierLabel`, `nextActionLabel`, `openingBasisText`, `vehicleRoleLabel`, `budgetText`, `relativeAge`, `shortDate`, bộ lọc và thẻ số.
+  - `types/customer360.ts`, `lib/api/agent.ts` (`fetchOpportunities` nhận bộ lọc, `fetchOpportunitySummary`, `joinAdvisorConversation`), `lib/api/customer360.ts` (`openOwnership`, `turnsTotal`, `latestSummary`).
+  - `advisor/sales-opportunities-view.tsx` (tiêu đề theo cờ), `app/advisor/sales-opportunities/page.tsx`, `app/globals.css` (khối `.c360-*`).
+- **Test FE:**
+  - `customer360.test.tsx` viết lại cho component mới (StageBar, OpportunityOverview, OpportunityQueue).
+  - `customer-profile-page.test.tsx`:
+    - Selector đổi theo markup có chủ đích: "Vào chat" → "Xem hội thoại"; "Tiếp quản" từ link → nút gọi API.
+    - SĐT đầy đủ không còn hiện dạng chữ, chỉ còn ở `tel:`.
+    - "Khách né:" → "Khách né · hỏi N lần".
+    - Thêm test Admin (cờ bật) và nhiều cơ hội.
+  - `BarrierList` cũ giữ nguyên vì live chat panel còn dùng.
+
+### 13.5 Kết quả kiểm thử
+
+- **Backend, Customer 360:** `pytest tests/agents -k "customer360 or customer_360 or opportunit"` → **65 passed**. Có test đếm SQL của `/overview` (vẫn 3 câu).
+- **Backend, toàn bộ:** 34 failed / 6986 passed / 197 skipped. Không có lỗi mới: 34 lỗi đều có từ trước, gồm test phụ thuộc ngày `test_hoi_mot_ngay_thi_chi_nhan_o_cua_ngay_do` và các test integration vốn đã fail. Ruff `src/ tests/` sạch.
+- **Frontend:**
+  - `vitest run src/components/customer360`: 19 passed. Toàn bộ vitest: 87 file / 517 passed.
+  - `npm run typecheck`: 0 lỗi.
+  - `npm run lint`: chỉ còn 1 lỗi + 1 cảnh báo có từ trước ở `consultation/tour-map.tsx`, `tour-panel.tsx`.
+  - `npm run build`: biên dịch thành công.
+- **Kiểm bằng mắt (§8):** **bỏ qua**. Repo chưa có Playwright và browser. Muốn chụp phải bật `customer360_ui`, chạy backfill trên dev DB và đăng nhập TVV có khách được giao — những việc này đổi trạng thái dùng chung nên không tự làm.
+
+### 13.6 `[GIẢ ĐỊNH]`
+
+1. Tiêu đề "Khách cần xử lý" chỉ hiện khi cờ `customer360_ui` bật. Nhãn menu vẫn "Cơ hội bán hàng".
+2. "Chờ người thật" = khách có phiên `ACTIVE` với `ownership = PENDING_HANDOFF`. Dùng chung cho dòng phụ "Yêu cầu gặp người thật".
+3. "Câu AI chưa trả lời được" = số dòng `out_of_scope_log` loại `MISSING_DATA` hoặc `OUT_OF_SCOPE` trong **7 ngày gần nhất**, vì bảng này không có trạng thái "đã xử lý". Chưa tính tính năng `UNKNOWN`.
+4. "Có lịch lái thử" / "Lái thử trong 48 giờ" = lịch chưa huỷ, có `scheduled_at` từ bây giờ trở đi (hoặc trong 48 giờ tới).
+5. Phạm vi thẻ số = phạm vi của danh sách cơ hội (phân công ACTIVE), không phải `_advisor_scope` theo phiên. Lý do: thẻ số phải khớp với bảng ngay bên dưới.
+6. Nút Tiếp quản hiện khi phiên đang mở do AI giữ **hoặc** khách đang chờ TVV (trước đây nút "Tiếp quản" chỉ dẫn tới phiên chờ).
+7. Link rào cản dùng anchor `#turn-{turn_index}`. Live chat chưa cuộn tới anchor này.
+8. Checkbox "Việc cần làm" chỉ đánh dấu phía trình duyệt, không lưu.
+9. "Xe quan tâm" gắn câu hỏi tính năng vào xe đứng đầu, vì dữ liệu không nói khách hỏi cho xe nào. Thêm vai trò `CHOSEN` (xe khách đã chốt) ngoài 3 vai trò trong prompt.
+10. Giữ font Inter đang dùng, không thêm Geist.
+11. Nút "Xem hội thoại" vẫn hiện cho Admin (prompt không liệt kê nút này trong danh sách phải ẩn).
+12. Đánh số mục này là 13 theo đúng prompt, dù plan chưa có mục 12.
+
+### 13.7 Việc còn lại
+
+- **Lưu trạng thái checkbox "Việc cần làm":** cần bảng mới, hoặc tái dùng `customer360_feedback`.
+- **Ghi chú cho mốc giai đoạn** ("hỏi xe gia đình", "VF 5 và VF 6"): cần chọn câu tóm tắt tất định cho từng mốc.
+- **Anchor `#turn-N` trong live chat:** trang hội thoại cần cuộn tới đúng lượt.
+- **Xe khách đem ra so sánh (`COMPARED`):** cần lưu kết quả lượt so sánh.
+- **Nhãn tiếng Việt cho `habit_need_tags`:** FE chưa có bảng nhãn cho các mã tag.
+- **Sắp rào cản theo tần suất:** hiện sắp theo nhãn.
+- **Chụp màn hình so với mockup:** repo chưa có Playwright. Cần bật cờ trên môi trường có dữ liệu thật rồi chụp 1440px/390px.
+
+---
+
+## 14. TƯ VẤN VIÊN TỰ NHẬN KHÁCH — BỎ PHÂN CÔNG CỦA ADMIN (2026-09-24)
+
+**Quyết định của người dùng:** Admin chỉ lo kỹ thuật; tư vấn viên chịu trách nhiệm với khách. Đã chốt 3 điểm:
+
+1. **Cách nhận khách:** tiếp quản hội thoại + hàng chờ.
+2. **Quyền Admin:** vẫn xem được hồ sơ khách, chỉ đọc, thông tin cá nhân được che.
+3. **Tự nhả khách:** sau 7 ngày.
+
+- **Cách nhận khách:**
+  - Tư vấn viên bấm "Tiếp quản hội thoại" (`POST /advisor/conversations/{id}/join`): khách **chưa có ai phụ trách** thì thuộc về người đó. Khách đã có người khác phụ trách thì giữ nguyên. Khách ẩn danh bị bỏ qua. Nếu gán khách lỗi thì việc tiếp quản vẫn thành công.
+  - Hàng chờ "Chưa ai nhận" trong màn "Khách cần xử lý": `GET /advisor/customers/pool`, khách đang chờ người lên trước rồi đến khách nóng nhất. Nút "Nhận khách" gọi `POST /advisor/customers/{id}/claim`; nếu người khác đã nhận trước thì trả 409.
+- **Trả khách:**
+  - Tư vấn viên phụ trách bấm "Trả khách về hàng chờ" (`POST /advisor/customers/{id}/release`); người khác bấm thì trả 403.
+  - Cron `customer360_sweep` tự nhả khách không có tin nhắn tư vấn viên nào trong 7 ngày, trừ khách đang có phiên do người giữ (`ownership = 'HUMAN'`).
+- **Admin:**
+  - Đã bỏ mục menu "Khách hàng & phân công", trang `/admin/assignments`, nút "Phân công lại", bộ chọn khách và link trên dashboard.
+  - Hồ sơ `/admin/customers/[id]` còn chỉ đọc, SĐT che, nút quay lại dẫn về "Phiên chat".
+  - Admin gọi claim/release thì trả 403.
+  - Số mục menu admin: bớt 1 (vẫn có mục "Ưu đãi").
+- **Database:** `agent_0040` thêm unique index một phần `uq_customer_advisor_assignments_active (customer_id) WHERE status = 'ACTIVE'`, có downgrade; trước khi tạo index thì dọn các dòng ACTIVE trùng. Bảng `customer_advisor_assignments` giữ nguyên làm hồ sơ "ai phụ trách". Giá trị mới: `assigned_by` = `TAKEOVER` / `SELF_CLAIM`, `status` = `RELEASED`.
+- **Code:**
+  - Tạo mới:
+    - Backend: `domain/customer_ownership.py`, `services/operations/customer_ownership.py`, `adapters/customer_ownership_repository.py`.
+    - Frontend API: `fetchCustomerPool`, `claimCustomer`, `releaseCustomer`.
+  - Sửa: `advisor_routes.join_conversation`, `customer_360_routes` (3 route), `composition`, `main`, `scripts/customer360_sweep.py`; frontend `opportunity-queue.tsx` (tab "Chưa ai nhận"), `customer-profile-page.tsx`, `operational-shell.tsx`, `admin-dashboard.tsx`.
+  - Xoá: `app/admin/assignments/page.tsx`, `components/admin/assignment-center.tsx`, `customer360/customer-picker.tsx`.
+- **Test:**
+  - Tạo mới `tests/agents/integration/test_customer_ownership.py`: hai người nhận cùng lúc chỉ một người thắng, tiếp quản tự gán, trả khách, hàng chờ, tự nhả.
+  - Thêm test route (Admin bị 403, người khác nhận trước bị 409) và test frontend cho hàng chờ và trả khách.
+  - Sửa hàm chuẩn hoá SQL trong `test_migrations.py` để chuẩn hoá cả dấu `=`.
+  - Toàn bộ backend: không có lỗi mới (34 test fail đều có từ trước). Frontend: 519/519 đạt.
+- **Còn lại:**
+  - Các endpoint Admin cũ (`/admin/assignments…`, `/admin/customers/picker`, chuyển phiên sang tư vấn viên khác) vẫn còn ở backend nhưng không còn màn hình nào gọi. Nên xoá ở lượt sau, cùng với các test đi kèm.
+  - Chưa có cơ chế chuyển khách trực tiếp giữa hai tư vấn viên; hiện phải trả khách về hàng chờ rồi người kia nhận.
+
+---
+
+## 15. DASHBOARD CHO TƯ VẤN VIÊN, ADMIN CHỈ CÒN SỐ KỸ THUẬT (2026-09-24)
+
+**Quyết định của người dùng:** dashboard giúp tư vấn viên nắm tình hình khách của chính mình. Admin chỉ giữ số kỹ thuật.
+
+- **Trang `/advisor` = "Tổng quan khách của tôi"** (khi cờ `customer360_ui` bật; cờ tắt thì vẫn là hàng đợi duyệt như cũ). Gồm:
+  - 4 thẻ số: khách nóng, khách chờ người thật, lái thử trong 48 giờ, câu AI chưa trả lời được.
+  - **Việc cần làm hôm nay:** mỗi khách một việc, tối đa 8 việc. Thứ tự: khách đang chờ > xác nhận lái thử > gọi khách nóng > xác nhận Tách/Gộp > xử lý rào cản > hỏi thông tin còn thiếu; cùng mức thì khách nóng hơn lên trước.
+  - Số khách trong hàng chờ "Chưa ai nhận".
+  - Biểu đồ "Khách của tôi theo giai đoạn" và "Khách của tôi hay lo gì" (đếm số cơ hội có mỗi rào cản).
+  - Chỉ dùng lại API đã có (`/advisor/opportunities/summary`, `/advisor/opportunities`, `/advisor/customers/pool`), cùng phạm vi tư vấn viên. **Backend không đổi.**
+- **Menu tư vấn viên: 7 mục.** Thêm mục đầu "Tổng quan". "Hàng đợi duyệt" chuyển sang `/advisor/queue`; các link "Quay lại hàng đợi" ở live chat, màn duyệt và màn nút thắt đã trỏ sang đó. Đăng nhập xong vẫn vào `/advisor`.
+- **Dashboard admin:** bỏ khối "Khách hàng 360" (phễu, độ nóng, rào cản, tải việc theo tư vấn viên). Còn lại số vận hành, phiên chat, phễu vận hành, chất lượng HITL. Endpoint `/admin/customer-360/metrics` không còn màn nào gọi; nên xoá ở lượt sau.
+- **File:**
+  - Tạo mới: `components/customer360/advisor-dashboard.tsx` (+ test), `components/advisor/advisor-home.tsx`, `app/advisor/queue/page.tsx`.
+  - Chuyển `admin/customer360-charts.tsx` → `shared/horizontal-bar-chart.tsx`.
+  - Sửa: `app/advisor/page.tsx`, `operational-shell.tsx`, `admin-dashboard.tsx` (+ test), `advisor-live-chat.tsx`, `advisor-review-panel.tsx`, `bottleneck-signal-panel.tsx`, `customer360-labels.ts`, `globals.css`.
+- **Kiểm thử:** vitest 88 file / 522 test đạt, typecheck sạch, lint chỉ còn lỗi cũ ở tour-map.
+
+---
+
+## 16. ƯU ĐÃI CHUYỂN SANG TƯ VẤN VIÊN, DUYỆT CHÉO (2026-09-24)
+
+**Quyết định của người dùng:** tư vấn viên toàn quyền quản lý chương trình ưu đãi. Ưu đãi vượt hạn mức do một tư vấn viên **khác** duyệt (Admin không duyệt nữa).
+
+- **Quản lý chương trình:**
+  - `/admin/promotions` → `/advisor/promotions`. Backend `src/products/presentation/promotion_admin_routes.py` đổi prefix; chỉ `Role.ADVISOR` được gọi, Admin bị 403.
+  - Menu: mục "Ưu đãi" rời Admin, sang tư vấn viên (menu tư vấn viên: 8 mục).
+- **Duyệt chéo:**
+  - Domain `offer_lifecycle.approval_blocker`: người duyệt trùng người đề xuất → `SELF_APPROVAL`.
+  - `POST /advisor/opportunity-offers/{id}/approve`: tự duyệt → 403, Admin → 403. Route này phải đăng ký **trước** route chung `/{offer_id}/{action}`.
+  - `GET /advisor/opportunity-offers/pending`: danh sách chờ duyệt, cũ nhất trước.
+  - Màn Ưu đãi có khối "Chờ duyệt (N)" với nút Duyệt. Các nhãn "chờ quản lý duyệt" đổi thành "chờ một tư vấn viên khác duyệt".
+- **Thống kê:** `/admin/promotion-stats` → `/advisor/promotion-stats`.
+- **Bỏ bước "Tạo thông báo" sau khi kích hoạt ưu đãi:** đăng thông báo nội bộ (`POST /agent/notices`) vẫn chỉ Admin làm được. Muốn tư vấn viên tự báo cho đồng nghiệp thì phải mở quyền thông báo — chưa làm.
+- **File:**
+  - Chuyển `components/admin/{promotion-manager,eligibility-rule-builder(.test)}` → `components/advisor/`, `app/admin/promotions` → `app/advisor/promotions`.
+  - Sửa `lib/api/promotions.ts` (đường dẫn, `fetchPendingOffers`), `issued-offer-list.tsx`, `eligible-offer-list.tsx`, `operational-shell.tsx`, `globals.css`.
+  - Backend sửa `customer_360_routes.py`, `opportunity_offers.py`, `opportunity_offer_repository.py` (`list_pending`, `OfferView.suggested_by`), `offer_lifecycle.py`.
+- **Test:**
+  - Integration `test_opportunity_offers` (tự duyệt bị chặn, người khác duyệt được, danh sách chờ).
+  - Unit route (duyệt chéo, Admin 403).
+  - Frontend `promotion-manager.test.tsx`. Vitest 89 file đạt.
+
+---
+
+## 17. GỌN UI TƯ VẤN VIÊN: 8 → 6 TÍNH NĂNG, MỖI TRANG CÓ MÔ TẢ NGHIỆP VỤ (2026-09-24)
+
+**Yêu cầu của người dùng:** UI tư vấn viên đang rời rạc. Chỉ giữ thứ thật sự cần; gộp được thì gộp, không thì bỏ. Mỗi tính năng có một dòng mô tả nghiệp vụ.
+
+| Trước (8 mục) | Sau (6 mục) |
+|---|---|
+| Tổng quan | **Tổng quan**: thêm khối Thông báo nội bộ (dữ liệu thật) |
+| Cơ hội bán hàng ("Khách cần xử lý") + Khách hàng (danh sách phân công cũ) | **Khách hàng**: gộp làm một (`/advisor/customers`), gồm danh sách theo độ nóng + tab "Chưa ai nhận" |
+| Phiên chat | **Hội thoại** |
+| Hàng đợi duyệt | **Duyệt nội dung AI** |
+| Lịch lái thử | **Lịch lái thử** |
+| Ưu đãi | **Ưu đãi** |
+| Chính sách nội bộ | **Bỏ**: trang cũ chỉ hiện dữ liệu giả (`mocks/admin`), "Đã đọc" không lưu. Thông báo thật (`GET /agent/notices`, `POST …/read`) đưa lên Tổng quan |
+
+- **Một nguồn duy nhất:** `components/advisor/advisor-features.tsx` (`ADVISOR_FEATURES`, `ADVISOR_MENU`, `AdvisorPageHeading`) chứa tên, đường dẫn, icon, tiêu đề và **dòng mô tả nghiệp vụ**. Menu (`operational-shell.tsx`) và tiêu đề của cả 6 trang cùng đọc từ đây, nên không lệch nhau. Tiêu đề thuộc về trang; component danh sách và dashboard không tự dựng `h1` nữa.
+- **Đường dẫn cũ vẫn dùng được:** `/advisor/sales-opportunities` chuyển sang `/advisor/customers`, `/advisor/notices` chuyển sang `/advisor`. Nút quay lại và nút trả khách trong hồ sơ dẫn về "Khách hàng".
+- **Cờ `customer360_ui` tắt:** "Khách hàng" hiện danh sách theo phiên cũ; "Tổng quan" chỉ còn thông báo nội bộ.
+- **Đã xoá:** `advisor-customers.tsx`, `advisor-notices.tsx`. Sửa kiểu `fetchNoticeList` cho khớp `NoticeResponse` (trước đây sai: `id` thay vì `notice_id`, thiếu `content`) và thêm `markNoticeRead`.
+- **Backend:** không đổi.
+- **Kiểm thử:** vitest 90 file / 526 test đạt (thêm `advisor-features.test.tsx`, test thông báo trên dashboard). Typecheck sạch; lint chỉ còn lỗi cũ ở tour-map. Cả 6 trang trả 200 trên dev server, 2 đường dẫn cũ chuyển hướng đúng.
+- **Chưa đụng:** trang con (hồ sơ khách, live chat, chi tiết bản nháp/nút thắt) giữ tiêu đề riêng theo ngữ cảnh.
+
+---
+
+## 18. "HỘI THOẠI" GỘP VÀO "KHÁCH HÀNG" + BADGE KHÁCH ĐANG CHỜ (2026-09-24)
+
+**Yêu cầu của người dùng:** tư vấn viên kiểm tra hội thoại **theo khách mình tư vấn**; một danh sách hội thoại rời không cho biết nên tư vấn gì. Cần badge đỏ đếm số (1, 2, 3…) khi có khách xin gặp tư vấn viên, để khỏi phải tự vào tìm.
+
+- **Menu tư vấn viên: 5 mục.** Tổng quan · Khách hàng · Duyệt nội dung AI · Lịch lái thử · Ưu đãi.
+  - `/advisor/conversations` chuyển sang `/advisor/customers`.
+  - Live chat `/advisor/conversations/[id]` giữ nguyên, mở từ hồ sơ khách (tab "Phiên chat") hoặc từ khối "đang chờ". Menu "Khách hàng" sáng cả khi đang ở live chat.
+  - Nút quay lại trong live chat dẫn về "Khách hàng".
+- **Khối "Khách đang chờ gặp tư vấn viên (N)"** ở đầu trang Khách hàng (`components/advisor/waiting-customers.tsx`):
+  - Nguồn: `GET /advisor/conversations` (đã giới hạn phạm vi tư vấn viên từ Phase 0: khách mình phụ trách + khách chưa ai nhận đang chờ), lọc phiên `WAITING_ADVISOR`/`PENDING_HANDOFF` chưa đóng, chờ lâu nhất lên đầu.
+  - Gồm cả khách vãng lai (`anon-…`), là những khách không có trong danh sách cơ hội.
+  - Nút **Tiếp quản** (`POST /advisor/conversations/{id}/join`, tự nhận khách theo §14) rồi vào chat; link **Hồ sơ** (trừ khách vãng lai).
+- **Badge đỏ** trên mục menu "Khách hàng": số phiên đang chờ, làm mới mỗi 30 giây, dùng chung hook `useWaitingConversations`. Có `role="status"` và `aria-label` cho trình đọc màn hình.
+  - **Ngoại lệ DESIGN.md** (đỏ chỉ dành cho lỗi): người dùng yêu cầu rõ màu đỏ.
+- **Đã xoá:** `advisor-conversation-list.tsx` (+ test). `ChatSessionTable` dùng chung vẫn phục vụ màn admin.
+- **Sửa test cũ:** mock thiếu `fetchBottleneckSignals` trong `advisor-live-chat.test.tsx` từng gây "Unhandled Rejection" (không làm fail test).
+- **Backend:** không đổi.
+- **Kiểm thử:** vitest 90 file / 525 test đạt, không còn lỗi chưa xử lý. Typecheck sạch; lint chỉ còn lỗi cũ ở tour-map. 5 trang trả 200, đường cũ chuyển hướng đúng.
+
+---
+
+## 19. KHÁCH TỰ KHAI TÊN / SĐT / ĐỊA CHỈ SAU ĐĂNG NHẬP (2026-09-24)
+
+**Yêu cầu của người dùng:** khách đăng nhập xong thì nhập thông tin cơ bản (tên, SĐT, địa chỉ), để tư vấn viên thấy người thật thay vì mã khách.
+
+- **Màn chào `/welcome`:** khách thiếu **tên hoặc SĐT** thì thấy form "Cho em xin vài thông tin cơ bản" trước lời chào.
+  - Họ tên, SĐT bắt buộc; địa chỉ tuỳ chọn.
+  - SĐT được chuẩn hoá về `0xxxxxxxxx` (nhận dấu cách, dấu chấm, `+84`).
+  - "Để sau" không chặn khách; lần đăng nhập sau hỏi lại nếu vẫn thiếu.
+  - Tài khoản staff không bị hỏi.
+- **Lưu:** `PUT /auth/profile` (đã có). Sau đó gọi **mới** `POST /agent/customer-360/identity/refresh`: `customer_id` lấy từ phiên đăng nhập, chưa đăng nhập thì trả 401. Endpoint chép **ngay** tên/SĐT/địa chỉ sang `customer_profiles` và **ghi đè** bằng bản khách vừa khai, nhưng không xoá ô khách để trống. Trang `/account` khi lưu cũng gọi (qua `auth-store.saveProfile`).
+- **Trước đây:** chỉ job nền sau mỗi lượt chat đồng bộ, và chỉ lấp chỗ trống. Tư vấn viên thấy mã khách cho tới lượt chat kế tiếp, và khách sửa tên thì không cập nhật.
+- **Địa chỉ:** migration `agent_0041` thêm cột `customer_profiles.address` (có downgrade). Job nền đồng bộ thêm địa chỉ.
+  - Hồ sơ `/overview` trả `customer.address` **chỉ cho tư vấn viên phụ trách** (như SĐT đầy đủ); Admin không thấy.
+  - Thẻ đầu hồ sơ hiện địa chỉ dưới dòng meta.
+- **File:**
+  - Backend: `agent_0041_customer_profile_address.py`, `models.py`, `customer_identity_source.py`, `customer_opportunity_repository.py` (`upsert_profile_identity(address=, overwrite=)`), `customer_360.py` (`refresh_identity`), `customer_360_query.py`, `customer_overview.py`, `customer_360_routes.py`.
+  - Frontend: `lib/api/customer-profile.ts` (mới), `components/customer/profile-completion-form.tsx` (mới), `app/welcome/page.tsx`, `store/auth-store.tsx`, `lib/api/agent.ts`, `lib/api/customer360.ts`, `types/customer360.ts`, `customer-summary.tsx`, `globals.css`.
+- **Kiểm thử:**
+  - Backend: integration mới (ghi đè, giữ ô trống, địa chỉ chỉ tư vấn viên phụ trách thấy). Toàn bộ backend không có lỗi mới.
+  - Frontend: test màn chào cập nhật (hồ sơ thiếu → form; "Để sau"; kiểm SĐT; lưu → làm mới danh tính). Vitest 527 đạt.
+- Dev DB đã lên `agent_0041`.
+
+---
+
+## 20. KHÁCH HÀNG: 2 TAB "ĐÃ NHẬN" / "CHƯA NHẬN" + LƯU HỒ SƠ MỌI KHÁCH (2026-09-24)
+
+**Yêu cầu của người dùng:** tách khách chưa nhận và đã nhận thành 2 tab (nhận xong thì chuyển sang "Đã nhận"). Trang phải lưu hồ sơ **mọi** khách, và phải thấy rõ cơ chế lưu.
+
+**Nguyên nhân khó hiểu trước đây:** danh sách được dựng từ **cơ hội bán hàng**, mà cơ hội chỉ sinh ra sau khi khách chat. Vì vậy:
+- khách đã nhận mà chưa chat thì không hiện ở đâu;
+- khách đăng ký nhưng chưa chat thì không có hồ sơ nào.
+
+- **Lưu hồ sơ mọi khách:** mỗi lần khách đăng nhập, màn chào gọi `POST /agent/customer-360/identity/refresh`. Nguồn danh tính giờ đọc cả `auth_users.email` (chỉ tài khoản role `customer`), nên khách vừa đăng ký, kể cả bỏ qua bước khai, đã có hồ sơ (ít nhất email).
+  - Hồ sơ được bổ sung khi khách khai tên/SĐT/địa chỉ (§19), và cập nhật nhu cầu/độ nóng/rào cản sau mỗi lượt chat.
+  - Trang Khách hàng có dòng giải thích cơ chế này.
+- **Tab "Đã nhận" (mặc định):**
+  - `GET /advisor/customers/mine` (**mới**), xuất phát từ **phân công ACTIVE**, ghép cơ hội nóng nhất nếu có. MỘT câu SQL.
+  - Khách chưa có nhu cầu vẫn hiện, với các cột cơ hội là "—" và việc nên làm "Chưa có nhu cầu — nhắn/gọi hỏi khách cần xe gì".
+  - Email che (`mi***@gmail.com`, `pii.mask_email`).
+  - Bộ lọc và 4 thẻ số nằm trong tab này. Số trên tab đếm theo danh sách không lọc.
+- **Tab "Chưa nhận":** hàng chờ `GET /advisor/customers/pool`, giờ gồm cả khách **chỉ có hồ sơ** (đăng nhập, chưa chat): nguồn là hợp của `conversation_sessions` và `customer_profiles`, trừ khách vãng lai. Có cột email đã che. "Nhận khách" chuyển khách sang "Đã nhận" (số trên tab tăng) rồi mở hồ sơ.
+- **Tên hiển thị:** tên khách khai → email đã che → mã khách.
+- **Bộ lọc "Chưa ai nhận" cũ đã bỏ,** vì nay là tab riêng.
+- **File:**
+  - Backend: `customer_identity_source.py` (email, chỉ khách), `customer_opportunity_repository.py` (`email=`), `customer_360.py`, `customer_ownership_repository.py` (hàng chờ), `customer_ownership.py` (che email), `customer_360_query.py` (`_MY_CUSTOMERS`), `customer_360_read.py` (`list_my_customers`), `customer_360_routes.py` (`/customers/mine`, `MyCustomerItem`, `PoolItem.email`), `domain/pii.py` (`mask_email`).
+  - Frontend: `opportunity-queue.tsx` (viết lại theo tab), `customer360-labels.ts`, `lib/api/agent.ts` (`fetchMyCustomers`), `app/welcome/page.tsx`, `advisor-features.tsx`, `globals.css`.
+- **Kiểm thử:**
+  - Backend: integration mới (tab Đã nhận có khách chưa chat; hàng chờ có khách chỉ có hồ sơ, email che). Toàn bộ backend không có lỗi mới.
+  - Frontend: test tab viết lại. Vitest 527 đạt.
+
+---
+
+## 21. SỬA: CHAT THẬT KHÔNG BAO GIỜ ĐƯỢC LƯU VÀO HỒ SƠ KHÁCH (2026-09-24)
+
+**Triệu chứng người dùng báo:** khách nói rất nhiều (ngân sách 100 triệu, chọn xe, đặt lái thử), nhưng hồ sơ khách ở trang tư vấn viên trống.
+
+**Lần theo dữ liệu dev** (phiên `16cd9ba1…`):
+- Slot **có** được lưu trong `conversation_core_state` (ngân sách, loại xe, xe đã chọn), lịch lái thử có trong `test_drive_bookings`.
+- Nhưng `session_opportunity`, `customer_opportunities`, `customer_profiles` đều **trống**. Chạy tay `refresh_session` thì gắn được ngay (luật R1). Vậy job đúng nhưng **không được gọi**.
+
+**Nguyên nhân gốc:** frontend gọi `/agent/turn`, route này lưu lượt qua `finalize_turn` (nhánh không lease trong `run_turn._commit`). Móc Customer 360 (`after_core_turn`) chỉ nằm trong `commit_core_turn` (nhánh lease). Vì vậy **mọi cuộc chat thật từ giao diện chưa bao giờ kích hoạt việc gắn cơ hội/lưu hồ sơ**. Test không bắt được vì chúng gọi thẳng `refresh_session` hoặc đi nhánh lease.
+
+**Sửa:**
+1. `ConversationMemoryService.notify_turn_committed(...)` (công khai). Nhánh không lease trong `run_turn` gọi nó sau khi ghi `core_state`/trace; hỏng thì chỉ log, không làm hỏng lượt.
+2. `Customer360TurnHook`: **mỗi lượt** gắn phiên + ghi slot (chỉ thao tác DB), để tư vấn viên thấy ngay. Trích insight bằng LLM (tốn tiền) giữ nhịp 4 lượt: lượt khác gọi `refresh_session(force_extract=False)`. Trước đây cả hai chỉ chạy mỗi 4 lượt.
+3. Dev DB: chạy lại `scripts.customer360_backfill` (37 phiên được gắn). Hồ sơ phiên trên giờ có giai đoạn Lái thử, Ấm 50, ngân sách 100 triệu, xe quan tâm, lịch lái thử, việc nên làm.
+
+**Ghi chú khi test:** cuộc chat được báo lỗi dùng tài khoản **`advisor@gmail.com` đóng vai khách**. Vì vậy:
+- hồ sơ không có tên (danh tính chỉ lấy từ tài khoản role `customer`, §20);
+- người phụ trách trùng chính mã khách (tư vấn viên tự nhận chính mình).
+
+Nên test luồng khách bằng tài khoản khách.
+
+**Kiểm thử:** unit mới cho nhánh không lease (báo việc nền; việc nền hỏng không giết lượt). Test hook cập nhật theo nhịp mới (cố ý đổi hành vi). Toàn bộ backend: không có lỗi mới.

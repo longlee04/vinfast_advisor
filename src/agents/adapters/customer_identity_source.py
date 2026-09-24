@@ -18,8 +18,17 @@ from src.agents.logging import get_agent_logger
 
 logger = get_agent_logger("agent.adapters.customer_identity_source")
 
-_LOOKUP = text("SELECT p.full_name, p.phone_number FROM auth_user_profiles p WHERE p.user_id = :customer_id")
-_TABLE_EXISTS = text("SELECT to_regclass('public.auth_user_profiles') IS NOT NULL")
+#: Chỉ tài khoản KHÁCH — staff không bao giờ thành hồ sơ khách.
+_LOOKUP = text(
+    """
+    SELECT p.full_name, p.phone_number, p.address, u.email
+    FROM auth_users u LEFT JOIN auth_user_profiles p ON p.user_id = u.id
+    WHERE u.id = :customer_id AND u.role = 'customer'
+    """
+)
+_TABLE_EXISTS = text(
+    "SELECT to_regclass('public.auth_user_profiles') IS NOT NULL AND to_regclass('public.auth_users') IS NOT NULL"
+)
 
 
 class AuthProfileIdentitySource:
@@ -27,7 +36,9 @@ class AuthProfileIdentitySource:
         self._session_factory = session_factory
         self._available: bool | None = None
 
-    async def lookup(self, customer_id: str) -> tuple[str | None, str | None] | None:
+    async def lookup(self, customer_id: str) -> tuple[str | None, str | None, str | None, str | None] | None:
+        """(tên, SĐT, địa chỉ, email) của tài khoản khách, hoặc `None` khi không có tài khoản/bảng auth."""
+
         try:
             async with self._session_factory() as session:
                 if self._available is None:
@@ -38,7 +49,7 @@ class AuthProfileIdentitySource:
         except SQLAlchemyError:
             logger.warning("customer360.identity khong doc duoc auth_user_profiles", exc_info=True)
             return None
-        return None if row is None else (row[0], row[1])
+        return None if row is None else (row[0], row[1], row[2], row[3])
 
 
 __all__ = ["AuthProfileIdentitySource"]

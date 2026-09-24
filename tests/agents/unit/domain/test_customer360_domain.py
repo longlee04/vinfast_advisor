@@ -17,12 +17,15 @@ from src.agents.domain.customer_insight import (
     validate_candidate,
 )
 from src.agents.domain.customer_overview import (
+    ActionSignals,
     FactRow,
     HeaderRow,
     OpportunityRow,
     SessionRowIn,
     Viewer,
+    actions_from_signals,
     build_overview,
+    vehicles_of_interest,
 )
 from src.agents.domain.heat_score import HeatBand, HeatSignals, band_for, compute_heat
 from src.agents.domain.sales_stage import SalesStage, StageSignals, derive_stage
@@ -261,3 +264,59 @@ def test_ho_so_admin_chi_thay_sdt_da_che() -> None:
 
     assert "phone" not in payload["customer"]
     assert payload["customer"]["phone_masked"] == "0912***678"
+
+
+def test_viec_nen_lam_cua_danh_sach_trung_viec_dau_tien_cua_ho_so() -> None:
+    """Danh sách dựng `ActionSignals` từ một dòng SQL; hồ sơ từ 3 câu — hai đường phải ra cùng việc."""
+
+    [opp] = _overview(Viewer(is_admin=False, is_assigned_advisor=True))["opportunities"]
+    from_list = actions_from_signals(
+        ActionSignals(
+            heat_band="HOT",
+            needs_review=True,
+            waiting=True,
+            has_phone=True,
+            barrier_codes=["PRICE"],
+            missing=opp["needs"]["missing"],
+        )
+    )
+    assert from_list == opp["next_actions"]
+    assert opp["needs"]["evaded_detail"] == [{"slot": "passenger_count", "ask_count": 2}]
+    assert opp["opening_hint_basis"] == {"kind": "BARRIER", "code": "PRICE"}
+    assert opp["barriers"][0]["at"] == NOW.isoformat()
+    assert [mark["stage"] for mark in opp["stage_history"]] == ["DISCOVER"]
+
+
+def test_xe_quan_tam_lay_ten_tu_the_de_xuat_khong_co_so_tien() -> None:
+    base = SessionRowIn("S1", NOW, NOW, "ACTIVE", "AI", "SALES", "O1", False, "RULE", 3)
+    cards = [
+        {"rank": 2, "vehicle_id": "v5", "display_name": "VinFast VF 5", "starting_price_vnd": "529000000"},
+        {"rank": 1, "vehicle_id": "v6", "display_name": "VinFast VF 6", "starting_price_vnd": "689000000"},
+    ]
+    older = SessionRowIn(
+        "S0",
+        NOW,
+        NOW - timedelta(days=2),
+        "COMPLETED",
+        "AI",
+        "SALES",
+        "O1",
+        False,
+        "RULE",
+        3,
+        chosen_vehicle_id="v5",
+        last_quote_sent_at=NOW - timedelta(days=2),
+        latest_recommendations=cards,
+        feature_mentions=["sạc nhanh, gọi 0912345678"],
+    )
+    latest = SessionRowIn("S1", NOW, NOW, "ACTIVE", "AI", "SALES", "O1", False, "RULE", 3, latest_recommendations=cards)
+
+    items = vehicles_of_interest([older, latest])
+    assert [(item["name"], item["role"]) for item in items] == [
+        ("VinFast VF 5", "CHOSEN"),
+        ("VinFast VF 6", "RECOMMENDED"),
+    ]
+    assert items[0]["quote_sent_at"] == (NOW - timedelta(days=2)).isoformat()
+    assert items[0]["asked_features"] == ["sạc nhanh, gọi [SĐT]"] and items[1]["asked_features"] == []
+    assert all("price" not in key for item in items for key in item)
+    assert vehicles_of_interest([base]) == []

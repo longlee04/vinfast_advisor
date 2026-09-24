@@ -10,11 +10,12 @@ from decimal import Decimal
 from typing import Final, Protocol
 from uuid import UUID
 
+from rapidfuzz import fuzz
+
 from src.agents.contracts import VehicleFacts
 from src.agents.domain.catalog_reply import (
     PRICE_HEADING,
     SAFETY_GLOSSARY,
-    SHEET_INVITATION,
     SPEC_HEADING,
     VAT_NOTE,
     format_vnd,
@@ -181,74 +182,196 @@ def render_overview_response(
     Cùng bố cục Markdown với `domain/catalog_reply` — khai một chỗ ở
     `domain/reply_format`, vì hai nhánh này trả lời CÙNG một câu hỏi của khách
     ("thông tin xe VF 5"), chỉ khác nguồn dữ liệu (catalog thuần vs. catalog +
-    RAG). Hai bố cục khác nhau cho cùng một câu hỏi là thứ khách nhìn thấy ngay.
+    RAG).
 
-        <đoạn mở đầu 2-3 câu, không bullet>
+        <mở đầu: 1 câu persona + tối đa 1 câu điểm nổi bật ngắn>
 
-        1. **Thông số kỹ thuật**:
-        * **Kích thước**: <giá trị>
-        * **Động cơ & Vận hành**: <giá trị>
+        1. **Thông số kỹ thuật**: …
+        2. **Nội thất & Tiện nghi**: …   (mỗi mục ĐÚNG MỘT lần)
+        …
+        N. **Giá bán**: từng phiên bản (hoặc "từ …" khi chỉ có một giá)
 
-        2. **An toàn**:
-        * **Trang bị an toàn**: <giá trị>
+    KHÔNG có câu mời/câu hỏi ở cuối: `core/act._vehicle_qa` nối ĐÚNG MỘT câu kết
+    theo checklist. Bản cũ tự kết bằng `SHEET_INVITATION` rồi act nối thêm câu
+    hỏi — khách nhận hai lời mời liền nhau (log thật 2026-09-23, "thông tin xe vf9").
 
-        3. **Giá bán**: từ <số> (đã bao gồm VAT).
-
-        <đoạn mời + 2 câu kết cố định>
+    Mọi câu lấy từ RAG đi qua `_SentencePool`: làm sạch gạch đầu dòng lạc, bỏ
+    đoạn quảng cáo dài, và bỏ câu trùng/gần trùng (rapidfuzz ≥ 85) với câu đã in
+    — đoạn ghế bản Plus từng in hai lần (mở đầu + mục Tiện nghi).
 
     `evidence_id` KHÔNG đi ra ngoài. Nó vẫn nằm nguyên trong `VehicleOverview`
-    để guardrail A6-1 và hàng đợi duyệt A7 đối chiếu — bỏ khỏi câu chữ gửi khách
-    khác hẳn với bỏ khỏi dữ liệu.
+    để guardrail A6-1 và hàng đợi duyệt A7 đối chiếu.
     """
 
-    return join_blocks(
-        [
-            _render_opening(overview),
-            *render_sections(_overview_sections(overview, approved_features, feature_groups)),
-            SHEET_INVITATION,
-        ]
-    )
+    pool = _SentencePool(overview)
+    opening = _render_opening(overview, pool)
+    sections = _overview_sections(overview, approved_features, feature_groups, pool)
+    text = join_blocks([opening, *render_sections(sections)])
+    if _word_count(text) > MAX_OVERVIEW_WORDS:
+        sections = _fit_word_budget(sections)
+        text = join_blocks([opening, *render_sections(sections)])
+    return text
+
+
+#: Hai câu coi là TRÙNG khi độ giống ≥ ngưỡng này (rapidfuzz, thang 0-100).
+DUPLICATE_SIMILARITY: Final = 85
+#: Câu evidence dài hơn mức này là đoạn văn quảng cáo, không phải một dữ kiện.
+MAX_EVIDENCE_WORDS: Final = 30
+#: [GIẢ ĐỊNH] Trần độ dài câu trả lời tổng quan (~250 từ). Vượt thì rút gọn danh
+#: sách trang bị/màu — khách muốn chi tiết thì hỏi sâu từng mục.
+MAX_OVERVIEW_WORDS: Final = 250
+#: Số tên giữ lại mỗi danh sách khi phải rút gọn cho vừa trần độ dài.
+TRIMMED_LIST_ITEMS: Final = 4
+#: Dấu hiệu văn quảng cáo không trả lời câu hỏi nào ("…vượt ổ gà ổ voi…").
+_MARKETING_MARKERS: Final = (
+    "ổ gà",
+    "ổ voi",
+    "mọi cung đường",
+    "mọi địa hình",
+    "chinh phục",
+    "đẳng cấp",
+    "bứt phá",
+    "khẳng định vị thế",
+)
+#: Câu KỂ CHUYỆN của bài review crawl về — không phải dữ kiện về xe, và bị cắt khỏi
+#: bài thì còn trỏ vào ngữ cảnh đã mất. Lượt dev 2026-09-24 mở đầu tư vấn VF 9 bằng
+#: "Trước đây, khi còn sử dụng xe gầm thấp, đây là những tình huống khiến anh Tùng ái ngại."
+_NARRATIVE_MARKERS: Final = (
+    "trước đây",
+    "khi còn",
+    "đây là những",
+    "như trên",
+    "như vậy",
+    "điều này",
+    "chúng tôi",
+    "người viết",
+    "tác giả",
+)
+#: Ngôi thứ nhất của người viết bài.
+_FIRST_PERSON = re.compile(r"(?<!\w)(tôi|mình)(?!\w)", re.IGNORECASE)
+#: Danh xưng + TÊN RIÊNG viết hoa ("anh Tùng", "chị Mai") — nhân vật trong bài, không phải khách.
+_NAMED_PERSON = re.compile(r"(?<!\w)(anh|chị|ông|bà|bạn|cô|chú)\s+[A-ZĐÀ-Ỹ][\wÀ-ỹ]*")
+#: Gạch đầu dòng dính giữa câu (" - Bản Plus") — ranh giới câu thật.
+_INLINE_BULLET = re.compile(r"\s[-–•]\s+")
+_SENTENCE_END = re.compile(r"(?<=[.!?;])\s+")
+
+
+def evidence_sentences(content: str) -> list[str]:
+    """Tách một trích đoạn RAG thành các câu SẠCH.
+
+    Xuống dòng và gạch đầu dòng là ranh giới câu; ký tự gạch đầu dòng bị bóc. Bản
+    cũ gộp mọi khoảng trắng rồi mới cắt câu, nên "- Bản Plus" dính vào giữa câu.
+    Mảnh dưới 4 từ ("Bản Plus:") là nhãn, không phải câu.
+    """
+
+    sentences: list[str] = []
+    for line in re.split(r"\n+", content or ""):
+        for piece in _INLINE_BULLET.split(f" {line}"):
+            piece = piece.strip().lstrip("-–•*· ").strip()
+            for sentence in _SENTENCE_END.split(piece):
+                cleaned = " ".join(sentence.split()).strip().rstrip(".;").strip()
+                if len(cleaned.split()) >= 4:
+                    sentences.append(cleaned)
+    return sentences
+
+
+class _SentencePool:
+    """Sổ các câu RAG ĐÃ in trong một câu trả lời — để không câu nào in hai lần."""
+
+    def __init__(self, overview: VehicleOverview) -> None:
+        self._seen: list[str] = []
+        dimensions = overview.dimensions
+        #: Kích thước đã in từ catalog thì câu RAG nói lại khoảng sáng gầm là thừa.
+        self._covers_ground_clearance = dimensions is not None and dimensions.ground_clearance_mm is not None
+
+    def usable(self, sentence: str) -> bool:
+        folded = sentence.casefold()
+        if len(sentence.split()) > MAX_EVIDENCE_WORDS:
+            return False
+        if any(marker in folded for marker in _MARKETING_MARKERS):
+            return False
+        if any(marker in folded for marker in _NARRATIVE_MARKERS):
+            return False
+        if _FIRST_PERSON.search(sentence) or _NAMED_PERSON.search(sentence):
+            return False
+        return not (self._covers_ground_clearance and "khoảng sáng gầm" in folded)
+
+    def take(self, sentence: str) -> bool:
+        """Nhận câu nếu dùng được VÀ chưa có câu nào giống nó; ghi nhận nó đã in."""
+
+        if not self.usable(sentence):
+            return False
+        key = _fold_choice(sentence)
+        for other in self._seen:
+            if key in other or other in key or fuzz.ratio(key, other) >= DUPLICATE_SIMILARITY:
+                return False
+        self._seen.append(key)
+        return True
+
+    def first(self, evidence: Sequence[EvidenceItem]) -> str | None:
+        """Câu dùng được đầu tiên (chưa in) trong một nhóm evidence."""
+
+        for item in evidence:
+            for sentence in evidence_sentences(item.content):
+                if self.take(sentence):
+                    return sentence
+        return None
+
+
+def _word_count(text: str) -> int:
+    return len(text.split())
+
+
+#: Nhãn nhóm trang bị COMFORT — cũng là tên dòng trong mục "Nội thất & Tiện nghi".
+COMFORT_LABEL: Final = "Tiện nghi"
+#: Nhãn nhóm trang bị SAFETY (`FEATURE_GROUP_LABELS`) — gộp vào mục "An toàn".
+SAFETY_GROUP_LABEL: Final = "An toàn"
+#: Số câu RAG tối đa cho dòng Tiện nghi khi catalog không có nhóm COMFORT.
+MAX_COMFORT_SENTENCES: Final = 2
 
 
 def _overview_sections(
     overview: VehicleOverview,
-    approved_features: Sequence[str] = (),
-    feature_groups: Sequence[tuple[str, str]] = (),
+    approved_features: Sequence[str],
+    feature_groups: Sequence[tuple[str, str]],
+    pool: _SentencePool,
 ) -> list[ReplySection]:
-    """Các mục lớn, đúng thứ tự; mục không có trường nào có dữ liệu bị bỏ hẳn.
+    """Các mục lớn, đúng thứ tự, MỖI mục một lần; mục không có dữ liệu bị bỏ hẳn.
 
-    Trang bị đã duyệt in ĐỦ theo nhóm trong mục "Trang bị" riêng (Sếp 2026-08-29:
-    "thông tin xe chưa chi tiết"); nguồn không có nhóm thì rơi về dòng "Trang bị
-    nổi bật" — cờ tính năng không cần tài liệu RAG nên mẫu như VF 5 vẫn kể được.
+    Nhóm trang bị "Tiện nghi" và "An toàn" của catalog (đã duyệt) được GỘP vào mục
+    cùng tên ("Nội thất & Tiện nghi", "An toàn") thay vì in thêm một dòng trùng
+    tên trong mục "Trang bị" với nội dung khác — log thật 2026-09-23 có "An toàn"
+    ở cả mục 3 lẫn mục 4, "Tiện nghi" ở cả mục 2 lẫn mục 3.
     """
 
     groups = tuple(feature_groups) or (
         (("Trang bị nổi bật", ", ".join(approved_features)),) if approved_features else ()
     )
+    comfort_names = next((value for label, value in groups if label == COMFORT_LABEL), None)
+    safety_names = next((value for label, value in groups if label == SAFETY_GROUP_LABEL), None)
+    remaining = tuple((label, value) for label, value in groups if label not in {COMFORT_LABEL, SAFETY_GROUP_LABEL})
     return [
         ReplySection(SPEC_HEADING, tuple(_technical_fields(overview))),
-        ReplySection("Nội thất & Tiện nghi", tuple(_comfort_fields(overview))),
-        ReplySection("Trang bị", groups),
-        ReplySection("An toàn", tuple(_safety_fields(overview))),
+        ReplySection("Nội thất & Tiện nghi", tuple(_comfort_fields(overview, pool, comfort_names))),
+        ReplySection("Trang bị", remaining),
+        ReplySection("An toàn", tuple(_safety_fields(overview, pool, safety_names))),
         ReplySection("Ngoại thất", tuple(_exterior_fields(overview))),
-        ReplySection(PRICE_HEADING, value=_price_value(overview.price_variants)),
+        _price_section(overview.price_variants),
     ]
 
 
-def _render_opening(overview: VehicleOverview) -> str:
-    """Đoạn mở đầu 2-3 câu, không bullet: phân khúc → thiết kế → 1 tiện ích.
+def _render_opening(overview: VehicleOverview, pool: _SentencePool) -> str:
+    """Mở đầu: MỘT câu persona + tối đa MỘT câu điểm nổi bật ngắn, đã kiểm trùng.
 
-    Mỗi vế lấy TỐI ĐA một mẩu evidence và cắt về một câu. Đổ nguyên trích đoạn
-    RAG vào đây là cách format cũ phình ra và lặp lại chính nó ở phần dưới.
+    [GIẢ ĐỊNH] Spec đòi "mở đầu 1 câu tự nhiên"; giữ thêm tối đa một câu nổi bật
+    (≤ 30 từ, không văn quảng cáo) vì đó là thông tin thiết kế duy nhất của mẫu
+    xe không nằm trong bảng thông số.
     """
 
     sentences = [f"Dạ, {overview.vehicle_name} là mẫu xe thuần điện của VinFast."]
-    design = _first_sentence(overview.highlights)
-    if design is not None:
-        sentences.append(design)
-    utility = _first_sentence(overview.features)
-    if utility is not None and utility != design:
-        sentences.append(utility)
+    highlight = pool.first(overview.highlights)
+    if highlight is not None:
+        sentences.append(f"{highlight}.")
     return " ".join(sentences)
 
 
@@ -264,20 +387,30 @@ def _technical_fields(overview: VehicleOverview) -> list[tuple[str, str]]:
     return [pair for build in builders if (pair := build(overview)) is not None]
 
 
-def _comfort_fields(overview: VehicleOverview) -> list[tuple[str, str]]:
-    """Render verified feature evidence as one concise amenity field."""
+def _comfort_fields(overview: VehicleOverview, pool: _SentencePool, comfort_names: str | None) -> list[tuple[str, str]]:
+    """Một dòng "Tiện nghi": ưu tiên danh sách ĐÃ DUYỆT của catalog; không có thì
+    tối đa hai câu RAG sạch, không trùng câu nào đã in."""
 
-    values = tuple(
-        dict.fromkeys(
-            sentence.rstrip(".") for item in overview.features if (sentence := _first_sentence([item])) is not None
-        )
-    )
-    return [("Tiện nghi", "; ".join(values))] if values else []
+    if comfort_names:
+        return [(COMFORT_LABEL, comfort_names)]
+    values: list[str] = []
+    for item in overview.features:
+        if len(values) >= MAX_COMFORT_SENTENCES:
+            break
+        sentence = pool.first([item])
+        if sentence is not None:
+            values.append(sentence)
+    return [(COMFORT_LABEL, "; ".join(values))] if values else []
 
 
-def _safety_fields(overview: VehicleOverview) -> list[tuple[str, str]]:
-    pair = _safety_field(overview)
-    return [pair] if pair is not None else []
+def _safety_fields(
+    overview: VehicleOverview, pool: _SentencePool, safety_names: str | None = None
+) -> list[tuple[str, str]]:
+    fields = [("Hỗ trợ lái & an toàn", safety_names)] if safety_names else []
+    pair = _safety_field(overview, pool)
+    if pair is not None:
+        fields.append(pair)
+    return fields
 
 
 def _exterior_fields(overview: VehicleOverview) -> list[tuple[str, str]]:
@@ -318,16 +451,13 @@ def _powertrain_field(overview: VehicleOverview) -> tuple[str, str] | None:
     return ("Động cơ & Vận hành", ", ".join(details)) if details else None
 
 
-def _safety_field(overview: VehicleOverview) -> tuple[str, str] | None:
+def _safety_field(overview: VehicleOverview, pool: _SentencePool) -> tuple[str, str] | None:
     """An toàn: viết tắt + tên đầy đủ NGẮN GỌN, rút ra từ trích đoạn tài liệu.
 
     Trích đoạn RAG là văn xuôi ("Ở phần hỗ trợ phanh và kiểm soát thân xe,
-    VinFast VF 5 có ABS, EBD, BA, ESC và TCS"). Đổ nguyên câu vào bullet là biến
-    dòng thông số thành một đoạn văn — đúng thứ format chuẩn cấm. Ở đây chỉ RÚT
-    các viết tắt đã biết ra, mỗi cái kèm nghĩa ngắn.
-
-    Viết tắt không nằm trong từ điển thì bỏ qua: đoán nghĩa hộ một chữ viết tắt
-    an toàn là chỗ sai nguy hiểm nhất trong cả câu trả lời.
+    VinFast VF 5 có ABS, EBD, BA, ESC và TCS"). Ở đây chỉ RÚT các viết tắt đã
+    biết ra, mỗi cái kèm nghĩa ngắn. Viết tắt không nằm trong từ điển thì bỏ qua:
+    đoán nghĩa hộ một chữ viết tắt an toàn là chỗ sai nguy hiểm nhất.
     """
 
     corpus = " ".join(item.content for item in overview.safety_systems)
@@ -338,11 +468,10 @@ def _safety_field(overview: VehicleOverview) -> tuple[str, str] | None:
     ]
     if found:
         return ("Trang bị an toàn", ", ".join(found))
-    # Tài liệu của một số mẫu chỉ gọi tên đầy đủ, không dùng viết tắt nào (VF 8:
-    # "kiểm soát hành trình thích ứng, hỗ trợ giữ làn..."). Bỏ trắng cả nhóm thì
-    # mất thông tin an toàn thật; lấy ĐÚNG một câu là giữ được nó mà vẫn gọn.
-    fallback = _first_sentence(overview.safety_systems)
-    return ("Trang bị an toàn", fallback.rstrip(".")) if fallback else None
+    # Tài liệu của một số mẫu chỉ gọi tên đầy đủ, không dùng viết tắt nào (VF 8).
+    # Lấy ĐÚNG một câu sạch, chưa in, là giữ được thông tin mà vẫn gọn.
+    fallback = pool.first(overview.safety_systems)
+    return ("Trang bị an toàn", fallback) if fallback else None
 
 
 def _mentions_abbreviation(corpus: str, abbreviation: str) -> bool:
@@ -356,29 +485,65 @@ def _mentions_abbreviation(corpus: str, abbreviation: str) -> bool:
 
 
 def _exterior_colour_field(overview: VehicleOverview) -> tuple[str, str] | None:
-    """Màu ngoại thất.
+    """Màu ngoại thất — CHỈ tên màu tất định từ catalog, không dùng trích đoạn RAG.
 
-    Catalog không đánh dấu màu nào là cơ bản, màu nào nâng cao, cũng không có
-    cột phụ phí — nên không tách hai nhóm đó thay vì tự gán bừa.
+    Đo trên dữ liệu thật: mẩu RAG gắn nhãn "màu" của VF 5 lại là câu nói về
+    khoang nội thất. Trích đoạn vẫn nằm trong `overview.colors` cho guardrail.
     """
 
     colors = overview.colors
     if colors is None or not colors.names:
-        # CHỈ dùng tên màu deterministic từ catalog, không dùng trích đoạn RAG.
-        # Đo trên dữ liệu thật: mẩu RAG được gắn nhãn "màu" của VF 5 lại là câu
-        # nói về khoang nội thất và vô lăng. Đưa nó lên dòng "Màu sắc ngoại thất"
-        # là khẳng định một điều sai, và sai ở đúng chỗ khách đọc để chọn màu.
-        # Trích đoạn vẫn nằm trong `overview.colors` cho guardrail và người duyệt.
         return None
     return ("Màu sắc ngoại thất", ", ".join(colors.names))
 
 
-def _price_value(prices: list[PriceVariant]) -> str | None:
-    """Giá trị mục "Giá bán" cho phiên bản mặc định, ghi rõ tình trạng VAT."""
+#: Không có giá đã xác minh thì nói thẳng, không bỏ trống mục (spec: không bịa số).
+PRICE_MISSING: Final = "em chưa có số liệu chính xác mục này"
 
-    if not prices:
-        return None
-    return f"từ {format_vnd(prices[0].amount_vnd)} ({VAT_NOTE})."
+
+def _price_section(prices: list[PriceVariant]) -> ReplySection:
+    """Mục "Giá bán": TỪNG phiên bản khi catalog có nhiều bản; một bản thì "từ …".
+
+    Bản cũ chỉ in `prices[0]` dạng "từ …" dù catalog có đủ Eco/Plus — khách phải
+    hỏi thêm một lượt mới biết bản mình muốn giá bao nhiêu.
+    """
+
+    by_variant: dict[str, Decimal] = {}
+    for price in prices:
+        name = " ".join((price.variant_name or "").split())
+        if name and name not in by_variant:
+            by_variant[name] = price.amount_vnd
+    if len(by_variant) >= 2:
+        # Ghi chú VAT là một dòng CÓ NHÃN như mọi dòng khác của bảng: format chuẩn
+        # chỉ có bullet "* **Nhãn**: giá trị".
+        fields = tuple((name, format_vnd(amount)) for name, amount in by_variant.items())
+        return ReplySection(PRICE_HEADING, fields=(*fields, ("Ghi chú", f"giá niêm yết, {VAT_NOTE}")))
+    if prices:
+        return ReplySection(PRICE_HEADING, value=f"từ {format_vnd(prices[0].amount_vnd)} ({VAT_NOTE}).")
+    return ReplySection(PRICE_HEADING, value=f"{PRICE_MISSING}.")
+
+
+def _fit_word_budget(sections: list[ReplySection]) -> list[ReplySection]:
+    """Rút các DANH SÁCH dài (trang bị, màu) về vài tên đầu cho vừa trần độ dài.
+
+    Chỉ đụng danh sách liệt kê — thông số, an toàn và giá là dữ kiện khách cần để
+    quyết, không cắt.
+    """
+
+    trimmed: list[ReplySection] = []
+    for section in sections:
+        if section.title in {"Trang bị", "Ngoại thất", "Nội thất & Tiện nghi"} and section.fields:
+            fields = tuple((label, _trim_list(value)) for label, value in section.fields)
+            section = ReplySection(section.title, fields=fields, value=section.value, lines=section.lines)
+        trimmed.append(section)
+    return trimmed
+
+
+def _trim_list(value: str) -> str:
+    items = [item.strip() for item in value.split(",") if item.strip()]
+    if len(items) <= TRIMMED_LIST_ITEMS:
+        return value
+    return ", ".join(items[:TRIMMED_LIST_ITEMS]) + f" và {len(items) - TRIMMED_LIST_ITEMS} trang bị khác"
 
 
 def _default_engine_variant(engine_specs: EngineSpecs | None):
@@ -395,24 +560,6 @@ def _default_engine_variant(engine_specs: EngineSpecs | None):
         if _engine_details(variant.motor_power_kw, variant.torque_nm, variant.drivetrain):
             return variant
     return None
-
-
-def _first_sentence(evidence: list[EvidenceItem]) -> str | None:
-    """Câu đầu tiên của mẩu evidence đầu tiên, đã chuẩn hoá dấu chấm câu."""
-
-    for item in evidence:
-        phrase = _shorten(item.content)
-        if phrase:
-            return phrase if phrase.endswith(".") else f"{phrase}."
-    return None
-
-
-def _shorten(content: str) -> str:
-    """Rút một trích đoạn về câu đầu, bỏ khoảng trắng thừa và dấu chấm cuối."""
-
-    normalized = " ".join(content.split())
-    head = normalized.split(". ")[0].strip()
-    return head.rstrip(".").strip()
 
 
 class DefaultVehicleOverviewService:

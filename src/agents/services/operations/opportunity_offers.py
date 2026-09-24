@@ -18,12 +18,14 @@ from src.agents.domain.offer_lifecycle import (
     OfferStatus,
     PromotionGate,
     SendBlocked,
+    approval_blocker,
     check_transition,
     initial_status,
     needs_manager_approval,
     promotion_blocker,
     send_blocker,
 )
+from src.agents.domain.offer_reply import offer_announcement
 from src.products.domain.eligibility_rules import Eligibility, evaluate
 
 
@@ -54,6 +56,16 @@ class OfferView:
     discount_vnd: int | None
     needs_manager_approval: bool
     proposed_value: Mapping[str, Any] = field(default_factory=dict)
+    suggested_by: str = ""
+
+
+def offer_snapshot(offer: OfferView, title: str) -> dict[str, Any]:
+    """Giá trị ưu đãi gửi khách: tên chương trình + điều chỉnh của TVV + mức giảm đã tính."""
+
+    snapshot: dict[str, Any] = {"display_name": title, **dict(offer.proposed_value)}
+    if offer.discount_vnd is not None and "amount_vnd" not in snapshot:
+        snapshot["amount_vnd"] = offer.discount_vnd
+    return snapshot
 
 
 class OfferBlockedError(Exception):
@@ -99,10 +111,13 @@ class OpportunityOfferRepository(Protocol):
         at: datetime,
         meta: Mapping[str, Any],
     ) -> OfferView | None: ...
-    async def deliver(self, offer: OfferView, candidate_title: str, actor: str, at: datetime) -> str | None: ...
+    async def deliver(
+        self, offer: OfferView, snapshot: Mapping[str, Any], announcement: str, actor: str, at: datetime
+    ) -> str | None: ...
     async def list_for_customer(self, customer_id: str) -> list[dict[str, Any]]: ...
     async def expire_due(self, at: datetime) -> int: ...
     async def stats(self, promotion_code: str | None) -> list[dict[str, Any]]: ...
+    async def list_pending(self) -> list[dict[str, Any]]: ...
 
 
 class FlagReader(Protocol):
@@ -243,11 +258,23 @@ class OpportunityOfferOperations:
             raise OfferBlockedError("CONFLICT")
         return moved
 
-    async def approve(self, offer_id: str, manager: str) -> OfferView:
-        """Quản lý (Admin) duyệt đề xuất vượt ngưỡng."""
+    async def approve(self, offer_id: str, approver: str, approver_ids: Sequence[str] = ()) -> OfferView:
+        """Tư vấn viên KHÁC người đề xuất duyệt ưu đãi vượt hạn mức (Admin không duyệt nữa)."""
 
         await self._require(FLAG_OFFER_LIFECYCLE)
-        return await self._move(offer_id, OfferStatus.APPROVED, manager, {"approved_by": manager})
+        offer = await self._repository.get(offer_id)
+        if offer is None:
+            raise OfferBlockedError("OFFER_NOT_FOUND")
+        blocker = approval_blocker(offer.suggested_by, tuple(approver_ids) or (approver,))
+        if blocker is not None:
+            raise OfferBlockedError(blocker)
+        return await self._move(offer_id, OfferStatus.APPROVED, approver, {"approved_by": approver})
+
+    async def list_pending(self) -> list[dict[str, Any]]:
+        """Ưu đãi vượt hạn mức đang chờ một tư vấn viên khác duyệt."""
+
+        await self._require(FLAG_OFFER_LIFECYCLE)
+        return await self._repository.list_pending()
 
     async def send(self, offer_id: str, actor: str) -> OfferView:
         """Gửi cho khách — hàng rào kiểm NGAY LÚC GỬI, rồi ghi `session_offers` cho agent."""
@@ -265,9 +292,11 @@ class OpportunityOfferOperations:
         candidate = next(
             (item for item in await self._catalog.candidates(at) if item.promotion_code == offer.promotion_code), None
         )
-        session_offer_id = await self._repository.deliver(
-            offer, candidate.title if candidate else offer.promotion_code, actor, at
-        )
+        snapshot = offer_snapshot(offer, candidate.title if candidate else offer.promotion_code)
+        # Gửi = KHÁCH THẤY NGAY: một tin nhắn của tư vấn viên trong phiên đang mở, cùng
+        # transaction với `session_offers` (cùng thành hoặc cùng không). Trước đây chỉ ghi
+        # `session_offers` — khách không nhận được gì cho tới khi tình cờ hỏi đúng chủ đề.
+        session_offer_id = await self._repository.deliver(offer, snapshot, offer_announcement(snapshot), actor, at)
         if session_offer_id is None:
             raise OfferBlockedError(SendBlocked.NO_OPEN_SESSION)
         return await self._move(offer_id, OfferStatus.SENT, actor, {"session_offer_id": session_offer_id})

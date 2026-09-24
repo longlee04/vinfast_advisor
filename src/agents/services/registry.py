@@ -64,6 +64,7 @@ from src.agents.ports import (
 )
 from src.agents.services.candidate_tuning import DelegatedFeatureChoice
 from src.agents.services.conversation_memory import StartedMemoryTurn
+from src.agents.services.conversational import ConversationalWriter
 from src.agents.services.nlu_pipeline import NluDecision
 from src.agents.services.profile_snapshot import ProfileSnapshotService
 from src.agents.services.task_context import TaskFollowupResolution
@@ -679,3 +680,6 @@ class AgentServices:
     #: [Agent] Vòng ReAct chỉ-đọc cho hai móc ngõ cụt. `None` = không móc nào
     #: chạy, lõi tất định y nguyên.
     agent_loop: AgentLoopPort | None = None
+    #: Lớp hội thoại tự nhiên: LLM viết câu đáp xã giao theo persona Vivi.
+    #: `None` = dùng mẫu câu tất định của `services.conversational`.
+    conversational_writer: ConversationalWriter | None = None

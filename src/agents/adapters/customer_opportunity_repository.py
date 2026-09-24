@@ -601,22 +601,49 @@ class SqlAlchemyCustomer360Repository:
     async def profile_needs_identity(self, customer_id: str) -> bool:
         async with self._session_factory() as session:
             row = await session.get(CustomerProfileRow, customer_id)
-        return row is None or not row.display_name or not row.phone
+        return row is None or not row.display_name or not row.phone or not row.address
 
     async def upsert_profile_identity(
-        self, customer_id: str, display_name: str | None, phone: str | None, at: datetime
+        self,
+        customer_id: str,
+        display_name: str | None,
+        phone: str | None,
+        at: datetime,
+        *,
+        address: str | None = None,
+        email: str | None = None,
+        overwrite: bool = False,
     ) -> None:
+        """Ghi tên/SĐT/địa chỉ/email khách.
+
+        `overwrite=False` (job nền): chỉ lấp chỗ trống. `overwrite=True` (khách vừa tự lưu
+        hồ sơ): bản khách khai là bản đúng — đè giá trị cũ, nhưng không xoá ô khách để trống.
+        """
+
         async with self._unit_of_work.transaction() as session:
             statement = insert(CustomerProfileRow).values(
-                customer_id=customer_id, display_name=display_name, phone=phone, created_at=at, updated_at=at
+                customer_id=customer_id,
+                display_name=display_name,
+                phone=phone,
+                address=address,
+                email=email,
+                created_at=at,
+                updated_at=at,
+            )
+            new, old = statement.excluded, CustomerProfileRow
+            pick = (
+                (lambda column: func.coalesce(getattr(new, column), getattr(old, column)))
+                if overwrite
+                else (lambda column: func.coalesce(getattr(old, column), getattr(new, column)))
             )
             await session.execute(
                 statement.on_conflict_do_update(
                     index_elements=[CustomerProfileRow.customer_id],
                     set_={
-                        # Chỉ lấp chỗ trống — không đè tên/SĐT đã có.
-                        "display_name": func.coalesce(CustomerProfileRow.display_name, statement.excluded.display_name),
-                        "phone": func.coalesce(CustomerProfileRow.phone, statement.excluded.phone),
+                        "display_name": pick("display_name"),
+                        "phone": pick("phone"),
+                        "address": pick("address"),
+                        "email": pick("email"),
                         "updated_at": at,
                     },
                 )

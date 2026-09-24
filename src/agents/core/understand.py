@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from functools import lru_cache
 from math import isfinite
 from typing import Final, Protocol
@@ -24,6 +24,7 @@ from src.agents.core.state import (
     DialogueAct,
     Intent,
     Pending,
+    PendingKind,
     Stage,
     Understanding,
 )
@@ -36,6 +37,13 @@ from src.agents.core.validate import (
 )
 from src.agents.domain.canonical_text import build_canonical_text
 from src.agents.domain.conversation_memory import redact_sensitive
+from src.agents.domain.conversational import (
+    ConversationalIntent,
+    ConversationContext,
+    ack_job,
+    classify_conversational,
+    last_question,
+)
 from src.agents.domain.feature_question import asked_feature
 from src.agents.domain.pricing_intent import PROVINCES, detect_province, mentions_on_road_price
 from src.agents.domain.text_normalization import has_diacritics, normalize, strip_diacritics
@@ -125,6 +133,9 @@ VÍ DỤ — rút từ LƯỢT LỖI THẬT trên production, làm đúng theo m
 - "ừ thì bảo hành pin, nhưng đi giữa đường hết pin thì sao" → REQUEST + VEHICLE_QA, question chép nguyên văn. Nỗi lo có nội dung là câu cần trả lời, KHÔNG phải UNCLEAR.
 - "à vậy cũng không đến nỗi" / "nghe cũng hợp lý" giữa cuộc tư vấn → SOCIAL (đồng tình giữ mạch), không phải UNCLEAR.
 - "anh có 5 củ mua xe để đi" → REQUEST + ADVISORY, budget_text "5 củ" ("củ" là tiếng lóng của triệu — chép nguyên văn, bộ đọc tiền lo phần quy đổi).
+- Bot vừa giới thiệu VF 9 rồi hỏi "Anh/chị ưng VF 9 không…", khách: "ok xe đẹp đấy" / "ngon đấy" → SOCIAL (khen xe đang bàn), KHÔNG phải lời chào mở đầu, KHÔNG phải CONFIRM.
+- "đắt quá em ạ" / "để anh suy nghĩ thêm" / "cảm ơn em" / "thôi bye" / "em là người hay máy" → SOCIAL.
+- "xe đẹp nhưng giá bao nhiêu" → REQUEST + CATALOG_LOOKUP (câu hỏi giá thắng, lời khen chỉ là phần đệm).
 """
 
 
@@ -731,13 +742,33 @@ def _human_requested(user_message: str) -> bool:
 #: lo TẦM CHẠY, dù có chữ "trạm"). Chỉ cụm đủ dài, bỏ ngữ cảnh vẫn đúng nghĩa —
 #: một chữ "sợ"/"lo" trần chặn nhầm cả lời kể nhu cầu.
 _CONCERN_PATTERNS: Final[tuple[tuple[str, re.Pattern[str]], ...]] = (
-    ("range", re.compile(r"hết (?:pin|điện).{0,20}(?:đường|giữa)|giữa đường.{0,15}hết (?:pin|điện)|làm gì có trạm|(?:quê|tỉnh).{0,20}không có trạm")),
+    (
+        "range",
+        re.compile(
+            r"hết (?:pin|điện).{0,20}(?:đường|giữa)|giữa đường.{0,15}hết (?:pin|điện)|làm gì có trạm|(?:quê|tỉnh).{0,20}không có trạm"
+        ),
+    ),
     # Nới sau blind run 2026-08-31: "sạc Ở NHÀ kiểu gì" (chen chữ) và "chung cư
     # chị không có Ổ" (ổ đứng sau, không kèm chữ sạc) đều từng trượt.
-    ("charging", re.compile(r"(?:chung cư|hầm|nhà trọ).{0,25}(?:sạc|trụ|ổ)|(?:sạc|trụ sạc|ổ điện).{0,30}(?:chung cư|hầm|nhà trọ)|sạc.{0,12}(?:kiểu gì|ở đâu|thế nào|làm sao)|không cho lắp|không có (?:trụ|chỗ|ổ)(?: sạc| cắm| điện)?|trạm công cộng|sạc ngoài trạm")),
-    ("battery", re.compile(r"pin.{0,30}(?:chai|xuống cấp|yếu đi)|chai pin|bán lại.{0,20}(?:ai mua|được không|mất giá)|xe điện.{0,20}mất giá")),
+    (
+        "charging",
+        re.compile(
+            r"(?:chung cư|hầm|nhà trọ).{0,25}(?:sạc|trụ|ổ)|(?:sạc|trụ sạc|ổ điện).{0,30}(?:chung cư|hầm|nhà trọ)|sạc.{0,12}(?:kiểu gì|ở đâu|thế nào|làm sao)|không cho lắp|không có (?:trụ|chỗ|ổ)(?: sạc| cắm| điện)?|trạm công cộng|sạc ngoài trạm"
+        ),
+    ),
+    (
+        "battery",
+        re.compile(
+            r"pin.{0,30}(?:chai|xuống cấp|yếu đi)|chai pin|bán lại.{0,20}(?:ai mua|được không|mất giá)|xe điện.{0,20}mất giá"
+        ),
+    ),
     ("service", re.compile(r"hỏng(?: hóc)?.{0,20}(?:dọc đường|giữa đường|đường)|cứu hộ|sửa ở đâu|không biết xử lý")),
-    ("usability", re.compile(r"không rành công nghệ|nhiều nút|nhiều màn hình|khó (?:dùng|thao tác|sử dụng)|phức tạp không|lớn tuổi")),
+    (
+        "usability",
+        re.compile(
+            r"không rành công nghệ|nhiều nút|nhiều màn hình|khó (?:dùng|thao tác|sử dụng)|phức tạp không|lớn tuổi"
+        ),
+    ),
     ("general", re.compile(r"chưa yên tâm|sợ.{0,20}hối hận|hối hận|lăn tăn|lấn cấn")),
 )
 
@@ -745,9 +776,7 @@ _CONCERN_PATTERNS: Final[tuple[tuple[str, re.Pattern[str]], ...]] = (
 #: Intent LLM được phép bị cửa lăn-bánh ĐÈ: các nhóm tra cứu chung + chưa rõ.
 #: KHÔNG đè TCO/TEST_DRIVE/ADVISORY: "chi phí sử dụng" và "lăn bánh" có thể
 #: cùng câu, LLM đã chọn nghĩa hẹp hơn thì tôn trọng.
-_ON_ROAD_OVERRIDABLE: Final = frozenset(
-    {Intent.NONE, Intent.CATALOG_LOOKUP, Intent.CATALOG_BROWSE, Intent.VEHICLE_QA}
-)
+_ON_ROAD_OVERRIDABLE: Final = frozenset({Intent.NONE, Intent.CATALOG_LOOKUP, Intent.CATALOG_BROWSE, Intent.VEHICLE_QA})
 
 
 def _forced_intent(user_message: str, intent: Intent) -> Intent:
@@ -1064,6 +1093,104 @@ def to_understanding(
     )
 
 
+def conversation_context(
+    *,
+    state: CoreState,
+    transcript: Sequence[TranscriptMessage],
+    user_message: str,
+    active_vehicle: str | None = None,
+) -> ConversationContext:
+    """Ngữ cảnh cho LỚP HỘI THOẠI: câu hỏi cuối của bot, vài lượt gần nhất, slot đã biết.
+
+    Dùng chung cho `understand` (phân loại câu ngắn CÓ ngữ cảnh) và `act` (viết
+    câu đáp). Chữ đi qua `_sanitize_customer_text` vì nó có thể vào prompt LLM
+    viết câu đáp. Tin nhắn hỏng trong transcript bị bỏ qua, không làm hỏng lượt.
+    """
+
+    turns: list[tuple[str, str]] = []
+    for message in transcript[-TRANSCRIPT_LIMIT:]:
+        try:
+            role = _ROLE_LABEL.get(str(message.role).upper(), str(message.role))
+            content = _sanitize_customer_text(str(message.content or ""))
+        except Exception:
+            continue
+        if content:
+            turns.append((role, content))
+    bot_turns = [text for role, text in turns if role == _ROLE_LABEL["ASSISTANT"]]
+    current = _sanitize_customer_text(user_message or "")
+    if current and (not turns or turns[-1] != (_ROLE_LABEL["USER"], current)):
+        turns.append((_ROLE_LABEL["USER"], current))
+    filled = {
+        str(getattr(key, "value", key)): str(value)
+        for key, value in state.slots.items()
+        if value not in (None, "", [], ()) and key is not SlotName.INTEREST_VEHICLE
+    }
+    return ConversationContext(
+        active_vehicle=active_vehicle,
+        last_bot_question=last_question(bot_turns[-1]) if bot_turns else "",
+        # `turn_count` còn đếm cả lượt đã qua khi transcript bị cắt/trống.
+        has_bot_turn=bool(bot_turns) or state.turn_count > 0,
+        filled_slots=filled,
+        recent_turns=tuple(turns),
+    )
+
+
+#: Act LLM trả mà lớp hội thoại được phép GHI ĐÈ khi câu là xã giao: không chở
+#: yêu cầu nghiệp vụ nào (SOCIAL/UNCLEAR).
+_OVERRIDABLE_ACTS: Final = frozenset({DialogueAct.SOCIAL, DialogueAct.UNCLEAR})
+#: Act "lỏng": LLM hay đọc "ok xe đẹp đấy" thành một cái gật đầu (CONFIRM) dù bot
+#: không chờ câu trả lời nào. Chỉ ghi đè khi lượt không chở gì nghiệp vụ.
+_LOOSE_ACTS: Final = frozenset({DialogueAct.CONFIRM, DialogueAct.REJECT, DialogueAct.SLOT_ANSWER, DialogueAct.REQUEST})
+
+
+def _apply_conversational(
+    u: Understanding, state: CoreState, transcript: Sequence[TranscriptMessage], user_message: str
+) -> Understanding:
+    """Gắn nhãn LỚP HỘI THOẠI và, khi câu thuần xã giao, lái lượt về đúng đường.
+
+    - Câu có hỏi nghiệp vụ ("xe đẹp nhưng giá bao nhiêu") → `classify` trả None,
+      LLM quyết như cũ.
+    - Xin gặp người thật (HANDOFF) luôn thắng — không bao giờ ghi đè.
+    - "ok"/"ừ" (ACK) đáp câu hỏi CÓ/KHÔNG của bot: có câu treo CONFIRM → CONFIRM;
+      không treo mà câu hỏi mời một việc ("đặt lái thử nhé?") → đi làm đúng việc
+      đó. Không thì là câu xã giao hỏi hướng đi tiếp.
+    - Còn lại chỉ ghi đè khi LLM không thấy yêu cầu nghiệp vụ nào. LLM đọc ra một
+      yêu cầu thật thì nó thắng; nhãn vẫn được ghi để trace thấy.
+    """
+
+    if u.intent is Intent.HANDOFF:
+        return u
+    try:
+        context = conversation_context(state=state, transcript=transcript, user_message=user_message)
+        kind = classify_conversational(user_message, context)
+    except Exception:
+        return u
+    if kind is None:
+        return u
+    labelled = replace(u, conversational=kind.value)
+    if kind is ConversationalIntent.ACK:
+        if not context.has_bot_turn:
+            # "ừ" khi bot chưa nói gì thì chẳng có gì để đồng ý — giữ nguyên cách
+            # LLM hiểu (thường là UNCLEAR, đếm vào trần hỏi lại như cũ).
+            return labelled
+        if state.pending is not None:
+            if state.pending.kind is PendingKind.CONFIRM and u.dialogue_act in _OVERRIDABLE_ACTS:
+                return replace(labelled, dialogue_act=DialogueAct.CONFIRM, confidence=max(u.confidence, 0.8))
+            return labelled
+        job = ack_job(context.last_bot_question)
+        if job is not None and u.intent in {Intent.NONE, _INTENT_BY_NAME[job]}:
+            return replace(
+                labelled,
+                dialogue_act=DialogueAct.REQUEST,
+                intent=_INTENT_BY_NAME[job],
+                confidence=max(u.confidence, 0.8),
+            )
+    free_of_business = u.intent is Intent.NONE and not u.slots and not u.vehicle_ids and state.pending is None
+    if u.dialogue_act in _OVERRIDABLE_ACTS or (u.dialogue_act in _LOOSE_ACTS and free_of_business):
+        return replace(labelled, dialogue_act=DialogueAct.SOCIAL, intent=Intent.NONE, confidence=max(u.confidence, 0.8))
+    return labelled
+
+
 async def understand(
     *,
     state: CoreState,
@@ -1098,7 +1225,9 @@ async def understand(
         prompt = build_user_prompt(state=state, transcript=transcript, user_message=user_message, vehicles=vehicles)
         outcome = await understander.understand(system_prompt=SYSTEM_PROMPT, user_prompt=prompt)
         if outcome.raw is None:
-            return UnderstandResult(UNCLEAR_UNDERSTANDING, error=outcome.error or "empty_outcome")
+            # LLM hỏng: lớp hội thoại tất định vẫn cứu được "cảm ơn em", "ok xe đẹp đấy".
+            rescued = _apply_conversational(UNCLEAR_UNDERSTANDING, state, transcript, user_message)
+            return UnderstandResult(rescued, error=outcome.error or "empty_outcome")
         # `to_understanding` cũng nằm TRONG try. Nó đọc thẳng dữ liệu LLM
         # (`raw.slots.features` có thể là `None`, `seats` có thể là chuỗi lạ) —
         # tức là dữ liệu KHÔNG đáng tin y như adapter. Để nó ngoài lưới thì mọi
@@ -1107,5 +1236,6 @@ async def understand(
     except Exception as error:
         # Adapter đã nuốt mọi lỗi biết trước. Lưới này bắt thứ KHÔNG biết trước:
         # một lượt hỏng không được phép làm hỏng cả phiên của khách.
-        return UnderstandResult(UNCLEAR_UNDERSTANDING, error=type(error).__name__)
-    return UnderstandResult(understanding, error=outcome.error)
+        rescued = _apply_conversational(UNCLEAR_UNDERSTANDING, state, transcript, user_message)
+        return UnderstandResult(rescued, error=type(error).__name__)
+    return UnderstandResult(_apply_conversational(understanding, state, transcript, user_message), error=outcome.error)

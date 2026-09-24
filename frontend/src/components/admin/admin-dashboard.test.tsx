@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act, cleanup, render, screen, within } from "@testing-library/react";
+import { act, cleanup, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
@@ -40,7 +40,6 @@ describe("AdminDashboard", () => {
 
   it("API lỗi: không bao giờ hiện số bịa (2.480, 1.814, 74%...)", async () => {
     vi.mocked(assignmentsApi.fetchAdminDashboardMetrics).mockRejectedValue(new Error("500"));
-    vi.mocked(agentApi.fetchCustomer360Metrics).mockRejectedValue(new Error("500"));
 
     await renderDashboard();
 
@@ -50,7 +49,7 @@ describe("AdminDashboard", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Không tải được số liệu vận hành");
   });
 
-  it("Customer 360: phễu 5 giai đoạn, độ nóng, rào cản vẽ từ số thật và có bảng dữ liệu", async () => {
+  it("Admin chỉ còn số kỹ thuật: không có phễu/độ nóng/rào cản bán hàng (đã sang Tổng quan của TVV)", async () => {
     vi.mocked(assignmentsApi.fetchAdminDashboardMetrics).mockResolvedValue({
       total_conversations: 12,
       completed_profiles: 5,
@@ -59,21 +58,12 @@ describe("AdminDashboard", () => {
       funnel: [],
       quality_stats: { approved_original_pct: 60, edited_pct: 30, rejected_pct: 10 },
     });
-    vi.mocked(agentApi.fetchCustomer360Metrics).mockResolvedValue({
-      stages: { DISCOVER: 4, QUOTE: 2 },
-      heat: { HOT: 1, WARM: 2, COLD: 3 },
-      barriers: [{ code: "PRICE", count: 5 }],
-      workload: [{ advisor_id: "adv-1", customers: 3, hot_customers: 1, waiting_sessions: 0 }],
-      totals: { conversations: 12, customers: 6, open_opportunities: 6, test_drives: 1, needs_review: 2 },
-    });
 
     await renderDashboard();
 
-    const section = screen.getByRole("region", { name: "Khách hàng 360" });
-    expect(within(section).getByRole("img", { name: "Phễu 5 giai đoạn (số cơ hội)" })).toBeInTheDocument();
-    const funnel = within(section).getByRole("table", { name: "Phễu 5 giai đoạn (số cơ hội)" });
-    expect(within(funnel).getByRole("rowheader", { name: "Báo giá" }).nextSibling).toHaveTextContent("2");
-    expect(within(section).getByText("adv-1")).toBeInTheDocument();
     expect(screen.getByText("12")).toBeInTheDocument();
+    expect(screen.getByText("60% duyệt nguyên trạng")).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Khách hàng 360" })).not.toBeInTheDocument();
+    expect(agentApi.fetchCustomer360Metrics).not.toHaveBeenCalled();
   });
 });

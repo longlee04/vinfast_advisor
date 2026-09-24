@@ -2,10 +2,14 @@
 
 import "@testing-library/jest-dom/vitest";
 
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import * as agentApi from "@/lib/api/agent";
 import * as authApi from "@/lib/api/auth";
+import { normalizeVnPhone } from "@/lib/api/customer-profile";
+
+vi.mock("@/lib/api/agent", () => ({ refreshCustomerIdentity: vi.fn().mockResolvedValue({ refreshed: true }) }));
 
 const replace = vi.fn();
 // Router phải là MỘT object ổn định như router thật của Next. Bản cũ trả
@@ -50,7 +54,7 @@ describe("WelcomePage", () => {
       email: "khach@gmail.com",
       role: "customer",
       full_name: "Nguyễn Văn A",
-      phone_number: null,
+      phone_number: "0912345678",
       address: null,
       showroom_name: null,
       avatar_url: null,
@@ -95,6 +99,7 @@ describe("WelcomePage", () => {
     const { default: WelcomePage } = await import("./page");
     render(<WelcomePage />);
 
+    fireEvent.click(await screen.findByRole("button", { name: "Để sau" }));
     await waitFor(() => {
       expect(screen.getByText(/Chào minhkhang, rất vui được gặp/)).toBeInTheDocument();
     });
@@ -112,6 +117,7 @@ describe("WelcomePage", () => {
     const { default: WelcomePage } = await import("./page");
     render(<WelcomePage />);
 
+    fireEvent.click(await screen.findByRole("button", { name: "Để sau" }));
     await waitFor(() => {
       expect(screen.getByText("Chào lanmoi, rất vui được gặp")).toBeInTheDocument();
     });
@@ -149,5 +155,43 @@ describe("WelcomePage", () => {
     const { default: WelcomePage } = await import("./page");
     render(<WelcomePage />);
     await waitFor(() => expect(screen.getByTestId("app-header")).toBeInTheDocument());
+  });
+
+  it("hồ sơ thiếu SĐT: xin tên/SĐT/địa chỉ, kiểm SĐT, lưu rồi báo tư vấn viên ngay (plan §19)", async () => {
+    vi.spyOn(authApi, "me").mockResolvedValue({ id: "u9", email: "moi@gmail.com", role: "customer", state: "active" });
+    vi.spyOn(authApi, "getProfile").mockResolvedValue({ full_name: "Trần B", phone_number: null } as never);
+    const save = vi.spyOn(authApi, "updateProfile").mockResolvedValue({
+      full_name: "Trần Bình",
+      phone_number: "0912345678",
+      address: "12 Láng Hạ",
+      role: "customer",
+    } as never);
+
+    const { default: WelcomePage } = await import("./page");
+    render(<WelcomePage />);
+
+    expect(await screen.findByRole("heading", { name: "Cho em xin vài thông tin cơ bản" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Họ và tên")).toHaveValue("Trần B");
+    fireEvent.change(screen.getByLabelText("Họ và tên"), { target: { value: "Trần Bình" } });
+    fireEvent.change(screen.getByLabelText("Số điện thoại"), { target: { value: "12345" } });
+    fireEvent.click(screen.getByRole("button", { name: "Lưu và tiếp tục" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Số điện thoại chưa đúng");
+    expect(save).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByLabelText("Số điện thoại"), { target: { value: "+84 912 345 678" } });
+    fireEvent.change(screen.getByLabelText(/Địa chỉ/), { target: { value: " 12 Láng Hạ " } });
+    fireEvent.click(screen.getByRole("button", { name: "Lưu và tiếp tục" }));
+
+    await waitFor(() => expect(screen.getByText(/Chào Trần Bình, rất vui được gặp/)).toBeInTheDocument());
+    expect(save).toHaveBeenCalledWith({ full_name: "Trần Bình", phone_number: "0912345678", address: "12 Láng Hạ" });
+    expect(agentApi.refreshCustomerIdentity).toHaveBeenCalled();
+  });
+
+  it("chuẩn hoá SĐT Việt Nam", () => {
+    expect(normalizeVnPhone("0912 345 678")).toBe("0912345678");
+    expect(normalizeVnPhone("+84 912.345.678")).toBe("0912345678");
+    expect(normalizeVnPhone("84912345678")).toBe("0912345678");
+    expect(normalizeVnPhone("0212345678")).toBeNull();
+    expect(normalizeVnPhone("091234")).toBeNull();
   });
 });

@@ -2,19 +2,14 @@
 
 import {
   Bell,
-  CalendarDays,
   CarFront,
   ChartNoAxesCombined,
-  ClipboardCheck,
-  ContactRound,
   Edit3,
   FileText,
-  Gift,
   Loader2,
   Megaphone,
   Menu,
   MessageSquareText,
-  Sparkles,
   UserCog,
   X,
 } from "lucide-react";
@@ -22,25 +17,38 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FormEvent, useState } from "react";
 
+import { ADVISOR_FEATURES, ADVISOR_MENU } from "@/components/advisor/advisor-features";
+import { useWaitingConversations } from "@/components/advisor/waiting-customers";
 import { DemoResetButton } from "@/components/shared/demo-reset-button";
 import { RoleDemoSwitcher } from "@/components/shared/role-demo-switcher";
 import { useAuth } from "@/store/auth-store";
 import type { DemoRole } from "@/types/demo";
 
-const advisorNavigation = [
-  { href: "/advisor", label: "Hàng đợi duyệt", icon: ClipboardCheck },
-  { href: "/advisor/conversations", label: "Phiên chat", icon: MessageSquareText },
-  { href: "/advisor/sales-opportunities", label: "Cơ hội bán hàng", icon: Sparkles },
-  { href: "/advisor/customers", label: "Khách hàng", icon: ContactRound },
-  { href: "/advisor/test-drives", label: "Lịch lái thử", icon: CalendarDays },
-  { href: "/advisor/notices", label: "Chính sách nội bộ", icon: Megaphone },
-];
+/** Menu tư vấn viên = 6 tính năng (plan §17), cùng nguồn với tiêu đề trang. */
+const advisorNavigation: readonly NavItem[] = ADVISOR_MENU.map((key) => {
+  const feature = ADVISOR_FEATURES[key];
+  return {
+    href: feature.href,
+    label: feature.label,
+    icon: feature.icon,
+    match: "match" in feature ? feature.match : undefined,
+    badge: key === "customers" ? "waiting" : undefined,
+  };
+});
 
-const adminNavigation = [
+type NavItem = {
+  readonly href: string;
+  readonly label: string;
+  readonly icon: typeof Bell;
+  /** Các đường dẫn khiến mục này sáng (mặc định: chính `href`). */
+  readonly match?: readonly string[];
+  /** Mục có badge đếm việc cần xử lý ngay. */
+  readonly badge?: "waiting";
+};
+
+const adminNavigation: readonly NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: ChartNoAxesCombined },
-  { href: "/admin/assignments", label: "Khách hàng & phân công", icon: ContactRound },
   { href: "/admin/vehicles", label: "Catalog xe", icon: CarFront },
-  { href: "/admin/promotions", label: "Ưu đãi", icon: Gift },
   { href: "/admin/documents", label: "Chính sách AI", icon: FileText },
   { href: "/admin/chat-sessions", label: "Phiên chat", icon: MessageSquareText },
   { href: "/admin/notices", label: "Thông báo", icon: Megaphone },
@@ -76,6 +84,8 @@ export function OperationalShell({ children, role }: Readonly<{ children: React.
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const navigation = role === "advisor" ? advisorNavigation : adminNavigation;
+  // Khách xin gặp tư vấn viên: đếm để hiện badge đỏ trên menu — không phải tự vào mò.
+  const waitingCount = useWaitingConversations(role === "advisor").length;
   const label = role === "advisor" ? "Advisor Workspace" : "Admin Preview";
 
   const initials = role === "advisor" ? getInitials(profile?.full_name, user?.email) : "AD";
@@ -125,9 +135,22 @@ export function OperationalShell({ children, role }: Readonly<{ children: React.
         </div>
         <nav className="ops-nav" aria-label={`Điều hướng ${label}`}>
           {navigation.map((item) => {
-            const active = item.href === pathname || (item.href !== `/${role}` && pathname.startsWith(item.href));
+            const active =
+              item.href === pathname ||
+              (item.href !== `/${role}` && (item.match ?? [item.href]).some((prefix) => pathname.startsWith(prefix)));
             const Icon = item.icon;
-            return <Link className={active ? "ops-nav-item is-active" : "ops-nav-item"} href={item.href} key={item.href} onClick={() => setOpen(false)}><Icon size={18} /><span>{item.label}</span></Link>;
+            const badge = item.badge === "waiting" && waitingCount > 0 ? waitingCount : null;
+            return (
+              <Link className={active ? "ops-nav-item is-active" : "ops-nav-item"} href={item.href} key={item.href} onClick={() => setOpen(false)}>
+                <Icon size={18} />
+                <span>{item.label}</span>
+                {badge !== null ? (
+                  <span aria-label={`${badge} khách đang chờ gặp tư vấn viên`} className="ops-nav-badge" role="status">
+                    {badge > 99 ? "99+" : badge}
+                  </span>
+                ) : null}
+              </Link>
+            );
           })}
         </nav>
         <div className="ops-sidebar-footer"><RoleDemoSwitcher /><DemoResetButton /></div>

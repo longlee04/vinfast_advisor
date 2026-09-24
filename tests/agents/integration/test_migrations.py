@@ -402,7 +402,8 @@ def _normalize_sql(statement: str | None) -> str | None:
     normalized = normalized.replace("array[", "").replace("[", "").replace("]", "")
     normalized = normalized.replace("(", "").replace(")", "")
     normalized = normalized.replace("= any ", " in ")
-    normalized = re.sub(r"\s*(<>|>=|<=)\s*", r" \1 ", normalized)
+    # `::text ` bị bỏ kèm khoảng trắng sau nó: "(status)::text = 'X'" thành "status= 'x'" — chuẩn hoá cả "=".
+    normalized = re.sub(r"\s*(<>|>=|<=|=)\s*", r" \1 ", normalized)
     return re.sub(r"(\w+) between (\d+) and (\d+)", r"\1 >= \2 and \1 <= \3", normalized)
 
 

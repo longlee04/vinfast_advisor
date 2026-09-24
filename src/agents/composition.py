@@ -47,10 +47,12 @@ from src.agents.adapters.conversation_repository import (
     SqlAlchemyPendingFeatureMentionRepository,
     SqlAlchemySessionRepository,
 )
+from src.agents.adapters.conversational_llm import OpenAIConversationalWriter
 from src.agents.adapters.customer_360_llm import OpenAIInsightExtractor, OpenAIOpportunityClassifier
 from src.agents.adapters.customer_360_query import SqlAlchemyCustomer360Query
 from src.agents.adapters.customer_identity_source import AuthProfileIdentitySource
 from src.agents.adapters.customer_opportunity_repository import SqlAlchemyCustomer360Repository
+from src.agents.adapters.customer_ownership_repository import SqlAlchemyCustomerOwnershipRepository
 from src.agents.adapters.embedding import OpenAIEmbeddingAdapter
 from src.agents.adapters.feature_fit_source import SqlAlchemyFeatureFitSource
 from src.agents.adapters.feature_vocabulary import SqlAlchemyFeatureVocabularyAdapter
@@ -182,6 +184,7 @@ from src.agents.services.operations.comparison_image import (
 )
 from src.agents.services.operations.customer_360 import Customer360Operations, Customer360TurnHook
 from src.agents.services.operations.customer_360_read import Customer360ReadOperations
+from src.agents.services.operations.customer_ownership import CustomerOwnershipOperations
 from src.agents.services.operations.history import HistoryOperations
 from src.agents.services.operations.notices import NoticeOperations
 from src.agents.services.operations.opportunity_offers import (
@@ -241,6 +244,8 @@ class AgentOperations:
     customer360_read: Customer360ReadOperations | None = None
     #: Customer 360 Phase 5 — ưu đãi theo cơ hội.
     opportunity_offers: OpportunityOfferOperations | None = None
+    #: Tư vấn viên tự nhận/trả khách (thay màn phân công của Admin).
+    customer_ownership: CustomerOwnershipOperations | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -510,6 +515,9 @@ class AgentComposition:
             customer360=customer360,
             customer360_read=customer360_read,
             opportunity_offers=opportunity_offers,
+            customer_ownership=CustomerOwnershipOperations(
+                SqlAlchemyCustomerOwnershipRepository(session_factory), clock.now
+            ),
         )
         conversation_service = ConversationServiceImpl(typed_unit_of_work)
         setattr(conversation_service, "post_pitch_branch_classifier", OpenAIPostPitchBranchClassifier())
@@ -658,6 +666,9 @@ class AgentComposition:
             agent_flag=flag_adapter,
             # Vòng ReAct chỉ chạy khi cờ `agent_fallback` bật (mặc định TẮT).
             agent_loop=OpenAIAgentLoop(),
+            # Lớp hội thoại tự nhiên (persona Vivi): chỉ chạy ở lượt xã giao,
+            # hỏng/timeout thì rơi về mẫu câu tất định.
+            conversational_writer=OpenAIConversationalWriter(),
         )
         self._graph = None  # lõi v1 (LangGraph) đã xoá — xem chain.py
 

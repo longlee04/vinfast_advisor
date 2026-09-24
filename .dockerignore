@@ -15,6 +15,8 @@ presentation/
 eval/
 *.md
 !README.md
+# Prompt persona của Vivi nạp lúc chạy (`src/agents/prompts/vivi_persona.py`).
+!src/agents/prompts/vivi_persona.md
 .dockerignore
 Dockerfile
 docker-compose.yml

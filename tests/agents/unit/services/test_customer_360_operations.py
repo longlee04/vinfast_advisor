@@ -29,9 +29,19 @@ class Flags:
 class Scheduler:
     def __init__(self) -> None:
         self.labels: list[str] = []
+        self.works: list = []
 
     def schedule(self, work, *, label: str) -> None:  # noqa: ANN001
         self.labels.append(label)
+        self.works.append(work)
+
+
+class SpyOperations:
+    def __init__(self) -> None:
+        self.calls: list[tuple[str, bool | None]] = []
+
+    async def refresh_session(self, session_id: str, *, force_extract: bool | None = None) -> None:
+        self.calls.append((session_id, force_extract))
 
 
 class Repo:
@@ -72,17 +82,24 @@ class BrokenClassifier:
 
 
 @pytest.mark.asyncio
-async def test_hook_chi_chay_khi_co_bat_va_dung_nhip() -> None:
+async def test_hook_moi_luot_gan_phien_trich_llm_theo_nhip() -> None:
+    """Plan §21: MỖI lượt gắn phiên + ghi slot (tư vấn viên thấy ngay); trích LLM mỗi 4 lượt."""
+
     scheduler = Scheduler()
-    operations = Customer360Operations(Repo([]), clock=lambda: NOW)
-    off = Customer360TurnHook(operations, Flags(), scheduler)
-    on = Customer360TurnHook(operations, Flags("customer360_attach"), scheduler)
+    operations = SpyOperations()
+    off = Customer360TurnHook(operations, Flags(), scheduler)  # type: ignore[arg-type]
+    on = Customer360TurnHook(operations, Flags("customer360_attach"), scheduler)  # type: ignore[arg-type]
 
     await off(session_id="s1", customer_id="c1", turn_count=4)
-    await on(session_id="s1", customer_id="c1", turn_count=3)
+    await on(session_id="s1", customer_id="c1", turn_count=0)
     assert scheduler.labels == []
+    await on(session_id="s1", customer_id="c1", turn_count=3)
     await on(session_id="s1", customer_id="c1", turn_count=8)
-    assert scheduler.labels == ["customer360:s1"]
+    assert scheduler.labels == ["customer360:s1", "customer360:s1"]
+    for work in scheduler.works:
+        await work()
+    # Lượt 3: không trích LLM (ép False); lượt 8: để cờ `customer360_extractor` quyết (None).
+    assert operations.calls == [("s1", False), ("s1", None)]
 
 
 @pytest.mark.asyncio

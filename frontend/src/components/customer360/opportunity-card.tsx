@@ -1,29 +1,35 @@
-import { Flag, Lightbulb, ListChecks } from "lucide-react";
-import type { ReactNode } from "react";
+"use client";
 
-import { StatusBadge } from "@/components/shared/status-badge";
+import { Flag } from "lucide-react";
+import Link from "next/link";
+import { type ReactNode, useState } from "react";
+
 import type {
   Barrier,
   BuyerFor,
+  CustomerFieldKey,
   FieldValue,
   HeatBand,
+  OpeningBasis,
   OpportunityStatus,
   SalesStage,
+  StageMark,
   ValueHistory,
+  VehicleInterest,
+  ViewerRole,
 } from "@/types/customer360";
 
-import { BarrierList } from "./barrier-list";
+import { BarrierRows } from "./barrier-rows";
 import {
-  BUYER_FOR_LABELS,
-  HEAT_BAND_BADGES,
   INSIGHT_FIELD_LABELS,
-  OPPORTUNITY_STATUS_LABELS,
-  SALES_STAGE_LABELS,
-  SALES_STAGE_ORDER,
   SLOT_LABELS,
   formatSlotValue,
   knownSlots,
+  nextActionLabel,
+  openingBasisText,
 } from "./customer360-labels";
+import { type NeedCell, NeedGrid } from "./need-grid";
+import { VehicleInterestCard } from "./vehicle-interest-card";
 
 export type OpportunityCardData = {
   readonly title: string;
@@ -33,160 +39,263 @@ export type OpportunityCardData = {
   readonly history?: Record<string, readonly ValueHistory[]>;
   readonly insights?: readonly (FieldValue & { readonly insight_id: string; readonly field: string })[];
   readonly openingHint?: string;
+  readonly openingBasis?: OpeningBasis;
   readonly nextActions?: readonly { readonly code: string; readonly label: string }[];
   readonly buyerFor?: BuyerFor;
   readonly stage?: SalesStage;
+  readonly stageHistory?: readonly StageMark[];
   readonly heatBand?: HeatBand;
   readonly heatScore?: number;
   /** Slot đã có (slot → giá trị thô); nhãn và định dạng do card lo. */
   readonly slots: Record<string, unknown>;
   readonly missing?: readonly string[];
   readonly evaded?: readonly string[];
-  readonly barriers: readonly Pick<Barrier, "code" | "evidence_quote" | "session_id" | "turn_index">[];
+  readonly evadedDetail?: readonly { readonly slot: string; readonly ask_count: number }[];
+  readonly barriers: readonly Pick<Barrier, "code" | "evidence_quote" | "session_id" | "turn_index" | "at">[];
+  readonly vehicles?: readonly VehicleInterest[];
 };
 
-export type OpportunityCardProps = {
+export type OpportunityOverviewProps = {
   readonly opportunity: OpportunityCardData;
+  readonly role: ViewerRole;
   readonly readOnly: boolean;
+  /** Thông tin tầng Khách (chỉ có khi đọc từ `/overview`) — ô Thanh toán/Xe đang đi, mục "Khách tự kể". */
+  readonly customerFields?: Partial<Record<CustomerFieldKey, FieldValue>>;
+  readonly latestSummary?: string | null;
+  /** Phiên để mở "toàn bộ hội thoại". */
+  readonly conversationHref?: string | null;
   /** TVV báo một insight sai — Admin (readOnly) không có nút này. */
   readonly onInsightFeedback?: (insightId: string) => void;
   /** Khối "Ưu đãi phù hợp" (Phase 5) — trang hồ sơ truyền vào khi cờ bật. */
   readonly offerSlot?: ReactNode;
 };
 
-function slotName(slot: string): string {
-  return SLOT_LABELS[slot] ?? slot;
+/** Ô lưới nhu cầu lấy từ tầng Khách khi slot không có — đúng thứ tự mockup. */
+const CUSTOMER_GRID_FIELDS: readonly CustomerFieldKey[] = ["registration_province", "home_charging", "payment_method", "current_vehicle"];
+/** Thông tin tầng Khách KHÔNG nằm trong lưới → mục "Khách tự kể". */
+const CUSTOMER_STORY_FIELDS: readonly CustomerFieldKey[] = ["decision_maker", "trade_in"];
+const GRID_HIDDEN_SLOTS = new Set(["habit_need_tags"]);
+
+function fieldLabel(key: string): string {
+  return SLOT_LABELS[key] ?? INSIGHT_FIELD_LABELS[key] ?? key;
 }
 
-function breakdownTitle(parts: OpportunityCardData["heatBreakdown"]): string | undefined {
-  if (!parts?.length) return undefined;
-  return parts.map((part) => `${part.points > 0 ? "+" : ""}${part.points} ${part.detail}`).join("\n");
+/** Ô lưới nhu cầu: slot đã có → thiếu/khách né → thông tin tầng Khách. */
+export function needCells(
+  opportunity: OpportunityCardData,
+  customerFields?: Partial<Record<CustomerFieldKey, FieldValue>>,
+): NeedCell[] {
+  const known = knownSlots(opportunity.slots).filter((item) => !GRID_HIDDEN_SLOTS.has(item.slot));
+  // Con số khách NÓI RA thắng trần đã nới biên — cùng luật `needSummary`.
+  const hasStated = known.some((item) => item.slot === "budget_stated_vnd");
+  const cells: NeedCell[] = known
+    .filter((item) => !(hasStated && (item.slot === "budget_max_vnd" || item.slot === "budget_min_vnd")))
+    .map((item) => {
+      const previous = opportunity.history?.[item.slot]?.at(-1);
+      return {
+        key: item.slot,
+        label: item.label,
+        value: item.value,
+        previous: previous ? (formatSlotValue(item.slot, previous.value) ?? previous.value) : null,
+      };
+    });
+  const asked = new Map((opportunity.evadedDetail ?? []).map((item) => [item.slot, item.ask_count]));
+  const evaded = new Set([...(opportunity.evaded ?? []), ...asked.keys()]);
+  for (const slot of opportunity.missing ?? []) {
+    if (cells.some((cell) => cell.key === slot)) continue;
+    cells.push({ key: slot, label: fieldLabel(slot), value: null, evaded: evaded.has(slot), evadedAskCount: asked.get(slot) });
+  }
+  if (customerFields) {
+    for (const key of CUSTOMER_GRID_FIELDS) {
+      const field = customerFields[key];
+      const value = field ? (formatSlotValue(key, field.value) ?? field.value) : null;
+      const index = cells.findIndex((cell) => cell.key === key);
+      if (index >= 0) {
+        if (cells[index].value === null && value) cells[index] = { ...cells[index], value };
+        continue;
+      }
+      cells.push({ key, label: fieldLabel(key), value });
+    }
+  }
+  return cells;
+}
+
+function habitTags(slots: Record<string, unknown>): string[] {
+  const raw = slots.habit_need_tags;
+  if (Array.isArray(raw)) return raw.map(String).filter(Boolean);
+  if (typeof raw === "string") return raw.split(",").map((item) => item.trim()).filter(Boolean);
+  return [];
+}
+
+type StoryRow = { readonly key: string; readonly label: string; readonly value: string; readonly quote?: string; readonly insightId?: string };
+
+function storyRows(opportunity: OpportunityCardData, customerFields?: Partial<Record<CustomerFieldKey, FieldValue>>): StoryRow[] {
+  const rows: StoryRow[] = (opportunity.insights ?? []).map((insight) => ({
+    key: insight.insight_id,
+    label: INSIGHT_FIELD_LABELS[insight.field] ?? insight.field,
+    value: insight.value,
+    quote: insight.evidence_quote,
+    insightId: insight.insight_id,
+  }));
+  for (const key of CUSTOMER_STORY_FIELDS) {
+    const field = customerFields?.[key];
+    if (field) rows.push({ key, label: INSIGHT_FIELD_LABELS[key] ?? key, value: field.value, quote: field.evidence_quote });
+  }
+  return rows;
+}
+
+function NextActionChecklist({ actions, readOnly }: Readonly<{ actions: readonly { code: string; label: string }[]; readOnly: boolean }>) {
+  // Chỉ đánh dấu phía trình duyệt — CHƯA lưu (plan §13, việc cho lượt sau).
+  const [done, setDone] = useState<ReadonlySet<string>>(new Set());
+  if (readOnly) {
+    return (
+      <ul className="c360-todo" data-readonly="true">
+        {actions.map((action) => (
+          <li key={action.code}>{nextActionLabel(action)}</li>
+        ))}
+      </ul>
+    );
+  }
+  return (
+    <ul className="c360-todo">
+      {actions.map((action) => {
+        const id = `c360-todo-${action.code}`;
+        return (
+          <li key={action.code}>
+            <input
+              checked={done.has(action.code)}
+              id={id}
+              onChange={(event) => {
+                const next = new Set(done);
+                if (event.target.checked) next.add(action.code);
+                else next.delete(action.code);
+                setDone(next);
+              }}
+              type="checkbox"
+            />
+            <label htmlFor={id}>{nextActionLabel(action)}</label>
+          </li>
+        );
+      })}
+    </ul>
+  );
 }
 
 /**
- * Một nhu cầu mua (plan §2.1 tầng Cơ hội): cần gì, còn thiếu gì, khách né gì, vướng đâu,
- * nên làm gì tiếp. Trước khi bật Customer 360 hồ sơ dựng card từ slot phiên gần nhất nên
- * giai đoạn/độ nóng/gợi ý chỉ hiện khi có dữ liệu.
+ * Tab "Tổng quan" của MỘT nhu cầu mua (mockup 02): cột trái gợi ý mở lời, rào cản, nhu cầu,
+ * khách tự kể; cột phải việc cần làm, xe quan tâm, ưu đãi, tóm tắt. Khối nào không có dữ liệu
+ * thì ẨN — nguồn dự phòng (cờ tắt) chỉ còn lưới nhu cầu.
  */
-export function OpportunityCard({ opportunity, readOnly, onInsightFeedback, offerSlot }: OpportunityCardProps) {
-  const known = knownSlots(opportunity.slots);
-  const heat = opportunity.heatBand ? HEAT_BAND_BADGES[opportunity.heatBand] : null;
-  const stageIndex = opportunity.stage ? SALES_STAGE_ORDER.indexOf(opportunity.stage) : -1;
-  const subtitle = [
-    opportunity.buyerFor ? BUYER_FOR_LABELS[opportunity.buyerFor] : null,
-    opportunity.status && opportunity.status !== "OPEN" ? OPPORTUNITY_STATUS_LABELS[opportunity.status] : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+export function OpportunityOverview({
+  opportunity,
+  role,
+  readOnly,
+  customerFields,
+  latestSummary,
+  conversationHref,
+  onInsightFeedback,
+  offerSlot,
+}: OpportunityOverviewProps) {
+  const cells = needCells(opportunity, customerFields);
+  const filled = cells.filter((cell) => cell.value !== null).length;
+  const tags = habitTags(opportunity.slots);
+  const stories = storyRows(opportunity, customerFields);
+  const basis = openingBasisText(opportunity.openingBasis);
+  const vehicles = opportunity.vehicles ?? [];
+  const actions = opportunity.nextActions ?? [];
 
   return (
-    <article aria-label={opportunity.title} className="customer360-opportunity" data-readonly={readOnly || undefined}>
-      <header>
-        <div>
-          <h3>{opportunity.title}</h3>
-          {subtitle ? <small>{subtitle}</small> : null}
-        </div>
-        {heat ? (
-          <span title={breakdownTitle(opportunity.heatBreakdown)}>
-            <StatusBadge tone={heat.tone}>
-              {heat.label}
-              {opportunity.heatScore !== undefined ? ` · ${opportunity.heatScore}` : ""}
-            </StatusBadge>
-          </span>
+    <div className="c360-overview-grid">
+      <div className="c360-column">
+        {opportunity.openingHint ? (
+          <section aria-label="Gợi ý mở lời" className="c360-hint-card">
+            <p className="c360-eyebrow">Gợi ý mở lời</p>
+            <p className="c360-hint-text">{opportunity.openingHint}</p>
+            {basis ? <p className="c360-hint-basis">{basis}</p> : null}
+          </section>
         ) : null}
-      </header>
 
-      {stageIndex >= 0 ? (
-        <ol aria-label="Giai đoạn" className="customer360-stages">
-          {SALES_STAGE_ORDER.map((stage, index) => (
-            <li aria-current={index === stageIndex ? "step" : undefined} data-reached={index <= stageIndex || undefined} key={stage}>
-              {SALES_STAGE_LABELS[stage]}
-            </li>
-          ))}
-        </ol>
-      ) : null}
+        {opportunity.barriers.length ? (
+          <section aria-labelledby="c360-barriers-title" className="c360-card c360-section">
+            <div className="c360-section-head">
+              <h2 id="c360-barriers-title">Rào cản khách đã nói ra</h2>
+              <span className="c360-muted">Bấm để mở đúng đoạn hội thoại</span>
+            </div>
+            <BarrierRows items={opportunity.barriers} role={role} />
+          </section>
+        ) : null}
 
-      {opportunity.openingHint ? (
-        <p className="customer360-hint">
-          <Lightbulb size={15} /> {opportunity.openingHint}
-        </p>
-      ) : null}
+        {cells.length || tags.length ? (
+          <section aria-labelledby="c360-needs-title" className="c360-card c360-section">
+            <div className="c360-section-head">
+              <h2 id="c360-needs-title">Nhu cầu</h2>
+              {cells.length ? (
+                <span className="c360-muted">
+                  {filled}/{cells.length} thông tin đã có
+                </span>
+              ) : null}
+            </div>
+            <NeedGrid cells={cells} tags={tags} />
+          </section>
+        ) : null}
 
-      <section>
-        <h4>Nhu cầu đã có</h4>
-        {known.length ? (
-          <dl className="customer360-needs">
-            {known.map((item) => {
-              const previous = opportunity.history?.[item.slot]?.at(-1);
-              return (
-                <div key={item.slot}>
-                  <dt>{item.label}</dt>
+        {stories.length ? (
+          <section aria-labelledby="c360-story-title" className="c360-card c360-section">
+            <h2 id="c360-story-title">Khách tự kể trong hội thoại</h2>
+            <dl className="c360-story">
+              {stories.map((row) => (
+                <div key={row.key}>
+                  <dt>{row.label}</dt>
                   <dd>
-                    {item.value}
-                    {previous ? <small> (trước: {formatSlotValue(item.slot, previous.value) ?? previous.value})</small> : null}
+                    <strong>{row.value}</strong>
+                    {row.quote ? <span className="c360-muted"> · “{row.quote}”</span> : null}
+                    {!readOnly && onInsightFeedback && row.insightId ? (
+                      <button className="text-button" onClick={() => onInsightFeedback(row.insightId as string)} type="button">
+                        <Flag size={13} /> Báo sai
+                      </button>
+                    ) : null}
                   </dd>
                 </div>
-              );
-            })}
-          </dl>
-        ) : (
-          <p className="customer360-empty">Chưa thu được thông tin nhu cầu.</p>
-        )}
-        {opportunity.missing?.length ? (
-          <p className="customer360-gaps">
-            <strong>Còn thiếu:</strong> {opportunity.missing.map(slotName).join(", ")}
-          </p>
+              ))}
+            </dl>
+          </section>
         ) : null}
-        {opportunity.evaded?.length ? (
-          <p className="customer360-gaps">
-            <strong>Khách né:</strong> {opportunity.evaded.map(slotName).join(", ")}
-          </p>
+      </div>
+
+      <div className="c360-column">
+        {actions.length ? (
+          <section aria-labelledby="c360-todo-title" className="c360-card c360-section">
+            <h2 id="c360-todo-title">Việc cần làm</h2>
+            <NextActionChecklist actions={actions} readOnly={readOnly} />
+          </section>
         ) : null}
-      </section>
 
-      <section>
-        <h4>Rào cản</h4>
-        <BarrierList items={opportunity.barriers} />
-      </section>
+        {vehicles.length ? (
+          <section aria-labelledby="c360-vehicles-title" className="c360-card c360-section">
+            <h2 id="c360-vehicles-title">Xe quan tâm</h2>
+            <ul className="c360-vehicle-list">
+              {vehicles.map((vehicle, index) => (
+                <VehicleInterestCard key={vehicle.vehicle_id} primary={index === 0} vehicle={vehicle} />
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
-      {opportunity.insights?.length ? (
-        <section>
-          <h4>Khách đã nói</h4>
-          <ul className="customer360-insights">
-            {opportunity.insights.map((insight) => (
-              <li key={insight.insight_id}>
-                <strong>{INSIGHT_FIELD_LABELS[insight.field] ?? insight.field}:</strong> {insight.value}
-                {insight.evidence_quote ? <blockquote>“{insight.evidence_quote}”</blockquote> : null}
-                {!readOnly && onInsightFeedback ? (
-                  <button className="text-button" onClick={() => onInsightFeedback(insight.insight_id)} type="button">
-                    <Flag size={13} /> Báo sai
-                  </button>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+        {offerSlot ? (
+          <section aria-labelledby="c360-offers-title" className="c360-card c360-section">
+            <h2 id="c360-offers-title">Ưu đãi phù hợp</h2>
+            {offerSlot}
+          </section>
+        ) : null}
 
-      {offerSlot ? (
-        <section>
-          <h4>Ưu đãi phù hợp</h4>
-          {offerSlot}
-        </section>
-      ) : null}
-
-      {opportunity.nextActions?.length ? (
-        <section>
-          <h4>
-            <ListChecks size={14} /> Việc cần làm
-          </h4>
-          <ul className="customer360-actions">
-            {opportunity.nextActions.map((action) => (
-              <li key={action.code}>{action.label}</li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-    </article>
+        {latestSummary ? (
+          <section aria-labelledby="c360-summary-title" className="c360-card c360-section">
+            <h2 id="c360-summary-title">Tóm tắt của AI</h2>
+            <p className="c360-summary-text">{latestSummary}</p>
+            {conversationHref ? <Link href={conversationHref}>Mở toàn bộ hội thoại</Link> : null}
+          </section>
+        ) : null}
+      </div>
+    </div>
   );
 }

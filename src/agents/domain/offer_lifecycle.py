@@ -77,6 +77,16 @@ def check_transition(current: OfferStatus, target: OfferStatus) -> None:
         raise OfferTransitionError(current, target)
 
 
+#: Người duyệt ưu đãi vượt hạn mức phải là tư vấn viên KHÁC người đề xuất (plan §16).
+SELF_APPROVAL = "SELF_APPROVAL"
+
+
+def approval_blocker(suggested_by: str, approver_ids: tuple[str, ...]) -> str | None:
+    """Admin không còn duyệt ưu đãi; duyệt chéo giữa hai tư vấn viên để vẫn có hai người kiểm."""
+
+    return SELF_APPROVAL if suggested_by and suggested_by in approver_ids else None
+
+
 def needs_manager_approval(discount_vnd: int | None, advisor_max_discount_vnd: int | None) -> bool:
     """Có tiền mà vượt ngưỡng TVV — hoặc ngưỡng chưa cấu hình (Q5: mặc định chặt)."""
 

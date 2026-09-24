@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
+import { refreshCustomerIdentity } from "@/lib/api/agent";
 import {
   getProfile as apiGetProfile,
   login as apiLogin,
@@ -117,6 +118,8 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
   const saveProfile = useCallback(async (payload: UpdateProfilePayload): Promise<UserProfile> => {
     const updated = await apiUpdateProfile(payload);
     setProfile(updated);
+    // Khách sửa tên/SĐT/địa chỉ ở /account: tư vấn viên thấy bản mới ngay (plan §19).
+    if (updated.role === "customer") await refreshCustomerIdentity().catch(() => undefined);
     return updated;
   }, []);
 

@@ -127,3 +127,33 @@ async def test_ghi_state_hong_khong_giet_luot() -> None:
     assert result is not None
     assert memory.finalized
     assert conversation.saved == [] and conversation.traces == []
+
+
+class _NotifyingMemory(_Memory):
+    def __init__(self, boom: Exception | None = None) -> None:
+        super().__init__()
+        self.notified: list[dict[str, Any]] = []
+        self.boom = boom
+
+    async def notify_turn_committed(self, **kwargs: Any) -> None:
+        if self.boom is not None:
+            raise self.boom
+        self.notified.append(kwargs)
+
+
+@pytest.mark.asyncio
+async def test_khong_lease_van_bao_viec_nen_customer_360() -> None:
+    """Plan §21: `/agent/turn` (không lease) trước đây KHÔNG báo việc nền — khách chat thật
+    không bao giờ được gắn cơ hội/lưu hồ sơ, trang tư vấn viên trống trơn."""
+
+    conversation = _Conversation(state=CoreState(session_id=SESSION, stage=Stage.RECOMMENDED, turn_count=3))
+    memory = _NotifyingMemory()
+    await _turn(conversation, memory)
+    assert memory.notified == [{"session_id": SESSION, "customer_id": "c1", "turn_count": 4}]
+
+
+@pytest.mark.asyncio
+async def test_viec_nen_hong_khong_giet_luot() -> None:
+    memory = _NotifyingMemory(boom=RuntimeError("scheduler down"))
+    result = await _turn(_Conversation(state=CoreState(session_id=SESSION)), memory)
+    assert result is not None and memory.finalized

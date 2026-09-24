@@ -8,15 +8,19 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
+from src.agents.api.customer_360_routes import customer_ownership_operations
 from src.agents.api.dependencies import AgentDependency
 from src.agents.api.security import StaffIdentity, require_staff
 from src.agents.api.ws_manager import ws_manager
 from src.agents.domain.pii import mask_phone
-from src.agents.domain.staff_access import can_list_other_advisor, staff_identifiers
+from src.agents.domain.staff_access import can_list_other_advisor, is_admin, staff_identifiers
+from src.agents.logging import get_agent_logger
+from src.agents.services.operations.customer_ownership import CustomerOwnershipOperations
 from src.auth.domain.audit import log_authorization_denied
 from src.auth.domain.authorization import Permission, Role, Scope
 
 router = APIRouter(prefix="/advisor", tags=["advisor-conversations"])
+logger = get_agent_logger(__name__)
 
 
 class AdvisorConversationListItem(BaseModel):
@@ -222,13 +226,23 @@ async def join_conversation(
     conversation_id: UUID,
     identity: StaffIdentity = Depends(require_staff),
     agent=AgentDependency,
+    ownership: CustomerOwnershipOperations | None = Depends(customer_ownership_operations),
 ) -> JoinResponse:
-    """Claim a conversation and move it to ADVISOR_JOINED."""
+    """Claim a conversation and move it to ADVISOR_JOINED.
+
+    Tư vấn viên tiếp quản thì khách CHƯA có ai phụ trách thuộc về người đó (thay màn phân
+    công của Admin). Gán khách hỏng không làm hỏng lượt tiếp quản — phiên vẫn đã được nhận.
+    """
 
     service = _service(agent)
     joined = await service.join_advisor(str(conversation_id), identity.staff_id)
     if not joined:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="conversation already assigned or closed")
+    if ownership is not None and not is_admin(identity.role.value):
+        try:
+            await ownership.claim_on_takeover(str(conversation_id), advisor_id=identity.staff_id)
+        except Exception:
+            logger.warning("advisor.join: khong gan duoc khach cho tu van vien", exc_info=True)
     detail = await service.staff_conversation_detail(
         str(conversation_id), requester_id=identity.staff_id, role=_role(identity), requester_email=identity.email
     )

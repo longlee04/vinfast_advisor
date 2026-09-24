@@ -328,7 +328,7 @@ export function AdvisorReviewPanel({ reviewId }: Readonly<{ reviewId: string }>)
       <div className="ops-state">
         {notice ? <AlertTriangle size={32} /> : <LoaderCircle className="spin" size={32} />}
         <h2>{notice || "Đang tải bản nháp"}</h2>
-        <Link className="secondary-button" href="/advisor">
+        <Link className="secondary-button" href="/advisor/queue">
           Quay lại hàng đợi
         </Link>
       </div>
@@ -347,7 +347,7 @@ export function AdvisorReviewPanel({ reviewId }: Readonly<{ reviewId: string }>)
               <MessageSquare size={17} /> Bắt đầu chat với khách hàng
             </Link>
           ) : null}
-          <Link className="secondary-button" href="/advisor">
+          <Link className="secondary-button" href="/advisor/queue">
             Quay lại hàng đợi
           </Link>
         </div>

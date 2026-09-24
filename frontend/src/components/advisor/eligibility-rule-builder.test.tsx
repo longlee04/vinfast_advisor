@@ -3,7 +3,7 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { EligibilityRuleBuilder, groupToRules, rulesToGroup } from "@/components/admin/eligibility-rule-builder";
+import { EligibilityRuleBuilder, groupToRules, rulesToGroup } from "@/components/advisor/eligibility-rule-builder";
 import { EligibleOfferList } from "@/components/customer360/eligible-offer-list";
 import * as promotionsApi from "@/lib/api/promotions";
 
@@ -101,7 +101,7 @@ describe("EligibleOfferList", () => {
       fireEvent.click(screen.getByRole("button", { name: "Đề xuất" }));
     });
     expect(promotionsApi.proposeOffer).toHaveBeenCalledWith("O1", "HN-10");
-    expect(screen.getByRole("status")).toHaveTextContent("chờ quản lý duyệt");
+    expect(screen.getByRole("status")).toHaveTextContent("chờ một tư vấn viên khác duyệt");
   });
 
   it("chỉ xem (Admin): không có nút Đề xuất", async () => {

@@ -19,9 +19,15 @@ from src.agents.domain.customer360_flags import (
     FLAG_UI,
     is_globally_on,
 )
-from src.agents.domain.customer_overview import Viewer, build_overview
+from src.agents.domain.customer_overview import (
+    ActionSignals,
+    Viewer,
+    actions_from_signals,
+    build_overview,
+    missing_slots,
+)
 from src.agents.domain.heat_score import HEAT_VERSION, HOT_THRESHOLD, WARM_THRESHOLD
-from src.agents.domain.pii import mask_phone, redact_pii
+from src.agents.domain.pii import mask_email, mask_phone, redact_pii
 from src.agents.domain.sales_stage import STAGE_ORDER
 from src.agents.services.operations.customer_360 import FlagReader
 
@@ -38,7 +44,25 @@ class Customer360Query(Protocol):
     async def load_profile(self, customer_id: str) -> Any: ...
     async def owner(self, kind: str, ref: str) -> tuple[str, set[str]] | None: ...
     async def list_opportunities(
-        self, *, advisor_ids: Sequence[str] | None, band: str | None, limit: int
+        self,
+        *,
+        advisor_ids: Sequence[str] | None,
+        band: str | None,
+        limit: int,
+        now: datetime,
+        only_waiting: bool = False,
+        only_test_drive: bool = False,
+    ) -> list[dict[str, Any]]: ...
+    async def opportunity_summary(self, *, advisor_ids: Sequence[str] | None, now: datetime) -> dict[str, int]: ...
+    async def list_my_customers(
+        self,
+        *,
+        advisor_ids: Sequence[str] | None,
+        band: str | None,
+        limit: int,
+        now: datetime,
+        only_waiting: bool = False,
+        only_test_drive: bool = False,
     ) -> list[dict[str, Any]]: ...
     async def picker(self, query: str | None, limit: int) -> list[dict[str, Any]]: ...
     async def metrics(self, now: datetime, window_days: int) -> dict[str, Any]: ...
@@ -99,11 +123,66 @@ class Customer360ReadOperations:
         )
 
     async def list_opportunities(
-        self, *, requester_ids: Sequence[str], is_admin: bool, band: str | None, limit: int
+        self,
+        *,
+        requester_ids: Sequence[str],
+        is_admin: bool,
+        band: str | None,
+        limit: int,
+        only_waiting: bool = False,
+        only_test_drive: bool = False,
     ) -> list[dict[str, Any]]:
         await self._require_ui()
-        return await self._query.list_opportunities(
-            advisor_ids=None if is_admin else list(requester_ids), band=band, limit=limit
+        rows = await self._query.list_opportunities(
+            advisor_ids=None if is_admin else list(requester_ids),
+            band=band,
+            limit=limit,
+            now=self._clock(),
+            only_waiting=only_waiting,
+            only_test_drive=only_test_drive,
+        )
+        return [{**row, "next_action": _first_action(row)} for row in rows]
+
+    async def list_my_customers(
+        self,
+        *,
+        requester_ids: Sequence[str],
+        is_admin: bool,
+        band: str | None,
+        limit: int,
+        only_waiting: bool = False,
+        only_test_drive: bool = False,
+    ) -> list[dict[str, Any]]:
+        """Tab "Đã nhận": mọi khách người xem đang phụ trách, có cơ hội hay chưa (plan §20).
+
+        Danh sách nên email luôn che; khách chưa có nhu cầu thì không có "việc nên làm" từ
+        domain — frontend nhắc hỏi nhu cầu.
+        """
+
+        await self._require_ui()
+        rows = await self._query.list_my_customers(
+            advisor_ids=None if is_admin else list(requester_ids),
+            band=band,
+            limit=limit,
+            now=self._clock(),
+            only_waiting=only_waiting,
+            only_test_drive=only_test_drive,
+        )
+        return [
+            {
+                **row,
+                "email": mask_email(row["email"]) if row.get("email") else None,
+                "next_action": _first_action(row) if row.get("opportunity_id") else None,
+            }
+            for row in rows
+        ]
+
+    async def opportunity_summary(self, *, requester_ids: Sequence[str], is_admin: bool) -> dict[str, int]:
+        """Bốn thẻ số đầu màn "Khách cần xử lý" — cùng phạm vi TVV với danh sách cơ hội."""
+
+        await self._require_ui()
+        return await self._query.opportunity_summary(
+            advisor_ids=None if is_admin else list(requester_ids), now=self._clock()
         )
 
     async def picker(self, query: str | None, limit: int) -> list[dict[str, Any]]:
@@ -125,6 +204,23 @@ class Customer360ReadOperations:
             {**sample, "evidence_quote": redact_pii(sample.get("evidence_quote") or "")} for sample in result["samples"]
         ]
         return result
+
+
+def _first_action(row: dict[str, Any]) -> dict[str, str] | None:
+    """Việc đầu tiên trong "Việc cần làm" — cùng hàm domain với hồ sơ, từ tín hiệu của dòng danh sách."""
+
+    actions = actions_from_signals(
+        ActionSignals(
+            heat_band=str(row["heat_band"]),
+            needs_review=bool(row.get("needs_review")),
+            waiting=bool(row.get("waiting")),
+            booking_requested=bool(row.get("booking_requested")),
+            has_phone=bool(row.get("has_phone")),
+            barrier_codes=list(row.get("barriers") or []),
+            missing=missing_slots(row.get("vehicle_type"), row.get("slots") or {}),
+        )
+    )
+    return actions[0] if actions else None
 
 
 __all__ = ["Customer360DisabledError", "Customer360ReadOperations", "CustomerAccessDeniedError"]

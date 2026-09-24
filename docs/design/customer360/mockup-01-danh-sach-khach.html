@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Khách cần xử lý</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Geist',system-ui,sans-serif;background:#f5f7fa;color:#101828}
+a{color:#1464f4;text-decoration:none}a:hover{color:#0f52cc}
+</style>
+</helmet>
+<div style="width: 1440px; height: 960px; display: flex; background: #f5f7fa; font-family: 'Geist', system-ui, sans-serif; color: #101828;">
+
+  <nav style="width: 232px; flex-shrink: 0; box-sizing: border-box; padding: 24px 16px; background: #ffffff; border-right: 1px solid #e4e7ec; display: flex; flex-direction: column; gap: 28px;">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px;">
+      <div style="width: 28px; height: 28px; border-radius: 7px; background: #101828; color: #ffffff; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center;">P</div>
+      <div style="font-size: 15px; font-weight: 600;">Advisor Console</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2px;">
+      <a href="Main.dc.html" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 8px; background: #eaf1fe; color: #0f52cc; font-size: 14px; font-weight: 500;">Khách cần xử lý<span style="font-size: 12px; background: #1464f4; color: #ffffff; border-radius: 10px; padding: 1px 8px;">7</span></a>
+      <a href="#" style="padding: 10px 12px; border-radius: 8px; color: #344054; font-size: 14px;">Lịch lái thử</a>
+      <a href="#" style="padding: 10px 12px; border-radius: 8px; color: #344054; font-size: 14px;">Hội thoại đang mở</a>
+      <a href="#" style="padding: 10px 12px; border-radius: 8px; color: #344054; font-size: 14px;">Duyệt nội dung AI</a>
+      <a href="#" style="padding: 10px 12px; border-radius: 8px; color: #344054; font-size: 14px;">Ưu đãi</a>
+    </div>
+    <div style="margin-top: auto; padding: 12px; border-top: 1px solid #e4e7ec; font-size: 13px; color: #667085;">Đang đăng nhập<div style="color: #101828; font-weight: 500; margin-top: 2px;">[TÊN TƯ VẤN VIÊN]</div></div>
+  </nav>
+
+  <main style="flex-grow: 1; box-sizing: border-box; padding: 32px 40px; display: flex; flex-direction: column; gap: 24px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+      <div>
+        <div style="font-size: 13px; color: #667085;">Thứ Năm, 24/09</div>
+        <h1 style="margin: 4px 0 0; font-size: 28px; font-weight: 600; letter-spacing: -0.01em;">Khách cần xử lý</h1>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button style="height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid #1464f4; background: #eaf1fe; color: #0f52cc; font: inherit; font-size: 14px; font-weight: 500;">Tất cả</button>
+        <button style="height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid #e4e7ec; background: #ffffff; color: #344054; font: inherit; font-size: 14px;">Chỉ khách nóng</button>
+        <button style="height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid #e4e7ec; background: #ffffff; color: #344054; font: inherit; font-size: 14px;">Chờ người thật</button>
+        <button style="height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid #e4e7ec; background: #ffffff; color: #344054; font: inherit; font-size: 14px;">Có lịch lái thử</button>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;">
+      <div style="background: #ffffff; border: 1px solid #e4e7ec; border-radius: 12px; padding: 16px 20px;">
+        <div style="font-size: 13px; color: #667085;">Khách nóng</div>
+        <div style="font-size: 28px; font-weight: 600; margin-top: 4px; color: #9a4a00;">2</div>
+        <div style="font-size: 13px; color: #667085; margin-top: 2px;">Nên gọi trong hôm nay</div>
+      </div>
+      <div style="background: #ffffff; border: 1px solid #e4e7ec; border-radius: 12px; padding: 16px 20px;">
+        <div style="font-size: 13px; color: #667085;">Đang chờ người thật</div>
+        <div style="font-size: 28px; font-weight: 600; margin-top: 4px;">1</div>
+        <div style="font-size: 13px; color: #667085; margin-top: 2px;">Khách chủ động yêu cầu</div>
+      </div>
+      <div style="background: #ffffff; border: 1px solid #e4e7ec; border-radius: 12px; padding: 16px 20px;">
+        <div style="font-size: 13px; color: #667085;">Lái thử trong 48 giờ</div>
+        <div style="font-size: 28px; font-weight: 600; margin-top: 4px;">1</div>
+        <div style="font-size: 13px; color: #667085; margin-top: 2px;">Cần xác nhận lịch</div>
+      </div>
+      <div style="background: #ffffff; border: 1px solid #e4e7ec; border-radius: 12px; padding: 16px 20px;">
+        <div style="font-size: 13px; color: #667085;">Câu AI chưa trả lời được</div>
+        <div style="font-size: 28px; font-weight: 600; margin-top: 4px;">2</div>
+        <div style="font-size: 13px; color: #667085; margin-top: 2px;">TVV cần trả lời trước</div>
+      </div>
+    </div>
+
+    <div style="background: #ffffff; border: 1px solid #e4e7ec; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;">
+      <div style="display: grid; grid-template-columns: 104px 208px 128px 128px 168px 128px 96px minmax(0, 1fr); background: #f9fafb; border-bottom: 1px solid #e4e7ec; font-size: 12px; font-weight: 500; color: #667085; text-transform: uppercase; letter-spacing: 0.04em;">
+        <div style="padding: 12px 16px;">Độ nóng</div>
+        <div style="padding: 12px 16px;">Khách</div>
+        <div style="padding: 12px 16px;">Xe quan tâm</div>
+        <div style="padding: 12px 16px;">Ngân sách</div>
+        <div style="padding: 12px 16px;">Rào cản chính</div>
+        <div style="padding: 12px 16px;">Giai đoạn</div>
+        <div style="padding: 12px 16px;">Lần cuối</div>
+        <div style="padding: 12px 16px;">Việc nên làm</div>
+      </div>
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="7">
+        <div style="display: grid; grid-template-columns: 104px 208px 128px 128px 168px 128px 96px minmax(0, 1fr); align-items: center; border-bottom: 1px solid #f0f2f5; font-size: 14px; min-height: 68px;">
+          <div style="padding: 12px 16px;">
+            <span style="{{r.heatStyle}}">{{r.heat}} · {{r.score}}</span>
+          </div>
+          <div style="padding: 12px 16px;">
+            <a href="Customer360.dc.html" style="color: #101828; font-weight: 500;">{{r.name}}</a>
+            <div style="font-size: 12px; color: #667085; margin-top: 2px;">{{r.sub}}</div>
+          </div>
+          <div style="padding: 12px 16px; font-weight: 500;">{{r.car}}</div>
+          <div style="padding: 12px 16px; color: {{r.budgetColor}};">{{r.budget}}</div>
+          <div style="padding: 12px 16px;">
+            <span style="display: inline-block; padding: 3px 10px; border-radius: 999px; background: #f2f4f7; border: 1px solid #e4e7ec; font-size: 13px; color: #344054;">{{r.barrier}}</span>
+          </div>
+          <div style="padding: 12px 16px;">
+            <div style="display: flex; gap: 4px;">
+              <sc-for list="{{r.dots}}" as="d" hint-placeholder-count="5">
+                <span style="{{d.style}}"></span>
+              </sc-for>
+            </div>
+            <div style="font-size: 12px; color: #667085; margin-top: 6px;">{{r.stage}}</div>
+          </div>
+          <div style="padding: 12px 16px; font-size: 13px; color: #667085;">{{r.last}}</div>
+          <div style="padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+            <span style="color: #101828;">{{r.next}}</span>
+            <a href="Customer360.dc.html" style="flex-shrink: 0; font-size: 13px; font-weight: 500;">Mở hồ sơ</a>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="font-size: 12px; color: #667085;">Dữ liệu mẫu minh hoạ. Độ nóng tính từ tín hiệu hội thoại: để lại SĐT, đã nhận báo giá, đặt lái thử, thời điểm định mua, số lần quay lại.</div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var heat = {
+      'Nóng': 'display:inline-block;padding:4px 10px;border-radius:999px;background:#fdecd8;color:#8a3f00;font-size:13px;font-weight:500;',
+      'Ấm': 'display:inline-block;padding:4px 10px;border-radius:999px;background:#fff4d6;color:#7a5600;font-size:13px;font-weight:500;',
+      'Lạnh': 'display:inline-block;padding:4px 10px;border-radius:999px;background:#eef2f7;color:#475467;font-size:13px;font-weight:500;'
+    };
+    var stages = ['Tìm hiểu', 'So sánh', 'Báo giá', 'Lái thử', 'Chốt'];
+    function dots(n) {
+      var out = [];
+      for (var i = 0; i < 5; i++) {
+        out.push({ style: 'width:18px;height:6px;border-radius:3px;background:' + (i < n ? '#1464f4' : '#e4e7ec') + ';' });
+      }
+      return out;
+    }
+    var raw = [
+      ['Nóng', 86, 'Nguyễn Minh Anh', '4 phiên · để lại SĐT', 'VF 6', '~700 triệu', 'Sạc ở chung cư', 4, '12 phút', 'Xác nhận lái thử T7 27/09'],
+      ['Nóng', 78, 'Trần Quốc Bảo', 'Yêu cầu gặp người thật', 'VF 7', '850 tr – 1 tỷ', 'Giá lăn bánh', 3, '40 phút', 'Gọi lại ngay, khách đang chờ'],
+      ['Ấm', 64, 'Lê Thu Hà', '2 phiên', 'Evo200', '20–25 triệu', 'Quãng đường', 2, '2 giờ', 'Gửi so sánh quãng đường thực tế'],
+      ['Ấm', 61, 'Phạm Hoàng Nam', '3 phiên', 'VF 3', 'Dưới 300 triệu', 'Pin thuê hay mua', 3, 'Hôm qua', 'Trả lời câu AI còn bỏ ngỏ'],
+      ['Ấm', 55, 'Võ Ngọc Trâm', '1 phiên · để lại SĐT', 'VF 8', '~1,1 tỷ', 'Chưa rõ', 2, 'Hôm qua', 'Hỏi thời điểm định mua'],
+      ['Lạnh', 32, 'Đỗ Thành Trung', '1 phiên', 'VF 5', 'Chưa nói', 'Giá', 1, '3 ngày', 'Theo dõi, chưa cần gọi'],
+      ['Lạnh', 24, 'Bùi Mai Linh', '1 phiên', 'Feliz', '~30 triệu', 'Sạc', 1, '4 ngày', 'Theo dõi, chưa cần gọi']
+    ];
+    var rows = raw.map(function (x) {
+      return {
+        heat: x[0], score: x[1], heatStyle: heat[x[0]], name: x[2], sub: x[3], car: x[4],
+        budget: x[5], budgetColor: x[5] === 'Chưa nói' ? '#98a2b3' : '#101828',
+        barrier: x[6], dots: dots(x[7]), stage: stages[x[7] - 1], last: x[8], next: x[9]
+      };
+    });
+    return { rows: rows };
+  }
+}
+</script>
+</body>
+</html>

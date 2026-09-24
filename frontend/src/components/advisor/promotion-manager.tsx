@@ -1,25 +1,29 @@
 "use client";
 
 import { CheckCircle2, Pencil, Plus, Power, RefreshCw, X, XCircle } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { PROMOTION_TYPE_LABELS } from "@/components/advisor/offer-state-labels";
+import { customerProfileHref } from "@/components/customer360/profile-links";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
   type AdminPromotion,
   activatePromotion,
+  approveOffer,
   cancelPromotion,
   createPromotion,
   type EligibilityRules,
+  fetchPendingOffers,
   fetchPromotionStats,
   fetchRuleSchema,
   listPromotions,
   PromotionApiError,
+  type PendingOffer,
   type PromotionInput,
   type PromotionStats,
   type PromotionStatus,
   type PromotionTypeCode,
-  publishPromotionNotice,
   updatePromotion,
   validatePromotionRules,
 } from "@/lib/api/promotions";
@@ -46,8 +50,9 @@ function toDateInput(iso: string | null | undefined): string {
 }
 
 /**
- * `/admin/promotions` (plan Customer 360 §2.6): tạo/sửa/huỷ ưu đãi, dựng luật, duyệt
- * UNVERIFIED → ACTIVE, xem hiệu quả. Ưu đãi mới luôn là "Chưa kiểm" — chỉ nút Kích hoạt
+ * `/advisor/promotions` (plan Customer 360 §16): tư vấn viên tạo/sửa/huỷ ưu đãi, dựng luật,
+ * kích hoạt UNVERIFIED → ACTIVE, xem hiệu quả, và DUYỆT CHÉO ưu đãi vượt hạn mức của đồng
+ * nghiệp (không tự duyệt đề xuất của mình). Ưu đãi mới luôn là "Chưa kiểm" — chỉ nút Kích hoạt
  * (backend kiểm luật + hạn) mới đưa được lên "Đang áp dụng".
  */
 export function PromotionManager() {
@@ -56,7 +61,7 @@ export function PromotionManager() {
   const [fieldTypes, setFieldTypes] = useState<Record<string, string>>({});
   const [filter, setFilter] = useState<PromotionStatus | "ALL">("ALL");
   const [draft, setDraft] = useState<Draft | null>(null);
-  const [notify, setNotify] = useState<AdminPromotion | null>(null);
+  const [pending, setPending] = useState<readonly PendingOffer[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -64,9 +69,14 @@ export function PromotionManager() {
   const reload = useCallback(async () => {
     setError(null);
     try {
-      const [list, stat] = await Promise.all([listPromotions(), fetchPromotionStats().catch(() => [])]);
+      const [list, stat, waiting] = await Promise.all([
+        listPromotions(),
+        fetchPromotionStats().catch(() => []),
+        fetchPendingOffers().catch(() => []),
+      ]);
       setItems(list);
       setStats(stat);
+      setPending(waiting);
     } catch (err) {
       setError(errorText(err));
     }
@@ -116,11 +126,15 @@ export function PromotionManager() {
   }
 
   async function activate(item: AdminPromotion) {
-    if (await run(() => activatePromotion(item.promotion_id), `Đã kích hoạt ${item.promotion_code}.`)) setNotify(item);
+    await run(() => activatePromotion(item.promotion_id), `Đã kích hoạt ${item.promotion_code}.`);
+  }
+
+  async function approve(offer: PendingOffer) {
+    await run(() => approveOffer(offer.offer_id), `Đã duyệt ${offer.promotion_code} cho ${offer.display_name || offer.customer_id}.`);
   }
 
   return (
-    <section className="ops-panel promotion-manager" aria-label="Quản trị ưu đãi">
+    <section className="ops-panel promotion-manager" aria-label="Quản lý ưu đãi">
       <div className="ops-panel-heading">
         <div>
           <h2>Ưu đãi</h2>
@@ -157,6 +171,29 @@ export function PromotionManager() {
         <p className="inline-warning" role="alert">
           {error}
         </p>
+      ) : null}
+
+      {pending.length ? (
+        <section aria-labelledby="pending-offers-title" className="pending-offers">
+          <h3 id="pending-offers-title">Chờ duyệt ({pending.length})</h3>
+          <p>Ưu đãi vượt hạn mức tự cấp. Người đề xuất không tự duyệt được — cần một tư vấn viên khác.</p>
+          <ul>
+            {pending.map((offer) => (
+              <li key={offer.offer_id}>
+                <div>
+                  <strong className="mono-text">{offer.promotion_code}</strong>
+                  <small>
+                    <Link href={customerProfileHref(offer.customer_id)}>{offer.display_name || offer.customer_id}</Link>
+                    {offer.discount_vnd ? ` · ${offer.discount_vnd.toLocaleString("vi-VN")} đ` : ""} · đề xuất bởi {offer.suggested_by}
+                  </small>
+                </div>
+                <button className="primary-button" disabled={busy} onClick={() => void approve(offer)} type="button">
+                  Duyệt
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
       ) : null}
 
       <div className="chat-table-wrap">
@@ -333,7 +370,7 @@ export function PromotionManager() {
                 <input
                   min={0}
                   onChange={(event) => setDraft({ ...draft, advisor_max_discount_vnd: event.target.value ? Number(event.target.value) : null })}
-                  placeholder="Trống = mọi mức có tiền cần quản lý duyệt"
+                  placeholder="Trống = mọi mức có tiền cần tư vấn viên khác duyệt"
                   type="number"
                   value={draft.advisor_max_discount_vnd ?? ""}
                 />
@@ -374,26 +411,6 @@ export function PromotionManager() {
         </div>
       ) : null}
 
-      {notify ? (
-        <div className="inline-success promotion-notify" role="status">
-          Tạo thông báo nội bộ cho tư vấn viên về ưu đãi <strong>{notify.promotion_code}</strong>?
-          <button
-            className="text-button"
-            onClick={() =>
-              void run(
-                () => publishPromotionNotice(`Ưu đãi mới: ${notify.title}`, `Ưu đãi ${notify.promotion_code} đã được kích hoạt.`),
-                "Đã gửi thông báo cho tư vấn viên.",
-              ).then(() => setNotify(null))
-            }
-            type="button"
-          >
-            Tạo thông báo
-          </button>
-          <button className="text-button" onClick={() => setNotify(null)} type="button">
-            Bỏ qua
-          </button>
-        </div>
-      ) : null}
     </section>
   );
 }

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { MetricCard } from "@/components/shared/metric-card";
 import { OperationalShell } from "@/components/shared/operational-shell";
-import { PageHeading } from "@/components/shared/page-heading";
+import { AdvisorPageHeading } from "@/components/advisor/advisor-features";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
   cancelTestDriveBooking,
@@ -81,11 +81,7 @@ export default function AdvisorTestDrivesPage() {
 
   return (
     <OperationalShell role="advisor">
-      <PageHeading
-        description="Quản lý, điều phối và xác nhận lịch hẹn lái thử xe tại Showroom của khách hàng (Dữ liệu PostgreSQL)."
-        eyebrow="Advisor / Showroom"
-        title="Yêu cầu lái thử"
-      />
+      <AdvisorPageHeading feature="testDrives" />
 
       <div className="metric-grid advisor-metrics">
         <MetricCard label="Tổng yêu cầu" note="Tất cả các lượt đăng ký" value={String(bookings.length)} />

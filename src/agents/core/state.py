@@ -194,6 +194,10 @@ class Understanding:
     #: khi `vehicle_ids` rỗng. Đọc tất định ở `understand`. Không có nó thì
     #: policy hỏi "mẫu nào?" ngay sau khi khách nói tên (prod benchmark2).
     unresolved_mention: str = ""
+    #: Nhãn của LỚP HỘI THOẠI (`domain.conversational.ConversationalIntent`):
+    #: khen/chê/phân vân/đồng ý/cảm ơn/tạm biệt/tán gẫu/chào — đọc TẤT ĐỊNH ở
+    #: `understand` có ngữ cảnh lượt trước. Rỗng = câu không thuộc lớp này.
+    conversational: str = ""
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "slots", _frozen(self.slots))

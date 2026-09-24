@@ -436,6 +436,11 @@ export function deleteAdvisorConversation(conversationId: string): Promise<{ del
   });
 }
 
+/** TVV nhận phiên AI đang giữ (`POST /advisor/conversations/{id}/join`) — 409 khi đã có người nhận/đã đóng. */
+export function joinAdvisorConversation(conversationId: string): Promise<{ joined: boolean; conversation_id: string }> {
+  return request(`/advisor/conversations/${conversationId}/join`, { method: "POST" });
+}
+
 export function handoffAdvisorConversation(conversationId: string): Promise<{ released: boolean }> {
   return request<{ released: boolean }>(`/advisor/conversations/${conversationId}/handoff`, {
     method: "POST",
@@ -508,6 +513,11 @@ export async function fetchCustomer360Meta(): Promise<Customer360Meta> {
   }
 }
 
+/** Khách vừa lưu hồ sơ: chép ngay tên/SĐT/địa chỉ sang phía tư vấn viên (plan §19). */
+export function refreshCustomerIdentity(): Promise<{ refreshed: boolean }> {
+  return request("/agent/customer-360/identity/refresh", { method: "POST" });
+}
+
 export function fetchCustomerOverview(customerId: string, role: ViewerRole): Promise<CustomerOverview> {
   const base = role === "admin" ? "/admin" : "/advisor";
   return request<CustomerOverview>(`${base}/customers/${encodeURIComponent(customerId)}/overview`);
@@ -542,14 +552,79 @@ export type OpportunityListItem = {
   readonly barriers: readonly string[];
   readonly needs_review: boolean;
   readonly last_seen_at: string;
+  // Màn "Khách cần xử lý" — backend cũ không trả thì coi như chưa có.
+  readonly sessions_count?: number;
+  readonly has_phone?: boolean;
+  /** Khách đang chờ người thật. */
+  readonly waiting?: boolean;
+  readonly has_test_drive?: boolean;
+  readonly top_vehicle_name?: string | null;
+  readonly next_action?: { readonly code: string; readonly label: string } | null;
 };
 
-export function fetchOpportunities(options: { readonly band?: HeatBand; readonly limit?: number } = {}): Promise<readonly OpportunityListItem[]> {
+export type OpportunityFilters = {
+  readonly band?: HeatBand;
+  readonly waiting?: boolean;
+  readonly hasTestDrive?: boolean;
+  readonly limit?: number;
+};
+
+export function fetchOpportunities(options: OpportunityFilters = {}): Promise<readonly OpportunityListItem[]> {
   const query = new URLSearchParams();
   if (options.band) query.set("band", options.band);
+  if (options.waiting) query.set("waiting", "true");
+  if (options.hasTestDrive) query.set("has_test_drive", "true");
   if (options.limit) query.set("limit", String(options.limit));
   const qs = query.toString();
   return request<readonly OpportunityListItem[]>(`/advisor/opportunities${qs ? `?${qs}` : ""}`);
+}
+
+/**
+ * Một khách đang phụ trách (tab "Đã nhận", plan §20) — xuất phát từ PHÂN CÔNG nên khách chưa có
+ * nhu cầu (chưa chat) vẫn có mặt; khi đó các trường cơ hội là `null`.
+ */
+export type MyCustomerItem = {
+  readonly customer_id: string;
+  readonly display_name: string | null;
+  readonly email: string | null;
+  readonly assigned_at: string | null;
+  readonly opportunity_id: string | null;
+  readonly vehicle_type: string | null;
+  readonly stage: SalesStage | null;
+  readonly heat_score: number | null;
+  readonly heat_band: HeatBand | null;
+  readonly slots: Record<string, unknown>;
+  readonly barriers: readonly string[];
+  readonly needs_review: boolean;
+  readonly last_seen_at: string | null;
+  readonly sessions_count: number;
+  readonly has_phone: boolean;
+  readonly waiting: boolean;
+  readonly has_test_drive: boolean;
+  readonly top_vehicle_name: string | null;
+  readonly next_action: { readonly code: string; readonly label: string } | null;
+};
+
+export function fetchMyCustomers(options: OpportunityFilters = {}): Promise<readonly MyCustomerItem[]> {
+  const query = new URLSearchParams();
+  if (options.band) query.set("band", options.band);
+  if (options.waiting) query.set("waiting", "true");
+  if (options.hasTestDrive) query.set("has_test_drive", "true");
+  if (options.limit) query.set("limit", String(options.limit));
+  const qs = query.toString();
+  return request<readonly MyCustomerItem[]>(`/advisor/customers/mine${qs ? `?${qs}` : ""}`);
+}
+
+/** Bốn thẻ số đầu màn "Khách cần xử lý" — cùng phạm vi TVV với danh sách. */
+export type OpportunitySummary = {
+  readonly hot: number;
+  readonly waiting: number;
+  readonly test_drives_48h: number;
+  readonly unanswered: number;
+};
+
+export function fetchOpportunitySummary(): Promise<OpportunitySummary> {
+  return request<OpportunitySummary>("/advisor/opportunities/summary");
 }
 
 export type Customer360Metrics = {
@@ -576,21 +651,35 @@ export function fetchCustomer360Metrics(windowDays = 30): Promise<Customer360Met
   return request<Customer360Metrics>(`/admin/customer-360/metrics?window=${windowDays}`);
 }
 
-export type CustomerPickerItem = {
+/** Khách chưa ai phụ trách — tư vấn viên tự nhận (thay màn phân công của Admin). SĐT đã che. */
+export type CustomerPoolItem = {
   readonly customer_id: string;
   readonly display_name: string | null;
   readonly phone: string | null;
-  readonly advisor_id: string | null;
-  readonly last_seen_at: string | null;
+  /** Đã che (`mi***@gmail.com`) — khách mới đăng nhập chưa khai tên vẫn nhận ra được. */
+  readonly email?: string | null;
   readonly sessions_count: number;
+  readonly last_seen_at: string | null;
+  /** Khách đang chờ người thật. */
+  readonly waiting: boolean;
   readonly heat_band: HeatBand | null;
   readonly heat_score: number | null;
+  readonly stage: SalesStage | null;
+  readonly slots: Record<string, unknown>;
 };
 
-export function fetchCustomerPicker(query: string, limit = 20): Promise<readonly CustomerPickerItem[]> {
-  const qs = new URLSearchParams({ limit: String(limit) });
-  if (query.trim()) qs.set("q", query.trim());
-  return request<readonly CustomerPickerItem[]>(`/admin/customers/picker?${qs.toString()}`);
+export function fetchCustomerPool(limit = 100): Promise<readonly CustomerPoolItem[]> {
+  return request<readonly CustomerPoolItem[]>(`/advisor/customers/pool?limit=${limit}`);
+}
+
+/** Nhận khách từ hàng chờ — 409 khi tư vấn viên khác đã nhận trước. */
+export function claimCustomer(customerId: string): Promise<{ outcome: "CLAIMED" | "ALREADY_MINE"; customer_id: string }> {
+  return request(`/advisor/customers/${encodeURIComponent(customerId)}/claim`, { method: "POST" });
+}
+
+/** Trả khách về hàng chờ — chỉ người đang phụ trách. */
+export function releaseCustomer(customerId: string): Promise<{ released: boolean }> {
+  return request(`/advisor/customers/${encodeURIComponent(customerId)}/release`, { method: "POST" });
 }
 
 export type ExtractionQuality = {

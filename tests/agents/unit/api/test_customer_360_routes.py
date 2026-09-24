@@ -44,6 +44,16 @@ class FakeReader:
     async def meta(self) -> dict:
         return {"enabled": {"ui": self.enabled}}
 
+    async def list_opportunities(self, **kwargs) -> list[dict]:  # noqa: ANN003
+        self.calls.append(("list", kwargs))
+        return []
+
+    async def opportunity_summary(self, *, requester_ids, is_admin: bool) -> dict:  # noqa: ANN001
+        if not self.enabled:
+            raise Customer360DisabledError
+        self.calls.append(("summary", tuple(requester_ids), is_admin))
+        return {"hot": 2, "waiting": 1, "test_drives_48h": 1, "unanswered": 0}
+
 
 class FakeOperations:
     def __init__(self) -> None:
@@ -117,3 +127,119 @@ async def test_tach_gop_chi_tvv_phu_trach_admin_chi_doc() -> None:
     assert operations.moves == [(session_id, None, "adv-1")]
     assert missing.status_code == 422 and bad_id.status_code == 422
     assert admin.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_bo_loc_danh_sach_va_the_so_di_qua_pham_vi_tvv() -> None:
+    reader = FakeReader()
+    app = _app(Role.ADVISOR, "adv-1", reader)
+    response = await _get(app, "/advisor/opportunities?waiting=true&has_test_drive=true&band=HOT")
+    assert response.status_code == 200
+    [(_, kwargs)] = [call for call in reader.calls if call[0] == "list"]
+    assert kwargs["only_waiting"] and kwargs["only_test_drive"] and kwargs["band"] == "HOT"
+    assert kwargs["is_admin"] is False and "adv-1" in kwargs["requester_ids"]
+
+    summary = await _get(app, "/advisor/opportunities/summary")
+    assert summary.json() == {"hot": 2, "waiting": 1, "test_drives_48h": 1, "unanswered": 0}
+    assert ("summary", ("adv-1", "adv-1@x.vn"), False) in reader.calls
+    assert (
+        await _get(_app(Role.ADVISOR, "adv-1", FakeReader(enabled=False)), "/advisor/opportunities/summary")
+    ).status_code == 503
+
+
+class FakeOwnership:
+    def __init__(self, outcome: str = "CLAIMED") -> None:
+        self.outcome = outcome
+        self.calls: list[tuple] = []
+
+    async def claim(self, customer_id: str, *, advisor_id: str, requester_ids) -> object:  # noqa: ANN001
+        from src.agents.domain.customer_ownership import ClaimOutcome
+        from src.agents.services.operations.customer_ownership import ClaimResult
+
+        self.calls.append(("claim", customer_id, advisor_id))
+        return ClaimResult(ClaimOutcome(self.outcome), "adv-9" if self.outcome == "TAKEN" else advisor_id)
+
+    async def release(self, customer_id: str, *, requester_ids) -> bool:  # noqa: ANN001
+        self.calls.append(("release", customer_id))
+        return "adv-1" in requester_ids
+
+    async def pool(self, limit: int = 50) -> list[dict]:
+        return [{"customer_id": "cust-9", "sessions_count": 2, "waiting": True}]
+
+
+async def _post(app: FastAPI, path: str):  # noqa: ANN202
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://t") as client:
+        return await client.post(path)
+
+
+def _ownership_app(role: Role, staff_id: str, ownership: FakeOwnership) -> FastAPI:
+    from src.agents.api.customer_360_routes import customer_ownership_operations
+
+    app = _app(role, staff_id, FakeReader())
+    app.dependency_overrides[customer_ownership_operations] = lambda: ownership
+    return app
+
+
+@pytest.mark.asyncio
+async def test_tu_van_vien_nhan_tra_khach_admin_chi_xem() -> None:
+    ownership = FakeOwnership()
+    advisor = _ownership_app(Role.ADVISOR, "adv-1", ownership)
+    assert (await _get(advisor, "/advisor/customers/pool")).json()[0]["customer_id"] == "cust-9"
+    claimed = await _post(advisor, "/advisor/customers/cust-9/claim")
+    assert claimed.status_code == 200 and claimed.json()["outcome"] == "CLAIMED"
+    assert (await _post(advisor, "/advisor/customers/cust-9/release")).status_code == 200
+
+    other = _ownership_app(Role.ADVISOR, "adv-2", FakeOwnership("TAKEN"))
+    assert (await _post(other, "/advisor/customers/cust-9/claim")).status_code == 409
+    assert (await _post(other, "/advisor/customers/cust-9/release")).status_code == 403
+
+    admin = _ownership_app(Role.ADMIN, "admin-1", ownership)
+    assert (await _post(admin, "/advisor/customers/cust-9/claim")).status_code == 403
+    assert (await _post(admin, "/advisor/customers/cust-9/release")).status_code == 403
+
+
+class FakeOffers:
+    def __init__(self) -> None:
+        self.approved: list[tuple] = []
+
+    async def list_pending(self) -> list[dict]:
+        return [{"offer_id": "o1", "suggested_by": "adv-1"}]
+
+    async def approve(self, offer_id: str, approver: str, approver_ids=()) -> object:  # noqa: ANN001
+        from src.agents.domain.offer_lifecycle import SELF_APPROVAL, OfferStatus
+        from src.agents.services.operations.opportunity_offers import OfferBlockedError, OfferView
+
+        if "adv-1" in approver_ids:
+            raise OfferBlockedError(SELF_APPROVAL)
+        self.approved.append((offer_id, approver))
+        return OfferView(offer_id, "O1", "cust-1", "T-HN", OfferStatus.APPROVED, 30_000_000, True)
+
+    async def stats(self, promotion_code: str | None = None) -> list[dict]:
+        return []
+
+
+def _offer_app(role: Role, staff_id: str, offers: FakeOffers) -> FastAPI:
+    from src.agents.api.customer_360_routes import opportunity_offer_operations
+
+    app = _app(role, staff_id, FakeReader())
+    app.dependency_overrides[opportunity_offer_operations] = lambda: offers
+    return app
+
+
+@pytest.mark.asyncio
+async def test_duyet_cheo_uu_dai_giua_tu_van_vien_admin_khong_duyet() -> None:
+    offer_id = "11111111-2222-3333-4444-555555555555"
+    offers = FakeOffers()
+    other = _offer_app(Role.ADVISOR, "adv-2", offers)
+    assert (await _get(other, "/advisor/opportunity-offers/pending")).json()[0]["suggested_by"] == "adv-1"
+    assert (await _post(other, f"/advisor/opportunity-offers/{offer_id}/approve")).status_code == 200
+    assert offers.approved == [(offer_id, "adv-2")]
+    assert (await _get(other, "/advisor/promotion-stats")).status_code == 200
+
+    proposer = _offer_app(Role.ADVISOR, "adv-1", offers)
+    assert (await _post(proposer, f"/advisor/opportunity-offers/{offer_id}/approve")).status_code == 403
+
+    admin = _offer_app(Role.ADMIN, "admin-1", offers)
+    assert (await _post(admin, f"/advisor/opportunity-offers/{offer_id}/approve")).status_code == 403
+    assert (await _get(admin, "/advisor/opportunity-offers/pending")).status_code == 403
+    assert (await _get(admin, "/advisor/promotion-stats")).status_code == 403

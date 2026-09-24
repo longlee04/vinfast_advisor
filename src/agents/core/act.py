@@ -48,6 +48,7 @@ from src.agents.core.actions import (
     TEMPLATE_CLARIFY,
     TEMPLATE_NO_BETTER,
     TEMPLATE_SAME_PICK,
+    TEMPLATE_SOCIAL,
     TEMPLATE_TIMEFRAME_ACK,
     Action,
     Ask,
@@ -72,7 +73,7 @@ from src.agents.core.actions import (
 )
 from src.agents.core.state import CoreState, Pending, PendingKind, Stage
 from src.agents.core.suggest import profile_examples
-from src.agents.core.understand import sanitize_prompt_text, transcript_lines
+from src.agents.core.understand import conversation_context, sanitize_prompt_text, transcript_lines
 from src.agents.core.validate import VehicleDirectory, VehicleRef
 from src.agents.domain.agent_flag import FLAG_AGENT_FALLBACK, is_enabled_for
 from src.agents.domain.agent_tools import (
@@ -97,6 +98,7 @@ from src.agents.domain.bottleneck_signal import ConfirmedBottleneckEvidence
 from src.agents.domain.canonical_text import build_canonical_text
 from src.agents.domain.catalog_browse import page_path_for_name, page_slug_for_name
 from src.agents.domain.comparative_revision import ComparativeRevision, detect_comparative_revision
+from src.agents.domain.conversational import ConversationalIntent
 from src.agents.domain.customer_profile import Bottleneck, BottleneckEvidence, OfferState, ProfileSnapshot
 from src.agents.domain.location_tool import LOCATION_TOOL_NAME, LocationToolArgs
 from src.agents.domain.nearby_location import LocationKind, UserLocation, detect_location_kinds
@@ -122,6 +124,7 @@ from src.agents.logging import get_agent_logger
 from src.agents.prompts.question_variants import get_profile_variant, get_reask_lead
 from src.agents.services.call_budget import CallKind, current_call_budget
 from src.agents.services.conversation_memory import AdvisorReviewRequest
+from src.agents.services.conversational import handle_conversational
 from src.agents.services.registry import AgentServices
 from src.agents.services.slot_token import read_slot_token
 from src.config import get_settings
@@ -255,7 +258,7 @@ async def act(
             transcript=transcript,
         )
     elif isinstance(action, Reply):
-        result = await _reply(action, state, services)
+        result = await _reply(action, state, services, user_message=user_message, transcript=transcript)
     elif isinstance(action, Lookup):
         result = await _lookup(action, state, services, user_message=user_message, run_id=run_id)
     elif isinstance(action, NotInCatalog):
@@ -308,10 +311,14 @@ async def act(
             user_message=user_message,
             transcript=transcript,
         )
-        result = agent if agent is not None else await _reply(
-            Reply(template=TEMPLATE_CLARIFY, args={"stage": state.stage.value, "user_message": user_message}),
-            state,
-            services,
+        result = (
+            agent
+            if agent is not None
+            else await _reply(
+                Reply(template=TEMPLATE_CLARIFY, args={"stage": state.stage.value, "user_message": user_message}),
+                state,
+                services,
+            )
         )
     else:  # pragma: no cover - union đã phủ hết
         raise TypeError(f"Action lạ ở act(): {action!r}")
@@ -517,7 +524,18 @@ async def _ask(
     return ActResult(text=text, cards=cards, state_patch={"pending": pending})
 
 
-async def _reply(action: Reply, state: CoreState, services: AgentServices) -> ActResult:
+async def _reply(
+    action: Reply,
+    state: CoreState,
+    services: AgentServices,
+    *,
+    user_message: str = "",
+    transcript: Sequence[Any] = (),
+) -> ActResult:
+    if action.template == TEMPLATE_SOCIAL:
+        social = await _social_reply(action, state, services, user_message=user_message, transcript=transcript)
+        if social is not None:
+            return ActResult(text=social)
     vehicle_id = action.args.get("vehicle_id") or state.chosen_vehicle_id
     name = await _name_of(services, state, vehicle_id)
     if action.template == TEMPLATE_TIMEFRAME_ACK:
@@ -534,6 +552,88 @@ async def _reply(action: Reply, state: CoreState, services: AgentServices) -> Ac
         if intro:
             return ActResult(text=intro, cards=cards)
     return ActResult(text=render.render_reply(action, vehicle_name=name or None), cards=cards)
+
+
+def _active_vehicle_id(state: CoreState) -> str | None:
+    """Xe ĐANG BÀN: xe đã chốt → xe khách vừa tra cứu (nhớ ở `INTEREST_VEHICLE`)
+    → mẫu đề xuất đầu. Cùng thứ tự với `policy._target_vehicle`."""
+
+    if state.chosen_vehicle_id:
+        return state.chosen_vehicle_id
+    interest = state.slots.get(SlotName.INTEREST_VEHICLE)
+    if isinstance(interest, str) and interest:
+        return interest
+    return state.recommended_ids[0] if state.recommended_ids else None
+
+
+#: Nhãn cần một chi tiết THẬT về xe để đáp (khen theo một điểm, phân vân thì
+#: nhắc một điểm mạnh). Các nhãn khác không tốn một lần đọc catalog.
+_NEEDS_FACTS = frozenset({ConversationalIntent.FEEDBACK_POSITIVE, ConversationalIntent.HESITATION})
+
+
+async def _social_reply(
+    action: Reply,
+    state: CoreState,
+    services: AgentServices,
+    *,
+    user_message: str,
+    transcript: Sequence[Any],
+) -> str | None:
+    """Câu đáp của LỚP HỘI THOẠI, hoặc `None` để `render_reply` giữ câu cũ.
+
+    `None` ĐÚNG hai trường hợp: lời chào ĐẦU phiên (giữ lời chào giới thiệu đầy
+    đủ) và câu xã giao không nhãn đang giữa một câu treo (giữ "Dạ em nghe…" rồi
+    nối câu treo). Mọi ca còn lại — nhất là câu xã giao sau một lượt tra cứu, khi
+    chặng vẫn là GREETING — KHÔNG được giới thiệu lại (log thật 2026-09-23: "ok
+    xe đẹp đấy" nhận lại lời chào "Em là trợ lý tư vấn…").
+    """
+
+    vehicle_id = _active_vehicle_id(state)
+    name = await _name_of(services, state, vehicle_id)
+    # `policy.decide` đã cộng lượt NÀY vào `turn_count`; ngữ cảnh cần số lượt
+    # TRƯỚC đó để biết đây có phải lời chào đầu phiên không.
+    before = state.with_(turn_count=max(state.turn_count - 1, 0))
+    context = conversation_context(
+        state=before, transcript=transcript, user_message=user_message, active_vehicle=name or None
+    )
+    raw = str(action.args.get("conversational") or "")
+    try:
+        kind: ConversationalIntent | None = ConversationalIntent(raw) if raw else None
+    except ValueError:
+        kind = None
+    if kind is None:
+        if action.resume_pending or not context.has_bot_turn:
+            return None
+        # SOCIAL không nhãn giữa hội thoại (LLM gắn SOCIAL cho câu lớp tất định
+        # không bắt được): đáp ngắn, giữ mạch — tuyệt đối không chào lại.
+        kind = ConversationalIntent.ACK
+    if kind is ConversationalIntent.GREETING and not context.has_bot_turn:
+        return None
+    facts: dict[str, str] = {}
+    if kind in _NEEDS_FACTS and vehicle_id and name:
+        spec = await _vehicle_spec(services, state, vehicle_id, name)
+        if spec is not None:
+            if spec.range_km:
+                facts["Quãng đường"] = f"quãng đường khoảng {spec.range_km} km mỗi lần sạc đầy"
+            if spec.seats:
+                facts["Số chỗ"] = f"không gian {spec.seats} chỗ ngồi"
+    text = await handle_conversational(
+        kind,
+        context,
+        user_message=user_message,
+        vehicle_facts=facts,
+        writer=services.conversational_writer,
+        ask_follow_up=not action.resume_pending,
+    )
+    try:
+        return render.assert_clean(text)
+    except render.RenderError:
+        # Câu LLM viết lọt chữ cấm (mã máy, id…): dùng mẫu câu tất định.
+        return render.assert_clean(
+            await handle_conversational(
+                kind, context, user_message=user_message, vehicle_facts=facts, ask_follow_up=not action.resume_pending
+            )
+        )
 
 
 async def _chosen_intro_text(services: AgentServices, state: CoreState, name: str) -> str | None:
@@ -758,9 +858,7 @@ async def _policy_lookup(
         return ActResult(text=render.policy_vehicle_clarification())
     if search is not None:
         try:
-            chunks = list(
-                await search.search(query=user_message, top_k=4, vehicle_id=vehicle_id) or []
-            )
+            chunks = list(await search.search(query=user_message, top_k=4, vehicle_id=vehicle_id) or [])
         except Exception:
             logger.warning("core.act: tim tai lieu chinh sach that bai", exc_info=True)
             chunks = []
@@ -934,9 +1032,7 @@ def _location_tool_record(
     return {
         "tool": LOCATION_TOOL_NAME,
         "known": {"kinds": list(known_kinds), "area": known_area},
-        "returned": None
-        if tool_args is None
-        else {"kinds": list(tool_args.kinds), "area": tool_args.area},
+        "returned": None if tool_args is None else {"kinds": list(tool_args.kinds), "area": tool_args.area},
         "used": {"kinds": [kind.value for kind in kinds_after], "area": area_after},
     }
 
@@ -1218,7 +1314,9 @@ async def _vehicle_qa(action: VehicleQa, state: CoreState, services: AgentServic
             return ActResult(text=pointed, cards={"lookup_facts": facts}, tool_calls=tool_calls)
     # Bảng tổng quan là chữ của service cũ (không có câu kết); nối câu kết theo
     # checklist vào sau để lượt này cũng chỉ ra việc kế tiếp.
-    return ActResult(text=f"{(result.answer or '').rstrip()}\n\n{closing}", cards={"lookup_facts": facts}, tool_calls=tool_calls)
+    return ActResult(
+        text=f"{(result.answer or '').rstrip()}\n\n{closing}", cards={"lookup_facts": facts}, tool_calls=tool_calls
+    )
 
 
 # --------------------------------------------------------------- Task 2: nghiệp vụ
@@ -1603,7 +1701,9 @@ async def _nearest_by_price(services: AgentServices, state: CoreState, criteria:
         floors: dict[str, Decimal] = {}
         for type_name in ("ELECTRIC_MOTORBIKE", "CAR"):
             type_prices = (
-                prices if type_name == str(criteria.vehicle_type) else await catalog_prices(services, vehicle_type=type_name)
+                prices
+                if type_name == str(criteria.vehicle_type)
+                else await catalog_prices(services, vehicle_type=type_name)
             )
             if type_prices:
                 floors[type_name] = min(type_prices.values())
@@ -2374,9 +2474,7 @@ def _tco_tool_record(
     return {
         "tool": TCO_TOOL_NAME,
         "known": {"daily_km": known_daily_km, "province": known_province},
-        "returned": None
-        if tool_args is None
-        else {"daily_km": tool_args.daily_km, "province": tool_args.province},
+        "returned": None if tool_args is None else {"daily_km": tool_args.daily_km, "province": tool_args.province},
         "used": {"daily_km": daily_after, "province_code": province_after},
     }
 
@@ -3160,7 +3258,9 @@ async def _run_agent_tool(
         service = services.vehicle_overview
         if service is None:
             return AgentToolResult(name=name, ok=False, error=ERROR_TOOL_FAILED)
-        result = await service.answer(vehicle_name=names.get(vehicle_id, args.vehicle_name), session_id=state.session_id)
+        result = await service.answer(
+            vehicle_name=names.get(vehicle_id, args.vehicle_name), session_id=state.session_id
+        )
         answer = (getattr(result, "answer", "") or "").strip() if result is not None else ""
         if not answer:
             return AgentToolResult(name=name, ok=True, error=ERROR_EMPTY)
@@ -3349,7 +3449,9 @@ async def _open_question(
         _record_agent_attempt(_with_agent_error(steps_so_far, "render_blocked"))
         return None
 
-    name = await _name_of(services, state, state.chosen_vehicle_id or (state.recommended_ids[0] if state.recommended_ids else None))
+    name = await _name_of(
+        services, state, state.chosen_vehicle_id or (state.recommended_ids[0] if state.recommended_ids else None)
+    )
     closing = await _closing(services, state, vehicle_name=name)
     # Khoá `agent` là DẤU NHẬN BIẾT của vệt agent: `run_turn._agent_trace_fields`
     # đọc nó thay vì đoán theo tên Action — móc 2 và móc 3 chạy bên trong

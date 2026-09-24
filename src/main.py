@@ -15,6 +15,7 @@ from src.agents.api.bottleneck_signal_routes import bottleneck_signal_operations
 from src.agents.api.customer_360_routes import (
     customer_360_operations,
     customer_360_read_operations,
+    customer_ownership_operations,
     opportunity_offer_operations,
 )
 from src.agents.api.customer_routes import turn_event_broker
@@ -156,6 +157,8 @@ def _wire_agent_operations(app: FastAPI, agent: AgentComposition) -> None:
         app.dependency_overrides[customer_360_read_operations] = lambda: operations.customer360_read
     if operations.opportunity_offers is not None:
         app.dependency_overrides[opportunity_offer_operations] = lambda: operations.opportunity_offers
+    if operations.customer_ownership is not None:
+        app.dependency_overrides[customer_ownership_operations] = lambda: operations.customer_ownership
     app.dependency_overrides[current_staff] = _staff_identity_from_auth
     app.dependency_overrides[get_current_principal] = _document_principal_from_auth
     app.dependency_overrides[get_document_current_principal] = _document_principal_from_auth

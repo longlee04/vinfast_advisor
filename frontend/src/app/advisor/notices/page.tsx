@@ -1,7 +1,6 @@
-import { AdvisorNotices } from "@/components/advisor/advisor-notices";
-import { OperationalShell } from "@/components/shared/operational-shell";
-import { PageHeading } from "@/components/shared/page-heading";
+import { redirect } from "next/navigation";
 
+/** Thông báo nội bộ nằm trên "Tổng quan" (plan §17) — trang riêng cũ chỉ có dữ liệu giả. */
 export default function AdvisorNoticesPage() {
-  return <OperationalShell role="advisor"><PageHeading eyebrow="Advisor / Chính sách" title="Thông báo nội bộ" description="Các thay đổi về giá, ưu đãi, bảo hành và quy trình cần biết trước khi tư vấn khách hàng." /><AdvisorNotices /></OperationalShell>;
+  redirect("/advisor");
 }

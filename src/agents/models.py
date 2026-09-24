@@ -321,6 +321,8 @@ class CustomerProfileRow(AgentBase):
     display_name: Mapped[str | None] = mapped_column(String(150))
     phone: Mapped[str | None] = mapped_column(String(20))
     email: Mapped[str | None] = mapped_column(String(255))
+    #: Khách tự khai sau khi đăng nhập (agent_0041) — chỉ TVV phụ trách được xem.
+    address: Mapped[str | None] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
@@ -609,6 +611,13 @@ class CustomerAdvisorAssignmentRow(AgentBase):
     __table_args__ = (
         Index("ix_customer_advisor_assignments_customer", "customer_id", "status"),
         Index("ix_customer_advisor_assignments_advisor", "advisor_id", "status"),
+        # Mỗi khách tối đa một người phụ trách đang hiệu lực (agent_0040) — "Nhận khách" nguyên tử.
+        Index(
+            "uq_customer_advisor_assignments_active",
+            "customer_id",
+            unique=True,
+            postgresql_where=text("status = 'ACTIVE'"),
+        ),
     )
 
     assignment_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True)

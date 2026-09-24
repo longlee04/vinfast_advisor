@@ -17,7 +17,7 @@ from src.agents.domain.customer_overview import FactRow, HeaderRow, OpportunityR
 
 _HEADER_AND_OPPORTUNITIES = text(
     """
-    SELECT c.customer_id, cp.display_name, cp.phone, a.advisor_id,
+    SELECT c.customer_id, cp.display_name, cp.phone, cp.address, a.advisor_id,
            o.opportunity_id, o.vehicle_type, o.buyer_for, o.status, o.stage, o.heat_score, o.heat_band,
            o.heat_breakdown, o.slots_snapshot, o.slot_history, o.last_seen_at
     FROM (SELECT CAST(:customer_id AS varchar) AS customer_id) c
@@ -42,11 +42,26 @@ _SESSIONS = text(
     """
     SELECT s.session_id, s.started_at, s.last_activity_at, s.status, s.ownership,
            so.kind, so.opportunity_id, COALESCE(so.needs_review, FALSE) AS needs_review, so.decided_by,
-           cs.turn_count, cs.ask_counts, LEFT(sm.content, 280) AS summary
+           cs.turn_count, cs.ask_counts, LEFT(sm.content, 280) AS summary, sm.content AS summary_full,
+           s.last_quote_sent_at, cs.chosen_vehicle_id, rec.recommendations AS latest_recommendations,
+           rec_first.first_at AS first_recommendation_at, fm.mentions AS feature_mentions
     FROM conversation_sessions s
     LEFT JOIN session_opportunity so ON so.session_id = s.session_id
     LEFT JOIN conversation_core_state cs ON cs.session_id = s.session_id
     LEFT JOIN conversation_summaries sm ON sm.session_id = s.session_id
+    LEFT JOIN LATERAL (
+        SELECT t.recommendations FROM conversation_turn_outcomes t
+        WHERE t.session_id = s.session_id AND jsonb_array_length(t.recommendations) > 0
+        ORDER BY t.created_at DESC LIMIT 1
+    ) rec ON TRUE
+    LEFT JOIN LATERAL (
+        SELECT MIN(t.created_at) AS first_at FROM conversation_turn_outcomes t
+        WHERE t.session_id = s.session_id AND jsonb_array_length(t.recommendations) > 0
+    ) rec_first ON TRUE
+    LEFT JOIN LATERAL (
+        SELECT array_agg(m.raw_mention ORDER BY m.created_at) AS mentions FROM pending_feature_mentions m
+        WHERE m.session_id = s.session_id
+    ) fm ON TRUE
     WHERE s.customer_id = :customer_id
     ORDER BY s.last_activity_at DESC
     LIMIT 50
@@ -64,7 +79,27 @@ _OPPORTUNITY_LIST = text(
            ), ARRAY[]::varchar[]) AS barriers,
            EXISTS (
                SELECT 1 FROM session_opportunity so WHERE so.opportunity_id = o.opportunity_id AND so.needs_review
-           ) AS needs_review
+           ) AS needs_review,
+           (SELECT COUNT(*) FROM conversation_sessions cs WHERE cs.customer_id = o.customer_id) AS sessions_count,
+           (cp.phone IS NOT NULL AND cp.phone <> '') AS has_phone,
+           EXISTS (
+               SELECT 1 FROM conversation_sessions cs
+               WHERE cs.customer_id = o.customer_id AND cs.status = 'ACTIVE' AND cs.ownership = 'PENDING_HANDOFF'
+           ) AS waiting,
+           EXISTS (
+               SELECT 1 FROM test_drive_bookings tb
+               WHERE tb.customer_id = o.customer_id AND tb.status <> 'CANCELLED' AND tb.scheduled_at >= :now
+           ) AS has_test_drive,
+           EXISTS (
+               SELECT 1 FROM test_drive_bookings tb WHERE tb.customer_id = o.customer_id AND tb.status = 'REQUESTED'
+           ) AS booking_requested,
+           (
+               SELECT t.recommendations -> 0 ->> 'display_name'
+               FROM conversation_turn_outcomes t
+               JOIN session_opportunity so ON so.session_id = t.session_id
+               WHERE so.opportunity_id = o.opportunity_id AND jsonb_array_length(t.recommendations) > 0
+               ORDER BY t.created_at DESC LIMIT 1
+           ) AS top_vehicle_name
     FROM customer_opportunities o
     LEFT JOIN customer_profiles cp ON cp.customer_id = o.customer_id
     LEFT JOIN LATERAL (
@@ -75,8 +110,105 @@ _OPPORTUNITY_LIST = text(
     WHERE o.status IN ('OPEN', 'DORMANT')
       AND (:all_scope OR a.advisor_id IN :advisor_ids)
       AND (CAST(:band AS varchar) IS NULL OR o.heat_band = :band)
+      AND (NOT :only_waiting OR EXISTS (
+          SELECT 1 FROM conversation_sessions cs
+          WHERE cs.customer_id = o.customer_id AND cs.status = 'ACTIVE' AND cs.ownership = 'PENDING_HANDOFF'
+      ))
+      AND (NOT :only_test_drive OR EXISTS (
+          SELECT 1 FROM test_drive_bookings tb
+          WHERE tb.customer_id = o.customer_id AND tb.status <> 'CANCELLED' AND tb.scheduled_at >= :now
+      ))
     ORDER BY o.heat_score DESC, o.last_seen_at DESC
     LIMIT :limit
+    """
+).bindparams(bindparam("advisor_ids", expanding=True))
+#: Tab "Đã nhận" (plan §20): MỖI khách tư vấn viên đang phụ trách — xuất phát từ PHÂN CÔNG, không
+#: từ cơ hội, nên khách vừa nhận mà chưa chat lượt nào vẫn có mặt. Cơ hội nóng nhất (nếu có) ghép
+#: vào để có độ nóng/giai đoạn/rào cản. MỘT câu SQL, không N+1.
+_MY_CUSTOMERS = text(
+    """
+    SELECT a.customer_id, cp.display_name, cp.email, a.advisor_id, a.assigned_at,
+           o.opportunity_id, o.vehicle_type, o.buyer_for, o.status, o.stage, o.heat_score, o.heat_band,
+           o.slots_snapshot,
+           COALESCE(st.last_seen_at, o.last_seen_at, a.assigned_at) AS last_seen_at,
+           COALESCE((
+               SELECT array_agg(DISTINCT b.label ORDER BY b.label)
+               FROM session_opportunity so
+               JOIN conversation_turn_bottlenecks b ON b.session_id = so.session_id AND b.status <> 'INCORRECT'
+               WHERE so.opportunity_id = o.opportunity_id
+           ), ARRAY[]::varchar[]) AS barriers,
+           EXISTS (
+               SELECT 1 FROM session_opportunity so WHERE so.opportunity_id = o.opportunity_id AND so.needs_review
+           ) AS needs_review,
+           COALESCE(st.sessions_count, 0) AS sessions_count,
+           (cp.phone IS NOT NULL AND cp.phone <> '') AS has_phone,
+           COALESCE(st.waiting, FALSE) AS waiting,
+           EXISTS (
+               SELECT 1 FROM test_drive_bookings tb
+               WHERE tb.customer_id = a.customer_id AND tb.status <> 'CANCELLED' AND tb.scheduled_at >= :now
+           ) AS has_test_drive,
+           EXISTS (
+               SELECT 1 FROM test_drive_bookings tb WHERE tb.customer_id = a.customer_id AND tb.status = 'REQUESTED'
+           ) AS booking_requested,
+           (
+               SELECT t.recommendations -> 0 ->> 'display_name'
+               FROM conversation_turn_outcomes t
+               JOIN session_opportunity so ON so.session_id = t.session_id
+               WHERE so.opportunity_id = o.opportunity_id AND jsonb_array_length(t.recommendations) > 0
+               ORDER BY t.created_at DESC LIMIT 1
+           ) AS top_vehicle_name
+    FROM customer_advisor_assignments a
+    LEFT JOIN customer_profiles cp ON cp.customer_id = a.customer_id
+    LEFT JOIN LATERAL (
+        SELECT * FROM customer_opportunities
+        WHERE customer_id = a.customer_id AND status IN ('OPEN', 'DORMANT')
+        ORDER BY heat_score DESC, last_seen_at DESC LIMIT 1
+    ) o ON TRUE
+    LEFT JOIN LATERAL (
+        SELECT COUNT(*) AS sessions_count, MAX(s.last_activity_at) AS last_seen_at,
+               BOOL_OR(s.status = 'ACTIVE' AND s.ownership = 'PENDING_HANDOFF') AS waiting
+        FROM conversation_sessions s WHERE s.customer_id = a.customer_id
+    ) st ON TRUE
+    WHERE a.status = 'ACTIVE'
+      AND (:all_scope OR a.advisor_id IN :advisor_ids)
+      AND (CAST(:band AS varchar) IS NULL OR o.heat_band = :band)
+      AND (NOT :only_waiting OR COALESCE(st.waiting, FALSE))
+      AND (NOT :only_test_drive OR EXISTS (
+          SELECT 1 FROM test_drive_bookings tb
+          WHERE tb.customer_id = a.customer_id AND tb.status <> 'CANCELLED' AND tb.scheduled_at >= :now
+      ))
+    ORDER BY COALESCE(st.waiting, FALSE) DESC, o.heat_score DESC NULLS LAST,
+             COALESCE(st.last_seen_at, o.last_seen_at, a.assigned_at) DESC
+    LIMIT :limit
+    """
+).bindparams(bindparam("advisor_ids", expanding=True))
+#: Bốn thẻ số đầu màn "Khách cần xử lý" — MỘT câu, cùng phạm vi TVV với `_OPPORTUNITY_LIST`
+#: (khách có phân công ACTIVE cho TVV; Admin xem tất cả).
+_OPPORTUNITY_SUMMARY = text(
+    """
+    WITH scope AS (
+        SELECT DISTINCT c.customer_id FROM (
+            SELECT o.customer_id FROM customer_opportunities o WHERE o.status IN ('OPEN', 'DORMANT')
+            UNION SELECT a.customer_id FROM customer_advisor_assignments a WHERE a.status = 'ACTIVE'
+        ) c
+        LEFT JOIN LATERAL (
+            SELECT advisor_id FROM customer_advisor_assignments
+            WHERE customer_id = c.customer_id AND status = 'ACTIVE'
+            ORDER BY assigned_at DESC LIMIT 1
+        ) a ON TRUE
+        WHERE :all_scope OR a.advisor_id IN :advisor_ids
+    )
+    SELECT
+        (SELECT COUNT(DISTINCT o.customer_id) FROM customer_opportunities o JOIN scope USING (customer_id)
+          WHERE o.status = 'OPEN' AND o.heat_band = 'HOT') AS hot,
+        (SELECT COUNT(DISTINCT s.customer_id) FROM conversation_sessions s JOIN scope USING (customer_id)
+          WHERE s.status = 'ACTIVE' AND s.ownership = 'PENDING_HANDOFF') AS waiting,
+        (SELECT COUNT(*) FROM test_drive_bookings tb JOIN scope USING (customer_id)
+          WHERE tb.status <> 'CANCELLED' AND tb.scheduled_at >= :now AND tb.scheduled_at < :soon) AS test_drives_48h,
+        (SELECT COUNT(*) FROM out_of_scope_log l
+          JOIN conversation_sessions s ON s.session_id = l.session_id
+          JOIN scope ON scope.customer_id = s.customer_id
+          WHERE l.classification IN ('MISSING_DATA', 'OUT_OF_SCOPE') AND l.created_at >= :since) AS unanswered
     """
 ).bindparams(bindparam("advisor_ids", expanding=True))
 _PICKER = text(
@@ -237,6 +369,7 @@ class SqlAlchemyCustomer360Query:
             display_name=first["display_name"],
             phone=first["phone"],
             assigned_advisor_id=first["advisor_id"],
+            address=first["address"],
         )
         opportunities = [
             OpportunityRow(
@@ -287,6 +420,12 @@ class SqlAlchemyCustomer360Query:
                 turn_count=int(row["turn_count"]) if row["turn_count"] is not None else None,
                 ask_counts=row["ask_counts"] or {},
                 summary=row["summary"],
+                summary_full=row["summary_full"],
+                last_quote_sent_at=row["last_quote_sent_at"],
+                chosen_vehicle_id=_str(row["chosen_vehicle_id"]),
+                latest_recommendations=list(row["latest_recommendations"] or []),
+                first_recommendation_at=row["first_recommendation_at"],
+                feature_mentions=list(row["feature_mentions"] or []),
             )
             for row in session_rows
         ]
@@ -302,13 +441,23 @@ class SqlAlchemyCustomer360Query:
         return rows[0][0], {row[1] for row in rows if row[1]}
 
     async def list_opportunities(
-        self, *, advisor_ids: Sequence[str] | None, band: str | None, limit: int
+        self,
+        *,
+        advisor_ids: Sequence[str] | None,
+        band: str | None,
+        limit: int,
+        now: datetime,
+        only_waiting: bool = False,
+        only_test_drive: bool = False,
     ) -> list[dict[str, Any]]:
         params = {
             "all_scope": advisor_ids is None,
             "advisor_ids": list(advisor_ids or ["__none__"]),
             "band": band,
             "limit": limit,
+            "now": now,
+            "only_waiting": only_waiting,
+            "only_test_drive": only_test_drive,
         }
         async with self._session_factory() as session:
             rows = (await session.execute(_OPPORTUNITY_LIST, params)).mappings().all()
@@ -330,9 +479,78 @@ class SqlAlchemyCustomer360Query:
                 "barriers": list(row["barriers"] or []),
                 "needs_review": bool(row["needs_review"]),
                 "last_seen_at": row["last_seen_at"],
+                "sessions_count": int(row["sessions_count"]),
+                "has_phone": bool(row["has_phone"]),
+                "waiting": bool(row["waiting"]),
+                "has_test_drive": bool(row["has_test_drive"]),
+                "booking_requested": bool(row["booking_requested"]),
+                "top_vehicle_name": row["top_vehicle_name"],
             }
             for row in rows
         ]
+
+    async def list_my_customers(
+        self,
+        *,
+        advisor_ids: Sequence[str] | None,
+        band: str | None,
+        limit: int,
+        now: datetime,
+        only_waiting: bool = False,
+        only_test_drive: bool = False,
+    ) -> list[dict[str, Any]]:
+        params = {
+            "all_scope": advisor_ids is None,
+            "advisor_ids": list(advisor_ids or ["__none__"]),
+            "band": band,
+            "limit": limit,
+            "now": now,
+            "only_waiting": only_waiting,
+            "only_test_drive": only_test_drive,
+        }
+        async with self._session_factory() as session:
+            rows = (await session.execute(_MY_CUSTOMERS, params)).mappings().all()
+        return [
+            {
+                "customer_id": row["customer_id"],
+                "display_name": row["display_name"],
+                "email": row["email"],
+                "assigned_advisor_id": row["advisor_id"],
+                "assigned_at": row["assigned_at"],
+                "opportunity_id": _str(row["opportunity_id"]),
+                "vehicle_type": row["vehicle_type"],
+                "buyer_for": row["buyer_for"],
+                "status": row["status"],
+                "stage": row["stage"],
+                "heat_score": int(row["heat_score"]) if row["heat_score"] is not None else None,
+                "heat_band": row["heat_band"],
+                "slots": {
+                    key: value for key, value in (row["slots_snapshot"] or {}).items() if key != "purpose_bucket"
+                },
+                "barriers": list(row["barriers"] or []),
+                "needs_review": bool(row["needs_review"]),
+                "last_seen_at": row["last_seen_at"],
+                "sessions_count": int(row["sessions_count"]),
+                "has_phone": bool(row["has_phone"]),
+                "waiting": bool(row["waiting"]),
+                "has_test_drive": bool(row["has_test_drive"]),
+                "booking_requested": bool(row["booking_requested"]),
+                "top_vehicle_name": row["top_vehicle_name"],
+            }
+            for row in rows
+        ]
+
+    async def opportunity_summary(self, *, advisor_ids: Sequence[str] | None, now: datetime) -> dict[str, int]:
+        params = {
+            "all_scope": advisor_ids is None,
+            "advisor_ids": list(advisor_ids or ["__none__"]),
+            "now": now,
+            "soon": now + timedelta(hours=48),
+            "since": now - timedelta(days=7),
+        }
+        async with self._session_factory() as session:
+            row = (await session.execute(_OPPORTUNITY_SUMMARY, params)).mappings().one()
+        return {key: int(value or 0) for key, value in row.items()}
 
     async def picker(self, query: str | None, limit: int) -> list[dict[str, Any]]:
         cleaned = (query or "").strip() or None

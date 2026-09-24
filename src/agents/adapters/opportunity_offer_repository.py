@@ -13,9 +13,11 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from src.agents.adapters.unit_of_work import AgentUnitOfWork
 from src.agents.domain.offer_lifecycle import LIVE_STATUSES, OfferStatus
 from src.agents.models import (
+    ConversationMessageRow,
     ConversationSessionRow,
     CustomerInsightRow,
     CustomerOpportunityRow,
+    CustomerProfileRow,
     OpportunityOfferEventRow,
     OpportunityOfferRow,
     SessionOfferRow,
@@ -44,6 +46,7 @@ def _view(row: OpportunityOfferRow) -> OfferView:
         discount_vnd=row.discount_vnd,
         needs_manager_approval=bool(row.needs_manager_approval),
         proposed_value=dict(row.proposed_value or {}),
+        suggested_by=row.suggested_by,
     )
 
 
@@ -176,8 +179,15 @@ class SqlAlchemyOpportunityOfferRepository:
             )
         return _view(row)
 
-    async def deliver(self, offer: OfferView, candidate_title: str, actor: str, at: datetime) -> str | None:
-        """Ghi `session_offers` vào phiên đang mở gần nhất của khách — agent từ đây mới được nhắc."""
+    async def deliver(
+        self, offer: OfferView, snapshot: Mapping[str, Any], announcement: str, actor: str, at: datetime
+    ) -> str | None:
+        """Gửi ưu đãi vào phiên đang mở gần nhất của khách: `session_offers` (agent từ đây
+        được nhắc) + MỘT tin nhắn tư vấn viên báo khách nhận được gì — cùng transaction.
+
+        Tin nhắn không đổi người giữ phiên: AI vẫn trả lời tiếp, tư vấn viên không bị buộc
+        phải tiếp quản chỉ vì vừa gửi một ưu đãi.
+        """
 
         async with self._unit_of_work.transaction() as session:
             session_id = await session.scalar(
@@ -192,15 +202,12 @@ class SqlAlchemyOpportunityOfferRepository:
             )
             if session_id is None:
                 return None
-            snapshot = {"display_name": candidate_title, **dict(offer.proposed_value)}
-            if offer.discount_vnd is not None and "amount_vnd" not in snapshot:
-                snapshot["amount_vnd"] = offer.discount_vnd
             row = SessionOfferRow(
                 offer_id=uuid4(),
                 session_id=session_id,
                 source_kind="OPPORTUNITY_OFFER",
                 promotion_code=offer.promotion_code,
-                value_snapshot=snapshot,
+                value_snapshot=dict(snapshot),
                 status="ACTIVE",
                 approved_by=actor,
                 expires_at=at + SENT_OFFER_TTL,
@@ -209,6 +216,21 @@ class SqlAlchemyOpportunityOfferRepository:
                 updated_at=at,
             )
             session.add(row)
+            last_index = await session.scalar(
+                select(func.max(ConversationMessageRow.turn_index)).where(
+                    ConversationMessageRow.session_id == session_id
+                )
+            )
+            session.add(
+                ConversationMessageRow(
+                    message_id=uuid4(),
+                    session_id=session_id,
+                    role="ADVISOR",
+                    content=announcement,
+                    turn_index=int(last_index or 0) + 1,
+                    created_at=at,
+                )
+            )
         return str(row.offer_id)
 
     async def list_for_customer(self, customer_id: str) -> list[dict[str, Any]]:
@@ -235,6 +257,36 @@ class SqlAlchemyOpportunityOfferRepository:
                 "updated_at": row.updated_at,
             }
             for row in rows
+        ]
+
+    async def list_pending(self) -> list[dict[str, Any]]:
+        """Đề xuất vượt hạn mức đang chờ duyệt — cũ nhất trước (khách chờ lâu nhất)."""
+
+        async with self._session_factory() as session:
+            rows = (
+                await session.execute(
+                    select(OpportunityOfferRow, CustomerProfileRow.display_name)
+                    .outerjoin(CustomerProfileRow, CustomerProfileRow.customer_id == OpportunityOfferRow.customer_id)
+                    .where(
+                        OpportunityOfferRow.status == OfferStatus.SUGGESTED.value,
+                        OpportunityOfferRow.needs_manager_approval.is_(True),
+                    )
+                    .order_by(OpportunityOfferRow.created_at)
+                    .limit(200)
+                )
+            ).all()
+        return [
+            {
+                "offer_id": str(row.offer_id),
+                "opportunity_id": str(row.opportunity_id),
+                "customer_id": row.customer_id,
+                "display_name": display_name,
+                "promotion_code": row.promotion_code,
+                "discount_vnd": row.discount_vnd,
+                "suggested_by": row.suggested_by,
+                "created_at": row.created_at,
+            }
+            for row, display_name in rows
         ]
 
     async def expire_due(self, at: datetime) -> int:

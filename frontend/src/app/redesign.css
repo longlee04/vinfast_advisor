@@ -469,10 +469,13 @@ h1, h2, h3, .wordmark-main, .vf-product-nav > strong { font-family: var(--font-d
 @media (max-width: 640px) { .catalog-compare-tray { bottom: calc(78px + env(safe-area-inset-bottom)); flex-wrap: wrap; justify-content: center; border-radius: 20px; padding: 10px 14px; } }
 .catalog-show-more { display: block; margin: 34px auto 0; padding: 8px 2px; color: var(--vf-ink); background: transparent; border: 0; border-bottom: 1px solid var(--vf-line-strong); font-size: 12px; font-weight: 600; }
 
-/* Conversation: calm, editorial and wide. */
-.consultation-stage { min-height: calc(100vh - 68px); width: min(calc(100% - 48px), 1160px); padding: 36px 0 16px; }
-.consultation-nav { margin-bottom: 48px; }.consultation-back-link { color: var(--vf-ink-soft); font-size: 12px; }
-.conversation-thread { width: min(100%, 1000px); margin: 0 auto; }
+/* Conversation: calm, editorial and wide. Cột chat TRÀN HẾT phần còn lại bên
+   phải sidebar — không chặn trần bề rộng, để khỏi hở một dải trống bên phải.
+   Chữ vẫn dễ đọc nhờ trần riêng của từng tin (`.conversation-message > div`);
+   panel xe mở thì lưới chia cột và stage tự co theo cột của nó. */
+.consultation-stage { min-height: calc(100vh - 68px); width: 100%; padding: 36px clamp(16px, 3vw, 48px) 16px; }
+.consultation-nav { max-width: none; margin: 0 0 48px; }.consultation-back-link { color: var(--vf-ink-soft); font-size: 12px; }
+.conversation-thread { width: 100%; margin: 0; }
 .conversation-turn { width: 100%; }
 .conversation-message { gap: 14px; margin-bottom: 34px; }
 .message-avatar { width: 30px; height: 30px; display: grid; flex: 0 0 30px; place-items: center; color: #fff; background: var(--vf-ink); border: 0; border-radius: 50%; font-family: var(--font-display), sans-serif; font-size: 12px; font-weight: 650; }
@@ -488,7 +491,7 @@ h1, h2, h3, .wordmark-main, .vf-product-nav > strong { font-family: var(--font-d
 /* Ô gõ TRONG phòng chat (Sếp 2026-08-29): cùng một hình với thanh trợ lý ngoài
    sảnh (`.agent-dock` — viên thuốc, ô nhập chìm, nút gửi tròn đen, nút phụ viên
    thuốc), chỉ khác là ĐẶC và RÕ hơn: nền gần trắng hẳn, viền đậm, bóng rõ. */
-.conversation-composer { position: sticky; z-index: 30; bottom: 16px; width: min(100%, 1080px); min-height: 66px; margin: 34px auto 0; padding: 6px; background: rgba(250,251,249,.99); border: 1px solid rgba(12,23,35,.26); border-radius: 999px; box-shadow: 0 14px 38px rgba(12,23,35,.14); backdrop-filter: blur(16px); }
+.conversation-composer { position: sticky; z-index: 30; bottom: 16px; width: 100%; min-height: 66px; margin: 34px 0 0; padding: 6px; background: rgba(250,251,249,.99); border: 1px solid rgba(12,23,35,.26); border-radius: 999px; box-shadow: 0 14px 38px rgba(12,23,35,.14); backdrop-filter: blur(16px); }
 .conversation-composer:focus-within { border-color: rgba(12,23,35,.4); box-shadow: 0 18px 46px rgba(12,23,35,.18); }
 .conversation-composer form { padding-left: 20px; background: transparent; border-radius: 999px; }
 .conversation-composer input { min-height: 52px; padding: 0; color: var(--vf-ink); background: transparent; font-size: 15px; }
@@ -627,7 +630,7 @@ h1, h2, h3, .wordmark-main, .vf-product-nav > strong { font-family: var(--font-d
   .vf-specifications { width: calc(100% - 40px); grid-template-columns: 1fr; gap: 38px; padding-block: 82px; }
   .vf-spec-matrix { grid-column: auto; grid-template-columns: 1fr 1fr; }
   .customer-wide-container { width: calc(100% - 32px); padding-block: 52px 90px; }.customer-catalog-grid { grid-template-columns: 1fr; gap: 48px; }.catalog-vehicle-visual { min-height: 290px; }
-  .consultation-stage { width: calc(100% - 32px); padding-top: 24px; }.conversation-thread { width: 100%; }.conversation-message { gap: 10px; }.conversation-message > div { max-width: calc(100% - 40px); }.message-user > div { max-width: 88%; }.conversation-message p { font-size: 15px; }.vehicle-pitch-list { width: 100%; margin-left: 0; }.conversation-composer { bottom: 10px; }.message-user { display: flex; }
+  .consultation-stage { width: 100%; padding-top: 24px; }.conversation-thread { width: 100%; }.conversation-message { gap: 10px; }.conversation-message > div { max-width: calc(100% - 40px); }.message-user > div { max-width: 88%; }.conversation-message p { font-size: 15px; }.vehicle-pitch-list { width: 100%; margin-left: 0; }.conversation-composer { bottom: 10px; }.message-user { display: flex; }
 }
 
 @media (max-width: 430px) {
@@ -652,3 +655,5 @@ h1, h2, h3, .wordmark-main, .vf-product-nav > strong { font-family: var(--font-d
 .consultation-workspace.tour-panel-open .conversation-composer input { min-width: 100px; }
 .consultation-workspace.tour-panel-open .composer-action { width: 46px; min-width: 46px; padding-inline: 0; justify-content: center; border-radius: 50%; }
 .consultation-workspace.tour-panel-open .composer-action span { display: none; }
+/* Panel mở thì cột chat chỉ còn ~440px: lề mỏng lại để chữ không bị ép hẹp hơn trước. */
+.consultation-workspace.tour-panel-open .consultation-stage { padding-inline: 16px; }

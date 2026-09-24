@@ -45,12 +45,16 @@ export type CustomerHeader = {
   readonly phone_masked: string | null;
   /** Chỉ backend trả cho TVV phụ trách — không bao giờ có ở chế độ Admin. */
   readonly phone?: string;
+  /** Khách tự khai (plan §19) — như `phone`, chỉ TVV phụ trách nhận được. */
+  readonly address?: string;
   readonly assigned_advisor_id: string | null;
   readonly heat_band: HeatBand | null;
   readonly heat_score: number | null;
   readonly sessions_count: number;
   readonly last_seen_at: string | null;
   readonly fields: Partial<Record<CustomerFieldKey, FieldValue>>;
+  /** Tóm tắt đầy đủ của phiên mới nhất có tóm tắt (đã che liên hệ). */
+  readonly latest_summary?: string | null;
 };
 
 export type Barrier = {
@@ -61,7 +65,27 @@ export type Barrier = {
   readonly turn_index: number | null;
   readonly session_id: string;
   readonly status: string;
+  /** Thời điểm ghi nhận rào cản — hiện "Lượt N · dd/mm". */
+  readonly at?: string;
 };
+
+/** Mốc đầu tiên của một giai đoạn mà dữ liệu chứng minh được (không có thì không có mốc). */
+export type StageMark = { readonly stage: SalesStage; readonly at: string; readonly note?: string | null };
+
+export type VehicleInterestRole = "CHOSEN" | "RECOMMENDED" | "COMPARED" | "MENTIONED";
+
+export type VehicleInterest = {
+  readonly vehicle_id: string;
+  readonly name: string;
+  readonly role: VehicleInterestRole;
+  readonly rank: number | null;
+  /** Chỉ thời điểm đã gửi báo giá — số tiền không lưu theo xe nên không bao giờ hiện ở đây. */
+  readonly quote_sent_at: string | null;
+  readonly asked_features: readonly string[];
+};
+
+/** Gợi ý mở lời dựa trên gì — frontend dựng câu "Dựa trên …" bằng nhãn của nó. */
+export type OpeningBasis = { readonly kind: "TEST_DRIVE" | "BARRIER" | "QUOTE" | "MISSING" | "COMPARE" | "DEFAULT"; readonly code?: string };
 
 export type NeedSlot = { readonly slot: string; readonly value: string; readonly history: readonly ValueHistory[] };
 
@@ -74,11 +98,19 @@ export type Opportunity = {
   readonly heat_score: number;
   readonly heat_band: HeatBand;
   readonly heat_breakdown: readonly { readonly code: string; readonly points: number; readonly detail: string }[];
-  readonly needs: { readonly known: readonly NeedSlot[]; readonly missing: readonly string[]; readonly evaded: readonly string[] };
+  readonly needs: {
+    readonly known: readonly NeedSlot[];
+    readonly missing: readonly string[];
+    readonly evaded: readonly string[];
+    readonly evaded_detail?: readonly { readonly slot: string; readonly ask_count: number }[];
+  };
   readonly barriers: readonly Barrier[];
   readonly insights: readonly (FieldValue & { readonly insight_id: string; readonly field: string })[];
   readonly opening_hint: string;
+  readonly opening_hint_basis?: OpeningBasis;
   readonly next_actions: readonly { readonly code: string; readonly label: string }[];
+  readonly stage_history?: readonly StageMark[];
+  readonly vehicles_of_interest?: readonly VehicleInterest[];
 };
 
 export type SessionRow = {

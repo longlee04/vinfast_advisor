@@ -14,6 +14,7 @@ from src.agents.adapters.promotion_catalog_source import SqlAlchemyPromotionCata
 from src.agents.domain.agent_flag import AgentFlagState
 from src.agents.domain.offer_lifecycle import OfferStatus
 from src.agents.models import (
+    ConversationMessageRow,
     ConversationSessionRow,
     CustomerInsightRow,
     CustomerOpportunityRow,
@@ -140,7 +141,14 @@ async def test_luat_vong_doi_va_hang_rao(migrated_engine: AsyncEngine, clean_age
             await operations.send(offer.offer_id, "adv-1")
         assert blocked.value.reason == "NEEDS_MANAGER"
 
-        await operations.approve(offer.offer_id, "admin-1")
+        # Duyệt chéo: người đề xuất không tự duyệt; tư vấn viên khác thấy trong danh sách chờ và duyệt.
+        pending = await operations.list_pending()
+        assert [(item["offer_id"], item["suggested_by"]) for item in pending] == [(offer.offer_id, "adv-1")]
+        with pytest.raises(OfferBlockedError) as self_approval:
+            await operations.approve(offer.offer_id, "adv-1", ("adv-1", "adv-1@x.vn"))
+        assert self_approval.value.reason == "SELF_APPROVAL"
+        await operations.approve(offer.offer_id, "adv-2", ("adv-2",))
+        assert await operations.list_pending() == []
         sent = await operations.send(offer.offer_id, "adv-1")
         assert sent.status is OfferStatus.SENT
 
@@ -150,6 +158,14 @@ async def test_luat_vong_doi_va_hang_rao(migrated_engine: AsyncEngine, clean_age
             events = await session.scalar(select(func.count()).select_from(OpportunityOfferEventRow))
         assert delivered is not None and str(delivered.opportunity_offer_id) == offer.offer_id
         assert delivered.source_kind == "OPPORTUNITY_OFFER" and delivered.approved_by == "adv-1"
+        # Gửi = khách THẤY NGAY: một tin nhắn tư vấn viên trong đúng phiên, nói rõ mức giảm.
+        async with factory() as session:
+            notice = await session.scalar(
+                select(ConversationMessageRow).where(
+                    ConversationMessageRow.session_id == delivered.session_id, ConversationMessageRow.role == "ADVISOR"
+                )
+            )
+        assert notice is not None and "30.000.000" in notice.content
         assert used == 1 and events == 3
 
         stats = await operations.stats("T-HN")

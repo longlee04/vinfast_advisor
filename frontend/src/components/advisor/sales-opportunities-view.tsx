@@ -7,7 +7,7 @@ import { fetchCustomer360Meta } from "@/lib/api/agent";
 
 import { SalesOpportunityList } from "./sales-opportunity-list";
 
-/** Cờ `customer360_ui` bật → danh sách theo CƠ HỘI; tắt → màn theo phiên cũ (không đổi). */
+/** Cờ `customer360_ui` bật → danh sách theo CƠ HỘI + hàng chờ; tắt → danh sách theo phiên cũ. */
 export function SalesOpportunitiesView() {
   const [useOpportunities, setUseOpportunities] = useState<boolean | null>(null);
 

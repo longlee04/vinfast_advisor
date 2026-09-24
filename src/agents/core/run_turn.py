@@ -856,6 +856,14 @@ async def _commit(
     # và quan sát, chúng KHÔNG được phép làm hỏng một lượt đã trả lời xong.
     await _persist_core_state(services, state)
     await _persist_trace(services, trace)
+    # Việc nền SAU khi lượt đã lưu (Customer 360: gắn phiên → cơ hội, lưu hồ sơ khách). Đường
+    # lease gọi nó bên trong `commit_core_turn`; đường này trước đây bỏ sót (plan §21).
+    notifier = getattr(services.memory, "notify_turn_committed", None)
+    if notifier is not None:
+        try:
+            await notifier(session_id=session_id, customer_id=customer_id, turn_count=state.turn_count)
+        except Exception:  # noqa: BLE001 — việc nền của TVV không được chạm tới khách
+            logger.warning("core.run_turn: bao viec nen sau luot that bai", exc_info=True)
     return persisted
 
 

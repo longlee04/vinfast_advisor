@@ -342,3 +342,201 @@ async def test_chat_luong_trich_xuat(migrated_engine: AsyncEngine, clean_agent_d
     assert {"field": "purchase_timeframe", "total": 1, "wrong": 1} in quality["by_field"]
     assert quality["corrected_by_decider"] == {"RULE": 1}
     assert quality["samples"][0]["note"] == "khách nói tháng sau"
+
+
+async def _assign(session: AsyncSession, customer_id: str, advisor_id: str) -> None:
+    session.add(
+        CustomerAdvisorAssignmentRow(
+            assignment_id=uuid4(),
+            customer_id=customer_id,
+            advisor_id=advisor_id,
+            assigned_by="admin",
+            status="ACTIVE",
+            assigned_at=NOW,
+            created_at=NOW,
+            updated_at=NOW,
+        )
+    )
+
+
+@pytest.mark.asyncio
+async def test_man_khach_can_xu_ly_truong_moi_bo_loc_va_the_so(
+    migrated_engine: AsyncEngine, clean_agent_database: None
+) -> None:
+    """Mockup 01/02: trường mới của danh sách, bộ lọc chờ người/lái thử, 4 thẻ số theo phạm vi TVV."""
+
+    factory = async_sessionmaker(migrated_engine, expire_on_commit=False)
+    operations = _operations(factory)
+    vehicle_id = uuid4()
+    async with factory() as session:
+        hot = await _seed_session(
+            session,
+            "cust-hot",
+            {"vehicle_type": "CAR", "budget_max_vnd": 700_000_000},
+            ["tư vấn ô tô gia đình"],
+            ask_counts={"home_charging": 3},
+            at=NOW - timedelta(days=2),
+        )
+        other = await _seed_session(session, "cust-other", {"vehicle_type": "CAR"}, ["xem xe"])
+        session.add(
+            CustomerProfileRow(
+                customer_id="cust-hot", display_name="Khách Nóng", phone="0912345678", created_at=NOW, updated_at=NOW
+            )
+        )
+        await _assign(session, "cust-hot", "adv-1")
+        await _assign(session, "cust-other", "adv-2")
+        await session.execute(
+            text("UPDATE conversation_sessions SET ownership = 'PENDING_HANDOFF' WHERE session_id = :id"), {"id": hot}
+        )
+        await session.execute(
+            text(
+                "INSERT INTO conversation_turn_outcomes "
+                "(outcome_id, session_id, client_turn_id, turn_number, status, recommendations, created_at, updated_at) "
+                "VALUES (:id, :session, :client, 1, 'COMPLETED', CAST(:recs AS jsonb), :at, :at)"
+            ),
+            {
+                "id": uuid4(),
+                "session": hot,
+                "client": uuid4(),
+                "at": NOW - timedelta(days=1),
+                "recs": (
+                    f'[{{"rank": 1, "vehicle_id": "{vehicle_id}", "display_name": "VinFast VF 6"}},'
+                    f' {{"rank": 2, "vehicle_id": "{uuid4()}", "display_name": "VinFast VF 5"}}]'
+                ),
+            },
+        )
+        await session.execute(
+            text(
+                "INSERT INTO test_drive_bookings (booking_id, customer_id, vehicle_id, showroom, scheduled_at, status, "
+                "created_at, updated_at) VALUES (:id, 'cust-hot', :vehicle, 'Showroom A', :at, 'REQUESTED', :now, :now)"
+            ),
+            {"id": uuid4(), "vehicle": vehicle_id, "at": NOW + timedelta(hours=20), "now": NOW},
+        )
+        await session.execute(
+            text(
+                "INSERT INTO out_of_scope_log (id, session_id, utterance, classification, created_at) "
+                "VALUES (:id, :session, 'pin thuê có mua đứt được không', 'MISSING_DATA', :at)"
+            ),
+            {"id": uuid4(), "session": hot, "at": NOW - timedelta(days=1)},
+        )
+        await session.commit()
+    await operations.refresh_session(str(hot))
+    await operations.refresh_session(str(other))
+
+    reader = Customer360ReadOperations(SqlAlchemyCustomer360Query(factory), FakeFlags("customer360_ui"), lambda: NOW)
+    [row] = await reader.list_opportunities(requester_ids=("adv-1",), is_admin=False, band=None, limit=10)
+    assert row["customer_id"] == "cust-hot"
+    assert row["sessions_count"] == 1 and row["has_phone"] and row["waiting"] and row["has_test_drive"]
+    assert row["top_vehicle_name"] == "VinFast VF 6"
+    assert row["next_action"] == {"code": "TAKE_OVER", "label": "Khách đang chờ tư vấn viên — tiếp quản ngay"}
+
+    waiting = await reader.list_opportunities(
+        requester_ids=("adv-2",), is_admin=False, band=None, limit=10, only_waiting=True
+    )
+    assert waiting == []
+    assert [
+        item["customer_id"]
+        for item in await reader.list_opportunities(
+            requester_ids=("admin",), is_admin=True, band=None, limit=10, only_test_drive=True
+        )
+    ] == ["cust-hot"]
+
+    mine = await reader.opportunity_summary(requester_ids=("adv-1",), is_admin=False)
+    assert mine == {"hot": mine["hot"], "waiting": 1, "test_drives_48h": 1, "unanswered": 1}
+    assert await reader.opportunity_summary(requester_ids=("adv-2",), is_admin=False) == {
+        "hot": 0,
+        "waiting": 0,
+        "test_drives_48h": 0,
+        "unanswered": 0,
+    }
+
+    payload = await reader.overview("cust-hot", requester_ids=("adv-1",), is_admin=False)
+    [opportunity] = payload["opportunities"]
+    assert [item["name"] for item in opportunity["vehicles_of_interest"]] == ["VinFast VF 6", "VinFast VF 5"]
+    assert opportunity["vehicles_of_interest"][0]["role"] == "RECOMMENDED"
+    assert {"slot": "home_charging", "ask_count": 3} in opportunity["needs"]["evaded_detail"]
+    stages = [mark["stage"] for mark in opportunity["stage_history"]]
+    assert stages[:2] == ["DISCOVER", "COMPARE"] and "TEST_DRIVE" in stages
+    assert opportunity["opening_hint_basis"]["kind"]
+    with pytest.raises(CustomerAccessDeniedError):
+        await reader.overview("cust-hot", requester_ids=("adv-2",), is_admin=False)
+
+
+class FakeIdentity:
+    def __init__(self) -> None:
+        self.value: tuple[str | None, str | None, str | None, str | None] | None = None
+
+    async def lookup(self, customer_id: str) -> tuple[str | None, str | None, str | None, str | None] | None:  # noqa: ARG002
+        return self.value
+
+
+@pytest.mark.asyncio
+async def test_khach_tu_khai_ten_sdt_dia_chi_den_ngay_man_tu_van_vien(
+    migrated_engine: AsyncEngine, clean_agent_database: None
+) -> None:
+    """Plan §19: khách lưu hồ sơ → tư vấn viên thấy NGAY tên/SĐT/địa chỉ thật, không phải mã."""
+
+    factory = async_sessionmaker(migrated_engine, expire_on_commit=False)
+    identity = FakeIdentity()
+    operations = Customer360Operations(
+        SqlAlchemyCustomer360Repository(factory), clock=lambda: NOW, flags=FakeFlags(), identity=identity
+    )
+    async with factory() as session:
+        await _seed_session(session, "cust-id", {"vehicle_type": "CAR"}, ["xin chào"])
+        session.add(CustomerProfileRow(customer_id="cust-id", display_name="Tên cũ", created_at=NOW, updated_at=NOW))
+        await _assign(session, "cust-id", "adv-1")
+        await session.commit()
+
+    identity.value = ("Nguyễn Văn A", "0912345678", "12 Láng Hạ, Hà Nội", "vana@gmail.com")
+    assert await operations.refresh_identity("cust-id") is True
+    # Khách sửa lại chỉ SĐT: tên/địa chỉ đã khai giữ nguyên (không xoá ô khách để trống).
+    identity.value = (None, "0987654321", None, "vana@gmail.com")
+    assert await operations.refresh_identity("cust-id") is True
+    async with factory() as session:
+        row = await session.get(CustomerProfileRow, "cust-id")
+    assert (row.display_name, row.phone, row.address) == ("Nguyễn Văn A", "0987654321", "12 Láng Hạ, Hà Nội")
+
+    reader = Customer360ReadOperations(SqlAlchemyCustomer360Query(factory), FakeFlags("customer360_ui"), lambda: NOW)
+    mine = await reader.overview("cust-id", requester_ids=("adv-1",), is_admin=False)
+    assert mine["customer"]["display_name"] == "Nguyễn Văn A"
+    assert mine["customer"]["address"] == "12 Láng Hạ, Hà Nội"
+    admin = await reader.overview("cust-id", requester_ids=("admin",), is_admin=True)
+    assert "address" not in admin["customer"] and "phone" not in admin["customer"]
+
+    identity.value = None
+    assert await operations.refresh_identity("cust-id") is False
+
+
+@pytest.mark.asyncio
+async def test_tab_da_nhan_co_ca_khach_chua_chat_va_khach_co_nhu_cau(
+    migrated_engine: AsyncEngine, clean_agent_database: None
+) -> None:
+    """Plan §20: "Đã nhận" đi từ PHÂN CÔNG — khách vừa nhận, chưa chat lượt nào vẫn có mặt."""
+
+    factory = async_sessionmaker(migrated_engine, expire_on_commit=False)
+    operations = _operations(factory)
+    async with factory() as session:
+        chatted = await _seed_session(
+            session, "cust-chat", {"vehicle_type": "CAR", "budget_max_vnd": 600_000_000}, ["tư vấn"]
+        )
+        session.add(
+            CustomerProfileRow(
+                customer_id="cust-new", display_name=None, email="minhanh@gmail.com", created_at=NOW, updated_at=NOW
+            )
+        )
+        await _assign(session, "cust-chat", "adv-1")
+        await _assign(session, "cust-new", "adv-1")
+        await _assign(session, "cust-other", "adv-2")
+        await session.commit()
+    await operations.refresh_session(str(chatted))
+
+    reader = Customer360ReadOperations(SqlAlchemyCustomer360Query(factory), FakeFlags("customer360_ui"), lambda: NOW)
+    rows = await reader.list_my_customers(requester_ids=("adv-1",), is_admin=False, band=None, limit=50)
+    by_id = {row["customer_id"]: row for row in rows}
+    assert set(by_id) == {"cust-chat", "cust-new"}
+    assert by_id["cust-chat"]["opportunity_id"] and by_id["cust-chat"]["stage"] == "DISCOVER"
+    assert by_id["cust-chat"]["next_action"] is not None
+    fresh = by_id["cust-new"]
+    assert fresh["opportunity_id"] is None and fresh["heat_band"] is None and fresh["next_action"] is None
+    assert fresh["email"] == "mi***@gmail.com" and fresh["sessions_count"] == 0
+    assert await reader.list_my_customers(requester_ids=("adv-9",), is_admin=False, band=None, limit=50) == []

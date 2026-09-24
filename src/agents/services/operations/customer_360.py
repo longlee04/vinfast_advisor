@@ -156,7 +156,15 @@ class Customer360Repository(Protocol):
     ) -> bool: ...
     async def profile_needs_identity(self, customer_id: str) -> bool: ...
     async def upsert_profile_identity(
-        self, customer_id: str, display_name: str | None, phone: str | None, at: datetime
+        self,
+        customer_id: str,
+        display_name: str | None,
+        phone: str | None,
+        at: datetime,
+        *,
+        address: str | None = None,
+        email: str | None = None,
+        overwrite: bool = False,
     ) -> None: ...
 
 
@@ -173,9 +181,9 @@ class FlagReader(Protocol):
 
 
 class CustomerIdentitySource(Protocol):
-    """Tên/SĐT của khách từ module auth — agents không import model auth (plan 4F)."""
+    """Tên/SĐT/địa chỉ của khách từ module auth — agents không import model auth (plan 4F, §19)."""
 
-    async def lookup(self, customer_id: str) -> tuple[str | None, str | None] | None: ...
+    async def lookup(self, customer_id: str) -> tuple[str | None, str | None, str | None, str | None] | None: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -411,7 +419,27 @@ class Customer360Operations:
             logger.warning("customer360: khong tra duoc danh tinh khach", exc_info=True)
             return
         if found is not None and any(found):
-            await self._repository.upsert_profile_identity(customer_id, found[0], found[1], now)
+            await self._repository.upsert_profile_identity(
+                customer_id, found[0], found[1], now, address=found[2], email=found[3]
+            )
+
+    async def refresh_identity(self, customer_id: str) -> bool:
+        """Chép NGAY tên/SĐT/địa chỉ/email của khách sang phía tư vấn viên (plan §19, §20).
+
+        Gọi mỗi lần khách đăng nhập (màn chào) và mỗi lần khách lưu hồ sơ: khách vừa đăng ký,
+        chưa chat lượt nào vẫn CÓ hồ sơ (ít nhất email) để tư vấn viên thấy và nhận. Không chờ
+        job nền (vốn chỉ chạy sau một lượt chat, chỉ lấp chỗ trống). Không phụ thuộc cờ Customer 360.
+        """
+
+        if self._identity is None:
+            return False
+        found = await self._identity.lookup(customer_id)
+        if found is None or not any(found):
+            return False
+        await self._repository.upsert_profile_identity(
+            customer_id, found[0], found[1], self._clock(), address=found[2], email=found[3], overwrite=True
+        )
+        return True
 
     async def sweep(self, *, limit: int = 200) -> dict[str, int]:
         """Việc định kỳ: DORMANT, gắn phiên idle, tính lại độ nóng (điểm giảm theo thời gian)."""
@@ -479,12 +507,17 @@ class Customer360TurnHook:
         self._every = every
 
     async def __call__(self, *, session_id: str, customer_id: str, turn_count: int) -> None:
-        if turn_count <= 0 or turn_count % self._every != 0:
+        if turn_count <= 0:
             return
         if not is_enabled_for(await self._flags.load(FLAG_ATTACH), customer_id):
             return
+        # MỖI lượt: gắn phiên + ghi slot (chỉ DB) — tư vấn viên thấy ngân sách/xe khách vừa nói
+        # ngay, không chờ đủ 4 lượt hay job quét 30 phút (plan §21). Trích insight bằng LLM (tốn
+        # tiền) giữ nhịp `every` lượt: lượt khác ép `force_extract=False`.
+        extract = None if turn_count % self._every == 0 else False
         self._scheduler.schedule(
-            lambda: self._operations.refresh_session(session_id), label=f"customer360:{session_id}"
+            lambda: self._operations.refresh_session(session_id, force_extract=extract),
+            label=f"customer360:{session_id}",
         )
 
 

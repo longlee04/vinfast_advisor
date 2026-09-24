@@ -209,7 +209,7 @@ export function AdvisorLiveChat({ conversationId, viewerRole = "advisor" }: Read
       await closeAdvisorConversation(conversationId);
       setClosed(true);
       setConfirmClose(false);
-      router.push("/advisor");
+      router.push("/advisor/customers");
     } catch {
       setConfirmClose(false);
     }
@@ -221,7 +221,7 @@ export function AdvisorLiveChat({ conversationId, viewerRole = "advisor" }: Read
       setDeleting(true);
       await deleteAdvisorConversation(conversationId);
       setConfirmDelete(false);
-      router.push("/advisor");
+      router.push("/advisor/customers");
     } catch {
       setConfirmDelete(false);
     } finally {
@@ -235,7 +235,7 @@ export function AdvisorLiveChat({ conversationId, viewerRole = "advisor" }: Read
       setHandoffing(true);
       await handoffAdvisorConversation(conversationId);
       setConfirmHandoff(false);
-      router.push("/advisor");
+      router.push("/advisor/customers");
     } catch {
       setConfirmHandoff(false);
     } finally {
@@ -252,7 +252,7 @@ export function AdvisorLiveChat({ conversationId, viewerRole = "advisor" }: Read
     <div className="advisor-chat-page">
       <section className="advisor-chat-shell">
         <header className="advisor-chat-header">
-          <Link className="advisor-chat-back" href="/advisor" aria-label="Quay lại hàng đợi"><ChevronLeft size={20} /></Link>
+          <Link className="advisor-chat-back" href="/advisor/customers" aria-label="Quay lại danh sách khách"><ChevronLeft size={20} /></Link>
           <span className="advisor-chat-avatar customer-avatar">{customerAvatar}</span>
           <div className="advisor-chat-contact">
             <strong>{customerLabel}</strong>
@@ -306,7 +306,7 @@ export function AdvisorLiveChat({ conversationId, viewerRole = "advisor" }: Read
           <input aria-label="Tin nhắn gửi khách hàng" disabled={closed} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void sendMessage(); } }} placeholder={closed ? "Phiên chat đã kết thúc" : "Soạn tin nhắn..."} value={draft} />
           <button aria-label="Gửi tin nhắn" className="composer-send-button" disabled={closed || !draft.trim() || sending} type="submit">{sending ? <Loader2 className="spin" size={18} /> : <Send size={18} />}</button>
         </form>
-        {closed ? <div className="advisor-chat-ended"><span>Phiên chat đã kết thúc.</span><Link href="/advisor">Quay lại hàng đợi</Link></div> : null}
+        {closed ? <div className="advisor-chat-ended"><span>Phiên chat đã kết thúc.</span><Link href="/advisor/customers">Quay lại danh sách khách</Link></div> : null}
       </section>
 
       <CustomerProfilePanel

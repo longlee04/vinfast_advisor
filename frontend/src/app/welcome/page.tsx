@@ -5,8 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { getProfile, me } from "@/lib/api/auth";
+import { ProfileCompletionForm } from "@/components/customer/profile-completion-form";
 import { AppHeader } from "@/components/shared/app-header";
+import { refreshCustomerIdentity } from "@/lib/api/agent";
+import { getProfile, me, type UserProfile } from "@/lib/api/auth";
+import { isProfileComplete } from "@/lib/api/customer-profile";
 
 /** Cờ báo "đã cho xem màn chào ở phiên này" — chỉ hiện một lần mỗi lượt đăng nhập. */
 const WELCOME_SHOWN_KEY = "p150.welcomed";
@@ -58,13 +61,16 @@ function greetingName(fullName: string | null | undefined, email: string): strin
   return prefix || email;
 }
 
-type ViewState = "checking" | "ready";
+/** `profile`: hồ sơ còn thiếu tên/SĐT — xin thông tin trước lời chào (plan §19). */
+type ViewState = "checking" | "profile" | "ready";
 
 export default function WelcomePage() {
   const router = useRouter();
   const [view, setView] = useState<ViewState>("checking");
   const [name, setName] = useState("");
   const [returning, setReturning] = useState(true);
+  const [email, setEmail] = useState("");
+  const [profile, setProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -84,6 +90,8 @@ export default function WelcomePage() {
 
       const profile = await getProfile().catch(() => null);
       if (!active) return;
+      // Khách đăng nhập = có hồ sơ bên tư vấn viên ngay (plan §20), kể cả khi bỏ qua bước khai.
+      if (currentUser.role === "customer") void refreshCustomerIdentity().catch(() => undefined);
 
       const seenBefore = hasSeenBefore(currentUser.email);
       markSeen(currentUser.email);
@@ -91,7 +99,10 @@ export default function WelcomePage() {
 
       setName(greetingName(profile?.full_name, currentUser.email));
       setReturning(seenBefore);
-      setView("ready");
+      setEmail(currentUser.email);
+      setProfile(profile);
+      // Chỉ KHÁCH mới được hỏi; tài khoản không phải khách (hiếm khi tới đây) đi thẳng lời chào.
+      setView(currentUser.role === "customer" && !isProfileComplete(profile) ? "profile" : "ready");
     }
 
     bootstrap();
@@ -105,6 +116,26 @@ export default function WelcomePage() {
       <>
         <AppHeader />
         <main className="welcome-page" />
+      </>
+    );
+  }
+
+  if (view === "profile") {
+    return (
+      <>
+        <AppHeader />
+        <main className="welcome-page">
+          <section className="welcome-card">
+            <ProfileCompletionForm
+              onSaved={(saved) => {
+                setName(greetingName(saved.full_name, email));
+                setView("ready");
+              }}
+              onSkip={() => setView("ready")}
+              profile={profile}
+            />
+          </section>
+        </main>
       </>
     );
   }

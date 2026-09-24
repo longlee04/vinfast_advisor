@@ -8,7 +8,7 @@ import { fetchCustomerOffers, offerAction, type OpportunityOffer, PromotionApiEr
 type IssuedOffer = OpportunityOffer & { readonly sent_at: string | null; readonly updated_at: string };
 
 const STATUS: Record<OpportunityOffer["status"], { tone: "success" | "warning" | "neutral" | "info"; label: string }> = {
-  SUGGESTED: { tone: "warning", label: "Chờ quản lý duyệt" },
+  SUGGESTED: { tone: "warning", label: "Chờ tư vấn viên khác duyệt" },
   APPROVED: { tone: "info", label: "Đã duyệt — chưa gửi" },
   SENT: { tone: "info", label: "Đã gửi khách" },
   ENGAGED: { tone: "success", label: "Khách phản hồi" },
@@ -19,7 +19,7 @@ const STATUS: Record<OpportunityOffer["status"], { tone: "success" | "warning" |
 
 /** Lý do hàng rào chặn gửi → câu TVV đọc được. */
 const BLOCK_REASONS: Record<string, string> = {
-  NEEDS_MANAGER: "Vượt ngưỡng — cần quản lý duyệt trước.",
+  NEEDS_MANAGER: "Vượt hạn mức — cần một tư vấn viên khác duyệt trước (mục Ưu đãi).",
   PROMOTION_NOT_ACTIVE: "Ưu đãi không còn áp dụng.",
   PROMOTION_EXPIRED: "Ưu đãi đã hết hạn.",
   NO_USES_LEFT: "Ưu đãi đã hết suất.",

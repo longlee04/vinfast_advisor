@@ -41,6 +41,11 @@ export type CustomerProfileView = {
   /** Phiên nên mở khi bấm "Vào chat"/"Tiếp quản" — phiên chờ TVV trước, rồi phiên mới nhất chưa đóng. */
   readonly focusSessionId: string | null;
   readonly waitingSessionId: string | null;
+  /** Ai đang giữ phiên đang mở (`AI`/`PENDING_HANDOFF`/`ADVISOR`) — `null` khi không có phiên mở hoặc chưa biết. */
+  readonly openOwnership: string | null;
+  /** Tổng lượt của các phiên (chỉ khi biết `turn_count`). */
+  readonly turnsTotal: number | null;
+  readonly latestSummary: string | null;
 };
 
 /** Không truy cập được hồ sơ (ngoài phạm vi phân công, hoặc không tồn tại). */
@@ -153,7 +158,16 @@ async function loadFallback(customerId: string, role: ViewerRole): Promise<Custo
     testDrives: bookings.map(toTestDrive),
     focusSessionId: waiting?.session_id ?? open?.session_id ?? null,
     waitingSessionId: waiting?.session_id ?? null,
+    // Danh sách phiên cũ không có ownership; phiên "chờ TVV" chính là khách đang chờ người.
+    openOwnership: waiting ? "PENDING_HANDOFF" : null,
+    turnsTotal: null,
+    latestSummary: null,
   };
+}
+
+function turnsTotal(sessions: readonly SessionRow[]): number | null {
+  const counted = sessions.filter((item) => typeof item.turn_count === "number");
+  return counted.length ? counted.reduce((sum, item) => sum + (item.turn_count ?? 0), 0) : null;
 }
 
 const VEHICLE_TITLES: Record<string, string> = { CAR: "Ô tô điện", ELECTRIC_MOTORBIKE: "Xe máy điện" };
@@ -177,6 +191,7 @@ export function profileFromOverview(
       display_name: overview.customer.display_name,
       phone_masked: overview.customer.phone_masked,
       phone: overview.customer.phone,
+      address: overview.customer.address,
       assigned_advisor_id: overview.customer.assigned_advisor_id,
       sessions_count: overview.customer.sessions_count,
       last_seen_at: overview.customer.last_seen_at,
@@ -200,12 +215,19 @@ export function profileFromOverview(
       barriers: opportunity.barriers,
       insights: opportunity.insights,
       openingHint: opportunity.opening_hint,
+      openingBasis: opportunity.opening_hint_basis,
       nextActions: opportunity.next_actions,
+      stageHistory: opportunity.stage_history ?? [],
+      vehicles: opportunity.vehicles_of_interest ?? [],
+      evadedDetail: opportunity.needs.evaded_detail ?? [],
     })),
     sessions,
     testDrives: overview.test_drives,
     focusSessionId: waiting?.session_id ?? open?.session_id ?? null,
     waitingSessionId: waiting?.session_id ?? null,
+    openOwnership: (waiting ?? open)?.ownership ?? null,
+    turnsTotal: turnsTotal(sessions),
+    latestSummary: overview.customer.latest_summary ?? null,
   };
 }
 

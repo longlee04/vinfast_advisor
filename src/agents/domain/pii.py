@@ -57,11 +57,21 @@ def mask_phone(phone: str) -> str:
     return f"{digits[:_MASK_KEEP_HEAD]}***{digits[-_MASK_KEEP_TAIL:]}"
 
 
+def mask_email(email: str) -> str:
+    """`minhanh.nguyen@gmail.com` → `mi***@gmail.com` — nhận ra được khách, không lộ hộp thư."""
+
+    local, at, domain = email.strip().partition("@")
+    if not at:
+        return "***"
+    return f"{local[:2]}***@{domain}"
+
+
 __all__ = [
     "EMAIL_PLACEHOLDER",
     "ID_NUMBER_PLACEHOLDER",
     "PHONE_PLACEHOLDER",
     "contains_phone",
+    "mask_email",
     "mask_phone",
     "redact_pii",
 ]

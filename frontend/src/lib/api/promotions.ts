@@ -107,22 +107,22 @@ export type PromotionStats = {
 };
 
 export const listPromotions = (status?: PromotionStatus) =>
-  request<readonly AdminPromotion[]>(`/admin/promotions${status ? `?status_filter=${status}` : ""}`);
-export const fetchRuleSchema = () => request<RuleSchema>("/admin/promotions/rule-schema");
+  request<readonly AdminPromotion[]>(`/advisor/promotions${status ? `?status_filter=${status}` : ""}`);
+export const fetchRuleSchema = () => request<RuleSchema>("/advisor/promotions/rule-schema");
 export const validatePromotionRules = (rules: EligibilityRules) =>
-  request<{ ok: boolean; errors: string[] }>("/admin/promotions/validate-rules", {
+  request<{ ok: boolean; errors: string[] }>("/advisor/promotions/validate-rules", {
     method: "POST",
     body: JSON.stringify({ rules }),
   });
 export const createPromotion = (input: PromotionInput) =>
-  request<AdminPromotion>("/admin/promotions", { method: "POST", body: JSON.stringify(input) });
+  request<AdminPromotion>("/advisor/promotions", { method: "POST", body: JSON.stringify(input) });
 export const updatePromotion = (promotionId: string, input: PromotionInput) =>
-  request<AdminPromotion>(`/admin/promotions/${promotionId}`, { method: "PATCH", body: JSON.stringify(input) });
+  request<AdminPromotion>(`/advisor/promotions/${promotionId}`, { method: "PATCH", body: JSON.stringify(input) });
 export const activatePromotion = (promotionId: string) =>
-  request<AdminPromotion>(`/admin/promotions/${promotionId}/activate`, { method: "POST" });
+  request<AdminPromotion>(`/advisor/promotions/${promotionId}/activate`, { method: "POST" });
 export const cancelPromotion = (promotionId: string) =>
-  request<AdminPromotion>(`/admin/promotions/${promotionId}`, { method: "DELETE" });
-export const fetchPromotionStats = () => request<readonly PromotionStats[]>("/admin/promotion-stats");
+  request<AdminPromotion>(`/advisor/promotions/${promotionId}`, { method: "DELETE" });
+export const fetchPromotionStats = () => request<readonly PromotionStats[]>("/advisor/promotion-stats");
 
 // ---------------------------------------------------------------- ưu đãi theo cơ hội (TVV)
 
@@ -159,8 +159,22 @@ export const proposeOffer = (opportunityId: string, promotionCode: string, propo
   });
 export const offerAction = (offerId: string, action: "send" | "engage" | "convert" | "dismiss") =>
   request<OpportunityOffer>(`/advisor/opportunity-offers/${offerId}/${action}`, { method: "POST" });
+/** Duyệt chéo: tư vấn viên KHÁC người đề xuất duyệt ưu đãi vượt hạn mức — tự duyệt → 403. */
 export const approveOffer = (offerId: string) =>
-  request<OpportunityOffer>(`/admin/opportunity-offers/${offerId}/approve`, { method: "POST" });
+  request<OpportunityOffer>(`/advisor/opportunity-offers/${offerId}/approve`, { method: "POST" });
+
+export type PendingOffer = {
+  readonly offer_id: string;
+  readonly opportunity_id: string;
+  readonly customer_id: string;
+  readonly display_name: string | null;
+  readonly promotion_code: string;
+  readonly discount_vnd: number | null;
+  readonly suggested_by: string;
+  readonly created_at: string;
+};
+
+export const fetchPendingOffers = () => request<readonly PendingOffer[]>("/advisor/opportunity-offers/pending");
 export const fetchCustomerOffers = (customerId: string) =>
   request<readonly (OpportunityOffer & { readonly sent_at: string | null; readonly updated_at: string })[]>(
     `/advisor/customers/${encodeURIComponent(customerId)}/offers`,

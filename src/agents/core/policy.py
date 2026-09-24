@@ -163,9 +163,13 @@ def decide(state: CoreState, u: Understanding) -> Decision:
     if u.dialogue_act is DialogueAct.SOCIAL:
         # `stage` đi kèm để `render` biết đây là lời chào ĐẦU (chào đầy đủ, nói
         # rõ giúp được gì) hay một câu xã giao giữa chừng (đáp ngắn, giữ mạch).
+        # `conversational` là nhãn lớp hội thoại (khen/chê/phân vân…) để `act`
+        # đáp ĐÚNG cảm xúc thay vì một câu xã giao chung chung.
         return Decision(
             Reply(
-                template=TEMPLATE_SOCIAL, args={"stage": state.stage.value}, resume_pending=state.pending is not None
+                template=TEMPLATE_SOCIAL,
+                args={"stage": state.stage.value, **({"conversational": u.conversational} if u.conversational else {})},
+                resume_pending=state.pending is not None,
             ),
             state,
         )
@@ -411,7 +415,14 @@ def decide(state: CoreState, u: Understanding) -> Decision:
         and u.intent is not Intent.CATALOG_BROWSE
         and (u.dialogue_act is DialogueAct.INTERRUPT or u.intent in INTERRUPT_INTENTS)
     ):
-        found = _lookup_decision(state, u, resume=True)
+        if state.pending.key == PENDING_PROFILE and u.vehicle_ids:
+            # Câu HỒ SƠ hỏi ngân sách/mục đích để TÌM mẫu; khách đã tự gọi tên mẫu
+            # ("tư vấn cho tôi xe vf9") thì câu đó hết lý do — nối lại là hỏi ngược
+            # ngay sau câu kết "Anh/chị ưng VF 9 không…" (lượt dev 2026-09-24). Cùng
+            # tinh thần luật PENDING_PROFILE ở nhánh trả lời phía trên.
+            found = _lookup_decision(state.with_(pending=None), u, resume=False)
+        else:
+            found = _lookup_decision(state, u, resume=True)
         if found is not None:
             return found
 
@@ -1003,8 +1014,12 @@ def _choose_with_slots(state: CoreState, vehicle_id: str, u: Understanding) -> D
     cam kết đang theo chỉ trả câu xác nhận rồi bắt khách xin lại việc đó.
     """
 
-    if state.intent in _VEHICLE_INTENTS:
-        return _run_vehicle_intent(state, u, intent=state.intent, vehicle=vehicle_id)
+    # Việc khách xin NGAY TRONG câu chọn ("chốt con này, cho tôi đặt lịch lái thử")
+    # thắng việc đang theo từ lượt trước — chỉ xét `state.intent` là chốt xe rồi giới
+    # thiệu lại xe, bỏ mất nửa sau của câu (lượt dev 2026-09-24).
+    intent = u.intent if u.intent in _VEHICLE_INTENTS else state.intent
+    if intent in _VEHICLE_INTENTS:
+        return _run_vehicle_intent(state, u, intent=intent, vehicle=vehicle_id)
     after = _promote_to_chosen(state, vehicle_id)
     if u.next_steps_asked:
         # "Làm sao để chốt VF 3" mà LLM gắn CHOICE: khách vẫn cần các BƯỚC, và
@@ -1080,9 +1095,7 @@ def _lookup_decision(state: CoreState, u: Understanding, *, resume: bool) -> Dec
     if u.intent is Intent.NEARBY:
         return Decision(Nearby(resume_pending=resume), state)
     if u.intent is Intent.POLICY_QA:
-        return Decision(
-            Lookup(mode=LOOKUP_POLICY, vehicle_ids=u.vehicle_ids, resume_pending=resume), state
-        )
+        return Decision(Lookup(mode=LOOKUP_POLICY, vehicle_ids=u.vehicle_ids, resume_pending=resume), state)
     if u.intent is Intent.VEHICLE_QA:
         target = _target_vehicle(state, u)
         if target is None:

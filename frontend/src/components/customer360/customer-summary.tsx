@@ -1,22 +1,28 @@
+"use client";
+
 import type { ReactNode } from "react";
 
-import { StatusBadge } from "@/components/shared/status-badge";
-import type { CustomerHeader, ViewerRole } from "@/types/customer360";
+import type { CustomerHeader } from "@/types/customer360";
 
-import { HEAT_BAND_BADGES } from "./customer360-labels";
+import { OWNERSHIP_LABELS, relativeAge } from "./customer360-labels";
+import { HeatPill } from "./heat-pill";
+import { useClock } from "./use-clock";
 
 export type CustomerSummaryData = Pick<
   CustomerHeader,
-  "customer_id" | "display_name" | "phone_masked" | "phone" | "assigned_advisor_id" | "sessions_count" | "last_seen_at"
+  "customer_id" | "display_name" | "phone_masked" | "phone" | "address" | "assigned_advisor_id" | "sessions_count" | "last_seen_at"
 > &
   Partial<Pick<CustomerHeader, "heat_band" | "heat_score">>;
 
 export type CustomerSummaryProps = {
   readonly customer: CustomerSummaryData;
-  readonly role: ViewerRole;
-  readonly readOnly: boolean;
-  /** Nút thao tác (Vào chat / Gọi / Tiếp quản) — ẩn hoàn toàn khi `readOnly`. */
+  readonly turnsTotal?: number | null;
+  /** Ai đang giữ phiên đang mở — hiện "AI đang trả lời"… */
+  readonly ownership?: string | null;
+  /** Nút thao tác bên phải (Xem hội thoại / Gọi khách / Tiếp quản, hoặc Phân công lại cho Admin). */
   readonly actions?: ReactNode;
+  /** Thanh giai đoạn + chọn nhu cầu — nằm trong cùng thẻ đầu trang. */
+  readonly children?: ReactNode;
 };
 
 function initials(name: string): string {
@@ -25,55 +31,48 @@ function initials(name: string): string {
   return name.slice(0, 2).toUpperCase();
 }
 
-function formatWhen(iso: string | null): string {
-  if (!iso) return "—";
-  const value = new Date(iso);
-  if (Number.isNaN(value.getTime())) return iso;
-  return new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short" }).format(value);
+/** Mã khách dài (UUID/số) thì rút gọn khi chưa có tên. */
+function shortId(id: string): string {
+  return id.length > 14 ? `${id.slice(0, 8)}…` : id;
 }
 
 /**
- * Đầu hồ sơ: tầng Khách (plan §2.1). SĐT đầy đủ chỉ hiện khi backend trả `phone`
- * (TVV phụ trách) và người xem không ở chế độ chỉ xem; mọi trường hợp khác dùng bản đã che.
+ * Thẻ đầu hồ sơ (mockup 02): avatar, tên, độ nóng, dòng meta, nút thao tác. SĐT luôn hiện bản
+ * đã che — số đầy đủ (chỉ backend trả cho TVV phụ trách) chỉ dùng cho nút "Gọi khách".
  */
-export function CustomerSummary({ customer, role, readOnly, actions }: CustomerSummaryProps) {
-  const name = customer.display_name || customer.customer_id;
-  const phone = !readOnly && role === "advisor" && customer.phone ? customer.phone : customer.phone_masked;
-  const heat = customer.heat_band ? HEAT_BAND_BADGES[customer.heat_band] : null;
+export function CustomerSummary({ customer, turnsTotal, ownership, actions, children }: CustomerSummaryProps) {
+  const now = useClock();
+  const name = customer.display_name || shortId(customer.customer_id);
+  const age = relativeAge(customer.last_seen_at, now);
+  const meta = [
+    customer.phone_masked,
+    `${customer.sessions_count} phiên chat${typeof turnsTotal === "number" ? ` · ${turnsTotal} lượt` : ""}`,
+    age ? (age === "Vừa xong" ? "Vừa hoạt động" : `Hoạt động ${age === "Hôm qua" ? "hôm qua" : `${age} trước`}`) : null,
+    ownership ? (OWNERSHIP_LABELS[ownership] ?? null) : null,
+  ].filter(Boolean);
   return (
-    <div className="customer360-summary">
-      <span aria-hidden="true" className="ops-avatar large">
-        {initials(name)}
-      </span>
-      <div className="customer360-summary-copy">
-        <strong>{name}</strong>
-        <span className="mono-text">ID: {customer.customer_id}</span>
-        <dl>
+    <section aria-label="Thông tin khách" className="c360-card c360-profile-head">
+      <div className="c360-profile-top">
+        <div className="c360-profile-identity">
+          <span aria-hidden="true" className="c360-avatar">
+            {initials(name)}
+          </span>
           <div>
-            <dt>SĐT</dt>
-            <dd>{phone || "Chưa có"}</dd>
+            <div className="c360-profile-name">
+              <h1 title={customer.customer_id}>{name}</h1>
+              {customer.heat_band ? <HeatPill band={customer.heat_band} score={customer.heat_score} /> : null}
+            </div>
+            <p className="c360-profile-meta">
+              {meta.map((item) => (
+                <span key={item as string}>{item}</span>
+              ))}
+            </p>
+            {customer.address ? <p className="c360-profile-address">{customer.address}</p> : null}
           </div>
-          <div>
-            <dt>Phụ trách</dt>
-            <dd>{customer.assigned_advisor_id || "Chưa phân công"}</dd>
-          </div>
-          <div>
-            <dt>Số phiên</dt>
-            <dd>{customer.sessions_count}</dd>
-          </div>
-          <div>
-            <dt>Hoạt động gần nhất</dt>
-            <dd>{formatWhen(customer.last_seen_at)}</dd>
-          </div>
-        </dl>
+        </div>
+        {actions ? <div className="c360-profile-actions">{actions}</div> : null}
       </div>
-      {heat ? (
-        <StatusBadge tone={heat.tone}>
-          {heat.label}
-          {customer.heat_score !== null && customer.heat_score !== undefined ? ` · ${customer.heat_score}` : ""}
-        </StatusBadge>
-      ) : null}
-      {!readOnly && actions ? <div className="customer360-summary-actions">{actions}</div> : null}
-    </div>
+      {children}
+    </section>
   );
 }

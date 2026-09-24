@@ -44,7 +44,7 @@ export function EligibleOfferList({
       const created = await proposeOffer(opportunityId, offer.promotion_code);
       setMessage(
         created.status === "SUGGESTED"
-          ? `Đã đề xuất ${offer.promotion_code} — vượt ngưỡng của TVV, chờ quản lý duyệt.`
+          ? `Đã đề xuất ${offer.promotion_code} — vượt hạn mức, chờ một tư vấn viên khác duyệt ở mục Ưu đãi.`
           : `Đã duyệt ${offer.promotion_code} — gửi cho khách ở tab "Ưu đãi đã cấp".`,
       );
       onProposed?.();

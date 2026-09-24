@@ -1199,11 +1199,16 @@ def test_catalog_lookup_khong_ten_xe_van_la_lookup_trong() -> None:
 
 
 def test_catalog_lookup_kem_ten_xe_khi_dang_treo_cau_hoi_van_mang_theo_xe() -> None:
-    """Đường CHEN NGANG (luật 5) cũng phải chở xe — cùng một hàm dựng quyết định."""
+    """Đường CHEN NGANG (luật 5) cũng phải chở xe — cùng một hàm dựng quyết định.
+
+    Câu treo là câu HỒ SƠ nên không nối lại nữa (khách đã gọi tên xe — xem
+    `test_goi_ten_xe_khi_cau_ho_so_dang_treo_thi_bo_cau_ho_so`); điều test này khoá — xe
+    đi kèm quyết định — giữ nguyên.
+    """
 
     state = S(stage=Stage.COLLECTING, intent=I.ADVISORY, pending=ASK_PROFILE, slots=CAR_FULL)
     d = decide(state, U(A.INTERRUPT, I.CATALOG_LOOKUP, vehicle_ids=("v3",), confidence=0.9))
-    assert d.action == Lookup(mode="lookup", vehicle_ids=("v3",), resume_pending=True)
+    assert d.action == Lookup(mode="lookup", vehicle_ids=("v3",))
 
 
 # ---------- Nhóm prod vòng 9: câu hỏi "có hợp với nhu cầu không" ----------
@@ -1658,3 +1663,32 @@ def test_luat_6a_van_tom_tat_khi_cau_tra_loi_roi_khong_co_question() -> None:
     state = S(stage=Stage.CHOSEN, intent=I.ADVISORY, chosen_vehicle_id="v1", recommended_ids=("v1", "v2"), slots=CAR_FULL)
     d = decide(state, U(A.SLOT_ANSWER, intent=I.NONE, slots={N.REGISTRATION_PROVINCE: "HN"}))
     assert isinstance(d.action, Reply) and d.action.template == TEMPLATE_CHOSEN_SUMMARY
+
+
+@pytest.mark.parametrize(
+    ("act", "intent"), [(A.REQUEST, I.CATALOG_LOOKUP), (A.INTERRUPT, I.CATALOG_LOOKUP), (A.REQUEST, I.VEHICLE_QA)]
+)
+def test_goi_ten_xe_khi_cau_ho_so_dang_treo_thi_bo_cau_ho_so(act: A, intent: I) -> None:
+    """Lượt dev 2026-09-24: "tư vấn cho tôi xe vf9" (REQUEST + CATALOG_LOOKUP) nhận thông số VF 9,
+    câu kết "Anh/chị ưng VF 9 không…" RỒI "Quay lại câu lúc nãy: …dự tính khoảng bao nhiêu" —
+    câu hồ sơ hỏi để TÌM mẫu, khách đã tự gọi tên mẫu nên nối lại là hỏi ngược và cụt luồng.
+    """
+
+    state = S(stage=Stage.COLLECTING, intent=I.ADVISORY, pending=ASK_PROFILE, ask_counts={"profile": 1})
+    d = decide(state, U(act, intent, vehicle_ids=("v9",), confidence=0.9))
+    assert getattr(d.action, "resume_pending", False) is False
+    assert d.state_after.pending is None
+
+
+@pytest.mark.parametrize("intent", [I.TEST_DRIVE, I.ON_ROAD_PRICE, I.COST])
+def test_chot_xe_kem_viec_trong_cung_mot_cau_thi_lam_luon_viec_do(intent: I) -> None:
+    """Lượt dev 2026-09-24: "ok cho tôi chốt con này, cho tôi đặt lich lái thử" — bộ hiểu ý đọc
+    ĐÚNG (CHOICE + TEST_DRIVE + choice_ref=VF 3) nhưng lõi chỉ chốt xe rồi giới thiệu lại VF 3,
+    vì chỉ xét việc đang theo từ lượt TRƯỚC (`state.intent=ADVISORY`), bỏ mất việc khách vừa xin.
+    """
+
+    state = S(stage=Stage.RECOMMENDED, intent=I.ADVISORY, recommended_ids=("v3", "v5"), slots=CAR_FULL)
+    d = decide(state, U(A.CHOICE, intent, choice_ref="v3", confidence=0.9))
+    assert not (isinstance(d.action, Reply) and d.action.template == TEMPLATE_CHOSEN_SUMMARY)
+    assert d.state_after.chosen_vehicle_id == "v3"
+    assert d.state_after.intent is intent
